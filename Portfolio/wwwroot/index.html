@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sol Emanuel · S0LE — Portfólio interativo</title>
+  <meta name="description" content="Portfólio de Sol Emanuel: audiovisual, video mapping, cenografia e eletrônica embarcada, com linha do tempo e shaders interativos.">
+  <meta name="theme-color" content="#0b0b0c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="v-desktop">
+  <canvas id="gl" aria-hidden="true"></canvas>
+
+  <div class="app" id="app">
+    <header class="brand">
+      <button type="button" class="logo logo-sole" id="logo-sole" aria-label="Sol Emanuel: ir para a biografia">
+        <img class="mono" src="img/sole-mono.png" alt="Logo Se">
+        <img class="color" src="img/sole-color.jpg" alt="">
+      </button>
+      <button type="button" class="logo logo-v" id="logo-v" aria-label="v1su4rt: ver o projeto">
+        <img src="img/v1su4rt-mono.png" alt="v1su4rt">
+      </button>
+      <p class="brand-sub">Artista audiovisual, video mapping e eletrônica embarcada</p>
+
+      <div class="head-actions">
+        <details class="controls" id="controls">
+          <summary>Shader e vista</summary>
+          <div class="panel">
+            <label>Vista
+              <select id="c-view">
+                <option value="auto">Automática</option>
+                <option value="desktop">Desktop</option>
+                <option value="tablet">Tablet</option>
+                <option value="mobile">Celular</option>
+              </select>
+            </label>
+            <label>Velocidade <input type="range" id="c-speed" min="0" max="3" step="0.05" value="1"></label>
+            <label>Distorção <input type="range" id="c-warp" min="0" max="2" step="0.05" value="0.6"></label>
+            <label>Fase do padrão <input type="range" id="c-hue" min="0" max="1" step="0.01" value="0"></label>
+            <label>Sensibilidade do microfone <input type="range" id="c-sens" min="0.5" max="4" step="0.1" value="1.8"></label>
+            <button type="button" id="c-mic" class="btn">Ativar microfone</button>
+            <p class="note" id="c-note">Os visuais e os logos reagem ao som do ambiente. O áudio fica só no seu aparelho.</p>
+          </div>
+        </details>
+        <button type="button" class="btn ghost" id="c-bare" aria-pressed="false">Ocultar interface</button>
+      </div>
+    </header>
+
+    <nav class="rail" aria-label="Linha do tempo">
+      <ol id="rail"></ol>
+    </nav>
+
+    <main class="stage" id="stage" aria-live="polite"></main>
+  </div>
+
+  <dialog id="lb" aria-label="Foto ampliada">
+    <img alt="">
+    <p></p>
+    <button type="button" class="btn ghost">Fechar</button>
+  </dialog>
+
+  <script src="js/projects.js"></script>
+  <script src="js/shader.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
