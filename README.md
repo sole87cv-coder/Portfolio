@@ -38,3 +38,9 @@ Copie o conteúdo de `wwwroot` para o GitHub Pages ou qualquer hospedagem estát
 - Menu "Shader e vista": escolha Automática, Desktop, Tablet ou Celular para pré-visualizar cada layout.
 - Fotos ampliam ao clicar. O item "Links de referência" reúne os links; edite em `projects.js`.
 - Contatos como links, com botão de copiar para e-mail e WhatsApp.
+
+## Publicar na Vercel
+1. Envie o conteúdo desta pasta (onde estão `vercel.json`, `Portfolio.sln` e `Portfolio/`) para a raiz do repositório.
+2. No painel da Vercel, deixe **Root Directory** vazio e importe o repositório. O `vercel.json` já define Framework "Other", sem build e com `Portfolio/wwwroot` como pasta publicada.
+3. Se a Vercel abrir 404, confira se `vercel.json` está na raiz do repositório e se Root Directory está vazio.
+O `index.html` da raiz é só um redirecionamento de reserva.
