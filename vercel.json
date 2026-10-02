@@ -1,7 +1,1 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "installCommand": null,
-  "buildCommand": null,
-  "outputDirectory": "Portfolio/wwwroot"
-}
+﻿{ "rewrites": [ { "source": "/", "destination": "/Portfolio/wwwroot/index.html" }, { "source": "/(.*)", "destination": "/Portfolio/wwwroot/$1" } ] }
