@@ -100,8 +100,6 @@ window.PROJECTS = [
     links: [
       ["--", "Ouvidor 63"],
       ["Lab Novas Mídias", "Instagram @coletivolab63", "https://www.instagram.com/coletivolab63"],
-      ["II Bienal", "Dissertação (USP) sobre a II Bienal da Ouvidor 63", "https://teses.usp.br/teses/disponiveis/16/16136/tde-06102021-224109"],
-      ["Leitura", "Ocupa Ouvidor 63: arte, ocupação e artivismos (UFMG)", "https://periodicos.ufmg.br/index.php/indisciplinar/article/view/32708"],
       ["--", "Memorial da Resistência"],
       ["Exposição virtual", "Ouvidor 63: Habitar a Arte (Matterport)", "https://discover.matterport.com/space/EdZkVLG998V"],
       ["Site", "memorialdaresistenciasp.org.br", "https://memorialdaresistenciasp.org.br"],
