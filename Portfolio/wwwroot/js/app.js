@@ -7,6 +7,62 @@
   var stageEl = document.getElementById("stage");
   var filterEl = document.getElementById("c-category");
   var railViewToggle = document.getElementById("rail-view-toggle");
+  var mobileMenu = document.getElementById("mobile-menu");
+  var mobileMenuPanel = document.getElementById("mobile-menu-panel");
+  var mainNavEl = document.querySelector(".main-nav");
+  var headActionsEl = document.querySelector(".head-actions");
+  var railContainer = railEl.parentNode;
+  var appEl = document.getElementById("app");
+  var mobileMenuSummary = mobileMenu.querySelector("summary");
+  var brandEl = document.querySelector(".brand");
+  var nativeDetails = "open" in document.createElement("details");
+  if (!nativeDetails) {
+    mobileMenu.classList.add("mobile-menu-fallback");
+    mobileMenuSummary.setAttribute("role", "button");
+    mobileMenuSummary.setAttribute("tabindex", "0");
+    mobileMenuSummary.setAttribute("aria-expanded", "false");
+  }
+  function isMobileMenuOpen() { return nativeDetails ? mobileMenu.open : mobileMenu.classList.contains("is-open"); }
+  function setMobileMenuOpen(open) {
+    if (nativeDetails) mobileMenu.open = open;
+    else {
+      mobileMenu.classList.toggle("is-open", open);
+      mobileMenuSummary.setAttribute("aria-expanded", String(open));
+    }
+  }
+  if (!nativeDetails) {
+    mobileMenuSummary.addEventListener("click", function (event) { event.preventDefault(); setMobileMenuOpen(!isMobileMenuOpen()); });
+    mobileMenuSummary.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault(); setMobileMenuOpen(!isMobileMenuOpen());
+    });
+  }
+  var deferInitialSelection = false;
+  function syncMobileMenu(isMobile) {
+    if (isMobile) {
+      [mainNavEl, headActionsEl, railContainer].forEach(function (element) {
+        if (element.parentNode !== mobileMenuPanel) mobileMenuPanel.appendChild(element);
+      });
+      return;
+    }
+    if (mainNavEl.parentNode === mobileMenuPanel) brandEl.appendChild(mainNavEl);
+    if (headActionsEl.parentNode === mobileMenuPanel) brandEl.appendChild(headActionsEl);
+    if (railContainer.parentNode === mobileMenuPanel) appEl.insertBefore(railContainer, stageEl);
+    setMobileMenuOpen(false);
+  }
+  mobileMenuPanel.addEventListener("click", function (event) {
+    var target = event.target;
+    while (target && target !== mobileMenuPanel) {
+      if (matchesSelector(target, ".node, .nav-link")) {
+        window.setTimeout(function () {
+          setMobileMenuOpen(false);
+          mobileMenuSummary.focus();
+        }, 0);
+        return;
+      }
+      target = target.parentNode;
+    }
+  });
   railViewToggle.addEventListener("click", function () {
     var listView = railEl.parentNode.classList.toggle("list-view");
     railViewToggle.setAttribute("aria-pressed", String(listView));
@@ -139,7 +195,7 @@
     });
     countEl.textContent = visible.length + (visible.length === 1 ? " item" : " itens");
     if (current >= 0 && visible.indexOf(current) < 0) current = -1;
-    if (visible.length && current < 0) go(visible[0], true, true);
+    if (visible.length && current < 0 && !deferInitialSelection) go(visible[0], true, true);
     if (!visible.length) showEmpty();
     else updateRailState();
   }
@@ -233,6 +289,7 @@
     var card = make("article", "card");
     card.setAttribute("aria-labelledby", "project-title");
     var head = make("div", "card-heading");
+    if (p.id === "bio") head.appendChild(make("p", "eyebrow mobile-only", "Minibio"));
     appendChildren(head, make("p", "eyebrow", [p.featured ? "Em destaque" : "", p.kind, p.when].filter(Boolean).join(" · ")), make("h1", null, p.title || "Projeto"));
     head.lastChild.id = "project-title";
     if (p.subtitle) head.appendChild(make("p", "subtitle", p.subtitle));
@@ -312,7 +369,7 @@
     var index = projectIndexById(id);
     if (index < 0) return;
     var p = projects[index];
-    if (!matches(p)) { filterEl.value = "all"; searchEl.value = ""; rebuildRail(); }
+    if (!matches(p)) { filterEl.value = "all"; searchEl.value = ""; current = index; rebuildRail(); }
     go(index, false, true);
   }
   function readHash() {
@@ -326,12 +383,15 @@
         history.replaceState(null, "", location.pathname + location.search);
         lastObservedHash = "";
       }
-      filterEl.value = "all"; searchEl.value = ""; rebuildRail();
-      var home = projectIndexById("bio"); if (home >= 0) go(home, true, true);
+      filterEl.value = "all"; searchEl.value = "";
+      var home = projectIndexById("bio");
+      if (home >= 0) current = home;
+      rebuildRail();
+      if (home >= 0) go(home, true, true);
       return home >= 0;
     }
     var p = projects[index];
-    if (!matches(p)) { filterEl.value = "all"; searchEl.value = ""; rebuildRail(); }
+    if (!matches(p)) { filterEl.value = "all"; searchEl.value = ""; current = index; rebuildRail(); }
     go(index, true, true); return true;
   }
   function rebuildFromControls() {
@@ -351,6 +411,7 @@
   window.addEventListener("hashchange", readHash);
   window.addEventListener("keydown", function (event) {
     var tag = event.target && event.target.tagName;
+    if (event.key === "Escape" && isMobileMenuOpen()) { setMobileMenuOpen(false); mobileMenuSummary.focus(); return; }
     if (event.key === "Escape" && document.body.classList.contains("bare")) { restoreInterface(); return; }
     if (document.getElementById("lb").open) return;
     if (["INPUT", "TEXTAREA", "SELECT", "BUTTON"].indexOf(tag) >= 0) return;
@@ -391,7 +452,7 @@
   warp.addEventListener("input", function () { shader.params.warp = parseFloat(warp.value); if (shader.invalidate) shader.invalidate(); });
   pigment.addEventListener("input", function () { shader.params.pigment = parseFloat(pigment.value); if (shader.invalidate) shader.invalidate(); });
   document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });
-  var appEl = document.getElementById("app"), lastTouchAt = 0;
+  var lastTouchAt = 0;
   function addTouchStain(x, y, target) {
     if (isControlTarget(target)) return;
     shader.addStain(x / Math.max(1, window.innerWidth), y / Math.max(1, window.innerHeight));
@@ -424,9 +485,14 @@
     if (shader.invalidate) shader.invalidate();
   });
   var bareButton = document.getElementById("c-bare");
-  function restoreInterface() { document.body.classList.remove("bare"); bareButton.setAttribute("aria-pressed", "false"); bareButton.textContent = "Modo ambiente"; bareButton.focus(); }
+  function restoreInterface() {
+    document.body.classList.remove("bare"); bareButton.setAttribute("aria-pressed", "false"); bareButton.textContent = "Modo ambiente";
+    if (window.innerWidth <= 699) { setMobileMenuOpen(true); mobileMenuSummary.focus(); }
+    else bareButton.focus();
+  }
   bareButton.addEventListener("click", function () {
     var on = document.body.classList.toggle("bare"); bareButton.setAttribute("aria-pressed", String(on)); bareButton.textContent = on ? "Mostrar portfólio" : "Modo ambiente";
+    if (on && window.innerWidth <= 699) { setMobileMenuOpen(false); mobileMenuSummary.focus(); }
   });
   effectEl.addEventListener("change", function () {
     if (current < 0) return;
@@ -497,10 +563,20 @@
     var chosen = mode === "auto" ? (width < 700 ? "mobile" : (width < 1100 ? "tablet" : "desktop")) : mode;
     document.body.classList.remove("v-desktop", "v-tablet", "v-mobile", "framed"); document.body.classList.add("v-" + chosen);
     if (mode !== "auto" && ((chosen === "mobile" && width > 460) || (chosen === "tablet" && width > 860))) document.body.classList.add("framed");
+    syncMobileMenu(width <= 699);
   }
   view.addEventListener("change", applyView); window.addEventListener("resize", applyView); applyView();
 
+  var initialHash = location.hash;
+  var initialIndex = initialHash ? projectIndexById(initialHash.slice(1)) : -1;
+  var mobileHome = !initialHash && window.innerWidth <= 699 ? projectIndexById("bio") : -1;
+  if (initialIndex >= 0) current = initialIndex;
+  else if (mobileHome >= 0) current = mobileHome;
+  deferInitialSelection = true;
   rebuildRail();
-  if (location.hash && !readHash()) go(visible[0], true, true);
+  deferInitialSelection = false;
+  if (initialHash) { lastObservedHash = null; readHash(); }
+  else if (mobileHome >= 0) go(mobileHome, true, true);
+  else if (visible.length) go(visible[0]);
   document.documentElement.classList.add("js-ready");
 })();

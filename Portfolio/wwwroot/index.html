@@ -65,9 +65,13 @@
         </label>
         <button type="button" class="btn ghost" id="c-bare" aria-pressed="false">Modo ambiente</button>
       </div>
+      <details class="mobile-menu" id="mobile-menu">
+        <summary aria-controls="mobile-menu-panel">Menu</summary>
+        <div class="mobile-menu-panel" id="mobile-menu-panel"></div>
+      </details>
     </header>
 
-    <nav class="rail" aria-label="Navegação por projetos">
+    <nav class="rail list-view" aria-label="Navegação por projetos">
       <div class="browse-tools">
         <div class="filter-control">
           <label for="c-category">Explorar por tema</label>
@@ -89,13 +93,14 @@
         <p class="browse-count" id="browse-count" aria-live="polite"></p>
       </div>
       <ol id="rail"></ol>
-      <button type="button" class="rail-view-toggle" id="rail-view-toggle" aria-pressed="false">Ver cronologia em lista</button>
+      <button type="button" class="rail-view-toggle" id="rail-view-toggle" aria-pressed="true">Ver cronologia em faixa</button>
       <p class="rail-hint">Use as setas ou deslize para navegar. Toque ou clique no espaço visual para revelar pigmentos.</p>
     </nav>
 
     <main class="stage" id="stage" aria-label="Conteúdo do portfólio" aria-live="polite" aria-atomic="false">
       <article class="card static-content">
         <p class="eyebrow">Portfólio artístico</p>
+        <p class="eyebrow mobile-only">Minibio</p>
         <h1>Sol Emanuel Calderón Vargas</h1>
         <p class="subtitle">Artista audiovisual e pesquisador · São Paulo</p>
         <p class="text">Trabalhos entre audiovisual, video mapping, fotografia, cenografia, instalações e sistemas interativos.</p>
