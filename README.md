@@ -11,7 +11,7 @@ Portfólio artístico em português para audiovisual, pesquisa, fotografia, vide
 
 ## Experiência do portfólio
 
-- **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links. No celular, a cronologia pode ser alternada entre faixa horizontal e lista vertical.
+- **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links. No celular, a Minibio é a leitura inicial e a navegação, busca, filtros e ajustes ficam agrupados no menu recolhível. A cronologia abre em lista vertical, com opção de faixa horizontal.
 - **Sobre e Contato:** atalhos do cabeçalho levam diretamente à apresentação e aos canais de contato.
 - **Navegação por conteúdos:** abre cada registro por seleção, busca ou filtro; a URL usa `#id` e a navegação funciona por teclado, toque ou botões. “Mestrado” fica em destaque próprio. Os períodos e datas conhecidos aparecem em ordem inversa; atuação contínua, desenvolvimento, experimentos e conteúdo sem data ficam em grupos distintos. A cronologia não atribui datas.
 - **Ambiente visual e som:** a fumaça procedural é a imagem de fundo principal (modo 1); toque/clique no espaço visual desloca sua matéria e revela manchas cromáticas na paleta de cada registro. Os modos alternativos são analógico/CRT (0), orgânico psicodélico (2), fluido (3) e malha digital (4). O seletor “Efeito visual”, disponível no Modo ambiente, permite escolher uma linguagem ou acompanhar o projeto aberto. O fallback Canvas2D oferece fumaça e equivalentes simplificados; a preferência por movimento reduzido pausa a fumaça. Os logotipos S0LE e v1su4rt tocam sequências sintetizadas 8-bit ao clique ou ao foco por teclado. O site não solicita acesso ao microfone e não usa gravações de áudio.
@@ -57,7 +57,9 @@ Este repositório não contém atualmente uma configuração `vercel.json`; conf
 
 ## Acesso, desempenho e privacidade
 
-- Layout automático prioriza leitura em coluna em telas estreitas; o seletor de visualização serve para prévia, não mede o dispositivo real.
+- Layout automático prioriza leitura em coluna em telas estreitas; no celular, a Minibio aparece primeiro e o Mestrado continua no topo destacado da cronologia. O seletor de visualização serve para prévia, não mede o dispositivo real.
+- O menu móvel usa `<details>` quando disponível e alternância por teclado como fallback; o conteúdo editorial básico continua visível sem JavaScript.
+- Tablets e desktops mantêm a organização atual; os elementos de navegação retornam às posições originais quando a janela sai da largura de celular.
 - A preferência do sistema por movimento reduzido pausa a animação contínua. Toques deixam manchas estáticas, que desaparecem sem animação após o intervalo definido.
 - Ao deixar a página, o efeito interrompe os quadros; ao retornar, ele é retomado. Se WebGL e Canvas2D não estiverem disponíveis, os efeitos são escondidos e o conteúdo segue navegável.
 - Imagens são carregadas sob demanda no cartão atual. A série VIVITAR usa miniaturas WebP responsivas de 480 px e 960 px (ou 720 px nas imagens verticais), com JPEG original como alternativa e para ampliação; outros registros ainda usam os arquivos originais.
