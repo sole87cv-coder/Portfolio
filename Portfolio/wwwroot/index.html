@@ -3,65 +3,93 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Sol Emanuel · S0LE — Portfólio interativo</title>
-  <meta name="description" content="Portfólio de Sol Emanuel: audiovisual, video mapping, cenografia e eletrônica embarcada, com linha do tempo e shaders interativos.">
-  <meta name="theme-color" content="#0b0b0c">
+  <meta name="description" content="Portfólio de Sol Emanuel Calderón Vargas: audiovisual, video mapping, pesquisa, cenografia e experiências interativas.">
+  <meta name="theme-color" content="#090d14">
+  <title>Sol Emanuel Calderón Vargas · Portfólio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="v-desktop">
   <canvas id="gl" aria-hidden="true"></canvas>
-
   <div class="app" id="app">
     <header class="brand">
-      <button type="button" class="logo logo-sole" id="logo-sole" aria-label="Sol Emanuel: ir para a biografia">
-        <img class="mono" src="img/sole-mono.png" alt="Logo Se">
-        <img class="color" src="img/sole-color.jpg" alt="">
-      </button>
-      <button type="button" class="logo logo-v" id="logo-v" aria-label="v1su4rt: ver o projeto">
-        <img src="img/v1su4rt-mono.png" alt="v1su4rt">
-      </button>
-      <p class="brand-sub">Artista audiovisual, video mapping e eletrônica embarcada</p>
-
+      <div class="identity">
+        <button type="button" class="logo logo-sole" id="logo-sole" aria-label="Sol Emanuel: abrir apresentação">
+          <img class="mono" src="img/sole-mono.png" alt="S0LE">
+          <img class="color" src="img/sole-color.jpg" alt="">
+        </button>
+        <button type="button" class="logo logo-v" id="logo-v" aria-label="Abrir o experimento audiovisual v1su4rt">
+          <img src="img/v1su4rt-mono.png" alt="v1su4rt">
+        </button>
+        <div class="identity-copy">
+          <p class="brand-name">Sol Emanuel Calderón Vargas</p>
+          <p class="brand-sub">Artista audiovisual · pesquisa · imagem e espaço</p>
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <button type="button" class="nav-link" id="nav-work">Projetos</button>
+        <button type="button" class="nav-link" id="nav-bio">Sobre</button>
+        <button type="button" class="nav-link" id="nav-contact">Contato</button>
+      </nav>
       <div class="head-actions">
         <details class="controls" id="controls">
-          <summary>Shader e vista</summary>
+          <summary>Ajustes visuais</summary>
           <div class="panel">
-            <label>Vista
-              <select id="c-view">
-                <option value="auto">Automática</option>
-                <option value="desktop">Desktop</option>
-                <option value="tablet">Tablet</option>
-                <option value="mobile">Celular</option>
-              </select>
-            </label>
-            <label>Velocidade <input type="range" id="c-speed" min="0" max="3" step="0.05" value="1"></label>
-            <label>Distorção <input type="range" id="c-warp" min="0" max="2" step="0.05" value="0.6"></label>
-            <label>Fase do padrão <input type="range" id="c-hue" min="0" max="1" step="0.01" value="0"></label>
-            <label>Sensibilidade do microfone <input type="range" id="c-sens" min="0.5" max="4" step="0.1" value="1.8"></label>
+            <label for="c-view">Visualização</label>
+            <select id="c-view">
+              <option value="auto">Automática</option><option value="desktop">Desktop</option><option value="tablet">Tablet</option><option value="mobile">Celular</option>
+            </select>
+            <label for="c-speed">Velocidade do ambiente <output id="o-speed" for="c-speed">1.00</output></label>
+            <input type="range" id="c-speed" min="0" max="3" step="0.05" value="1">
+            <label for="c-warp">Distorção <output id="o-warp" for="c-warp">0.60</output></label>
+            <input type="range" id="c-warp" min="0" max="2" step="0.05" value="0.6">
+            <label for="c-hue">Fase de cor <output id="o-hue" for="c-hue">0.00</output></label>
+            <input type="range" id="c-hue" min="0" max="1" step="0.01" value="0">
+            <label for="c-sens">Sensibilidade do microfone <output id="o-sens" for="c-sens">1.8</output></label>
+            <input type="range" id="c-sens" min="0.5" max="4" step="0.1" value="1.8">
             <button type="button" id="c-mic" class="btn">Ativar microfone</button>
-            <p class="note" id="c-note">Os visuais e os logos reagem ao som do ambiente. O áudio fica só no seu aparelho.</p>
+            <p class="note" id="c-note" aria-live="polite">O microfone é opcional. Quando ativado, o nível de som é processado no aparelho e não é gravado.</p>
+            <button type="button" id="c-reset" class="text-button">Restaurar ajustes</button>
           </div>
         </details>
-        <button type="button" class="btn ghost" id="c-bare" aria-pressed="false">Ocultar interface</button>
+        <button type="button" class="btn ghost" id="c-bare" aria-pressed="false">Modo ambiente</button>
       </div>
     </header>
 
-    <nav class="rail" aria-label="Linha do tempo">
+    <nav class="rail" aria-label="Navegação por projetos">
+      <div class="browse-tools">
+        <div class="filter-control">
+          <label for="c-category">Explorar por tema</label>
+          <select id="c-category">
+            <option value="all">Todos os conteúdos</option>
+            <option value="works">Trabalhos e documentação</option>
+            <option value="research">Pesquisa</option>
+            <option value="collective">Coletivos e território</option>
+            <option value="workshop">Oficinas e mediação</option>
+            <option value="interactive">Tecnologia e interação</option>
+            <option value="education">Formação</option>
+          </select>
+        </div>
+        <div class="filter-control">
+          <label for="c-search">Buscar no portfólio</label>
+          <input type="search" id="c-search" placeholder="Título, tema, local ou linguagem" autocomplete="off">
+        </div>
+        <p class="browse-count" id="browse-count" aria-live="polite"></p>
+      </div>
       <ol id="rail"></ol>
+      <p class="rail-hint">Use as setas do teclado ou deslize entre os conteúdos.</p>
     </nav>
 
-    <main class="stage" id="stage" aria-live="polite"></main>
+    <main class="stage" id="stage" aria-label="Conteúdo do portfólio" aria-live="polite" aria-atomic="false"></main>
   </div>
-
-  <dialog id="lb" aria-label="Foto ampliada">
+  <p class="visually-hidden" id="app-status" role="status" aria-live="polite"></p>
+  <dialog id="lb" aria-label="Imagem ampliada">
+    <button type="button" class="btn ghost lb-close" aria-label="Fechar imagem ampliada">Fechar</button>
     <img alt="">
     <p></p>
-    <button type="button" class="btn ghost">Fechar</button>
   </dialog>
-
   <script src="js/projects.js"></script>
   <script src="js/shader.js"></script>
   <script src="js/audio.js"></script>
