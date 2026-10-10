@@ -357,8 +357,8 @@
   document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });
   document.getElementById("app").addEventListener("pointerdown", function (event) {
     if (event.target.closest("button, a, input, select, summary, dialog")) return;
-    var bounds = document.getElementById("app").getBoundingClientRect();
-    if (bounds.width && bounds.height) shader.addStain((event.clientX - bounds.left) / bounds.width, (event.clientY - bounds.top) / bounds.height);
+    var viewportWidth = Math.max(1, window.innerWidth), viewportHeight = Math.max(1, window.innerHeight);
+    shader.addStain(event.clientX / viewportWidth, event.clientY / viewportHeight);
   }, { passive: true });
 
   var defaults = { speed: shader.params.speed, warp: 0.6, pigment: 1 };
@@ -405,6 +405,24 @@
     filterEl.value = "apps"; searchEl.value = ""; rebuildRail();
     var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);
   });
+  var lastInputMethod = "pointer", lastLogoFocusSound = 0;
+  document.addEventListener("pointerdown", function () { lastInputMethod = "pointer"; }, true);
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Tab" || event.key.indexOf("Arrow") === 0 || event.key === "Enter" || event.key === " ") lastInputMethod = "keyboard";
+  }, true);
+  function attachLogoSound(element, name) {
+    element.addEventListener("focus", function () {
+      if (lastInputMethod !== "keyboard" || !window.SoleAudio) return;
+      lastLogoFocusSound = performance.now();
+      window.SoleAudio.playLogo(name);
+    });
+    element.addEventListener("click", function () {
+      if (lastInputMethod === "keyboard" && performance.now() - lastLogoFocusSound < 350) return;
+      if (window.SoleAudio) window.SoleAudio.playLogo(name);
+    });
+  }
+  attachLogoSound(document.getElementById("logo-sole"), "sole");
+  attachLogoSound(document.getElementById("logo-v"), "v1su4rt");
   document.getElementById("logo-v").addEventListener("click", function () { goToId("v1su4rt"); });
 
   var view = document.getElementById("c-view");
