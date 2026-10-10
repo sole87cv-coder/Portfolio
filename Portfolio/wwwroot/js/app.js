@@ -748,7 +748,7 @@
   }
   attachLogoSound(document.getElementById("logo-sole"), "sole");
   attachLogoSound(document.getElementById("logo-v"), "v1su4rt");
-  document.getElementById("logo-v").addEventListener("click", function () { goToId("v1su4rt"); });
+  document.getElementById("logo-v").addEventListener("click", function () { goToId("fotografia-vivitar"); });
 
   var view = document.getElementById("c-view");
   function applyView() {
