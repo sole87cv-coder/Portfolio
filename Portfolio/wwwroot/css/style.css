@@ -344,3 +344,7 @@ body.v-mobile .browse-count { display: block; }
   .logo-v:hover img, .logo-v:focus-visible img { animation: none; }
   .thumb img { transition: none; }
 }
+
+
+/* A navegação expressa seleção; a posição na lista não representa conclusão cronológica. */
+.rail li::before, .rail li.done::before { display: none !important; }

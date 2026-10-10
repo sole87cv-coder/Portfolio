@@ -94,7 +94,7 @@
     var items = railEl.children;
     for (var j = 0; j < items.length; j++) {
       var index = visible[j];
-      items[j].classList.toggle("done", index < current && index >= 0);
+      items[j].classList.remove("done");
       var button = items[j].firstChild;
       if (index === current) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");

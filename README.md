@@ -12,7 +12,7 @@ Portfólio artístico em português para audiovisual, pesquisa, video mapping, c
 
 - **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links.
 - **Sobre e Contato:** atalhos do cabeçalho levam diretamente à apresentação e aos canais de contato.
-- **Linha do tempo:** seleciona os itens, atualiza o endereço com `#id` e permite navegar por teclado, toque ou botões.
+- **Navegação por conteúdos:** abre cada registro por seleção, busca ou filtro; a URL usa `#id` e a navegação funciona por teclado, toque ou botões. A ordem dos registros não indica conclusão nem uma cronologia completa.
 - **Ambiente visual:** WebGL com fallback Canvas2D quando disponível; se nenhum contexto gráfico iniciar, os efeitos são ocultados e o conteúdo segue acessível. Ponteiro e toque atualizam a posição do ambiente; velocidade, distorção e cor podem ser ajustadas.
 - **Microfone:** opcional, ativado por escolha do visitante. O nível sonoro é analisado localmente, sem gravação.
 - **Imagens:** cada imagem deve ter legenda e descrição alternativa; clicar abre a versão ampliada.
