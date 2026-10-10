@@ -104,14 +104,19 @@
 
   window.createShader = function (initialCanvas) {
     var canvas = initialCanvas;
-    var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var nowTime = window.performance && window.performance.now ? function () { return window.performance.now(); } : function () { return Date.now(); };
+    var reducedMotion = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+    var requestFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (callback) {
+      return window.setTimeout(function () { callback(nowTime()); }, 33);
+    };
     var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    var hasHardwareSignal = !!(navigator.hardwareConcurrency || navigator.deviceMemory);
     var lowCapacity = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
-      (navigator.deviceMemory && navigator.deviceMemory <= 4) || window.innerWidth <= 820 || (connection && connection.saveData);
+      (navigator.deviceMemory && navigator.deviceMemory <= 4) || window.innerWidth <= 820 || (connection && connection.saveData) || !hasHardwareSignal;
     var maxDpr = lowCapacity ? 1 : 1.25;
     var frameDelay = lowCapacity ? 34 : 0;
     var gl = null, ctx2d = null, program = null, loc = {};
-    var framePending = false, frameTimer = 0, stainTimer = 0, time = 0, last = performance.now();
+    var framePending = false, frameTimer = 0, stainTimer = 0, time = 0, last = nowTime();
     var pulseValue = 0, modeValue = 1, paletteValue = 0.7, stainCursor = 0;
     var pointer = { x: -1, y: -1, born: 0 };
     var stains = [null, null, null, null, null, null];
@@ -123,7 +128,7 @@
       setTarget: function (mode, hue) { api.target.mode = mode || 0; api.target.hue = hue || 0; scheduleFrame(); },
       invalidate: function () { scheduleFrame(); },
       addStain: function (x, y) {
-        pointer = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), born: performance.now() };
+        pointer = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), born: nowTime() };
         stains[stainCursor] = { x: pointer.x, y: pointer.y, born: pointer.born, hue: Math.random() * 0.19 };
         stainCursor = (stainCursor + 1) % stains.length;
         scheduleFrame();
@@ -183,7 +188,7 @@
     function scheduleFrame() {
       if (framePending || document.hidden || (!gl && !ctx2d)) return;
       framePending = true;
-      var draw = function () { frameTimer = 0; requestAnimationFrame(frame); };
+      var draw = function () { frameTimer = 0; requestFrame.call(window, frame); };
       if (frameDelay) frameTimer = window.setTimeout(draw, frameDelay);
       else draw();
     }
@@ -197,7 +202,7 @@
       }
     }
     window.addEventListener("resize", function () { resize(); scheduleFrame(); }, { passive: true });
-    document.addEventListener("visibilitychange", function () { if (!document.hidden) { last = performance.now(); scheduleFrame(); } });
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) { last = nowTime(); scheduleFrame(); } });
     if (reducedMotion.addEventListener) reducedMotion.addEventListener("change", function (event) { if (event.matches) api.params.speed = 0; scheduleFrame(); });
     else if (reducedMotion.addListener) reducedMotion.addListener(function (event) { if (event.matches) api.params.speed = 0; scheduleFrame(); });
 

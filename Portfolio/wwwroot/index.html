@@ -53,6 +53,16 @@
             <button type="button" id="c-reset" class="text-button">Restaurar ajustes</button>
           </div>
         </details>
+        <label class="ambient-effects" for="c-effect">Efeito visual
+          <select id="c-effect" aria-label="Efeito visual do modo ambiente">
+            <option value="auto">Por projeto</option>
+            <option value="1">Fumaça</option>
+            <option value="2">Orgânico psicodélico</option>
+            <option value="3">Fluxo fluido</option>
+            <option value="0">Analógico</option>
+            <option value="4">Malha digital</option>
+          </select>
+        </label>
         <button type="button" class="btn ghost" id="c-bare" aria-pressed="false">Modo ambiente</button>
       </div>
     </header>
@@ -79,6 +89,7 @@
         <p class="browse-count" id="browse-count" aria-live="polite"></p>
       </div>
       <ol id="rail"></ol>
+      <button type="button" class="rail-view-toggle" id="rail-view-toggle" aria-pressed="false">Ver cronologia em lista</button>
       <p class="rail-hint">Use as setas ou deslize para navegar. Toque ou clique no espaço visual para revelar pigmentos.</p>
     </nav>
 

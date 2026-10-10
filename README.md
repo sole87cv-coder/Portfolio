@@ -7,13 +7,14 @@ Portfólio artístico em português para audiovisual, pesquisa, fotografia, vide
 - Abra `Portfolio.sln` no Visual Studio e inicie o projeto `Portfolio`; o perfil local usa `http://localhost:5173`.
 - O projeto ASP.NET Core serve os arquivos estáticos de `Portfolio/wwwroot`.
 - Também é possível abrir `Portfolio/wwwroot/index.html` diretamente. Todo o conteúdo e a interação visual funcionam sem permissões de dispositivo.
+- O projeto usa alternativas para eventos de toque, atualização de cartões, altura da tela, foco e janela ampliada em navegadores antigos. A validação final ainda deve incluir os aparelhos Android que o artista deseja atender.
 
 ## Experiência do portfólio
 
-- **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links.
+- **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links. No celular, a cronologia pode ser alternada entre faixa horizontal e lista vertical.
 - **Sobre e Contato:** atalhos do cabeçalho levam diretamente à apresentação e aos canais de contato.
 - **Navegação por conteúdos:** abre cada registro por seleção, busca ou filtro; a URL usa `#id` e a navegação funciona por teclado, toque ou botões. “Mestrado” fica em destaque próprio. Os períodos e datas conhecidos aparecem em ordem inversa; atuação contínua, desenvolvimento, experimentos e conteúdo sem data ficam em grupos distintos. A cronologia não atribui datas.
-- **Ambiente visual e som:** a fumaça procedural é a imagem de fundo principal (modo 1); toque/clique no espaço visual desloca sua matéria e revela manchas cromáticas na paleta de cada registro. Os modos alternativos são analógico/CRT (0), orgânico psicodélico (2), fluido (3) e malha digital (4). O fallback Canvas2D oferece fumaça e equivalentes simplificados; a preferência por movimento reduzido pausa a fumaça. Os logotipos S0LE e v1su4rt tocam sequências sintetizadas 8-bit ao clique ou ao foco por teclado, sem microfone ou arquivos de áudio externos.
+- **Ambiente visual e som:** a fumaça procedural é a imagem de fundo principal (modo 1); toque/clique no espaço visual desloca sua matéria e revela manchas cromáticas na paleta de cada registro. Os modos alternativos são analógico/CRT (0), orgânico psicodélico (2), fluido (3) e malha digital (4). O seletor “Efeito visual”, disponível no Modo ambiente, permite escolher uma linguagem ou acompanhar o projeto aberto. O fallback Canvas2D oferece fumaça e equivalentes simplificados; a preferência por movimento reduzido pausa a fumaça. Os logotipos S0LE e v1su4rt tocam sequências sintetizadas 8-bit ao clique ou ao foco por teclado. O site não solicita acesso ao microfone e não usa gravações de áudio.
 - **Movimento reduzido:** não há animação contínua. As manchas ficam estáticas após o toque e desaparecem ao fim do intervalo definido; o efeito respeita a preferência do sistema.
 - **Sem JavaScript:** a página apresenta um resumo editorial, a ficha do mestrado, o Centro Cultural Ouvidor 63 e links principais. Filtros, navegação dinâmica e shader requerem JavaScript.
 - **Imagens:** cada imagem deve ter legenda e descrição alternativa; clicar abre a versão ampliada.

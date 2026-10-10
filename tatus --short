@@ -1,0 +1,462 @@
+[1mdiff --git a/Portfolio/wwwroot/css/style.css b/Portfolio/wwwroot/css/style.css[m
+[1mindex 1cb9749..b5a1310 100644[m
+[1m--- a/Portfolio/wwwroot/css/style.css[m
+[1m+++ b/Portfolio/wwwroot/css/style.css[m
+[36m@@ -17,19 +17,21 @@[m
+ }[m
+ * { box-sizing: border-box; }[m
+ html, body { min-width: 320px; min-height: 100%; margin: 0; }[m
+[31m-body { height: 100%; overflow: hidden; background: var(--ink); color: var(--text); font: 400 1rem/1.55 var(--body); }[m
+[32m+[m[32mbody { height: 100%; overflow-x: hidden; overflow-y: auto; background: #0b0b0c; background: var(--ink); color: #f0f0f0; color: var(--text); font: 400 1rem/1.55 var(--body); }[m
+ button, input, select { font: inherit; }[m
+ button, a, summary, input, select { -webkit-tap-highlight-color: transparent; }[m
+[31m-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }[m
+[32m+[m[32m:focus { outline: 2px solid var(--accent); outline-offset: 3px; }[m
+[32m+[m[32m:focus:not(:focus-visible) { outline: none; }[m
+ #gl { position: fixed; z-index: 0; inset: 0; display: block; width: 100%; height: 100%; opacity: .76; pointer-events: none; }[m
+ ::-webkit-scrollbar { width: 8px; height: 8px; }[m
+ ::-webkit-scrollbar-thumb { border-radius: 8px; background: rgba(240,240,240,.28); }[m
+ .app {[m
+[31m-  position: relative; z-index: 1; display: grid; grid-template-areas: "brand brand" "rail stage";[m
+[32m+[m[32m  position: relative; z-index: 1; display: flex; flex-direction: column; grid-template-areas: "brand brand" "rail stage";[m
+   grid-template-columns: minmax(245px, 290px) minmax(0,1fr); grid-template-rows: auto minmax(0,1fr);[m
+[31m-  width: 100%; height: 100%; height: 100dvh; margin: 0 auto;[m
+[32m+[m[32m  width: 100%; height: 100%; height: 100vh; height: 100dvh; margin: 0 auto;[m
+   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);[m
+ }[m
+[32m+[m[32m@supports (display: grid) { .app { display: grid; } }[m
+ html:not(.js-ready) .app { grid-template-areas: "brand" "stage"; grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0,1fr); }[m
+ html:not(.js-ready) .rail, html:not(.js-ready) .main-nav, html:not(.js-ready) .head-actions, html:not(.js-ready) .identity > .logo { display: none; }[m
+ body.v-tablet .app { grid-template-columns: minmax(205px,250px) minmax(0,1fr); }[m
+[36m@@ -86,6 +88,7 @@[m [mbody.framed.v-mobile .app { max-width: 430px; }[m
+ .rail li.sub .node { min-height: 42px; padding-top: .35rem; padding-bottom: .4rem; }[m
+ .rail li.sub .node .dot { top: .67rem; left: .3rem; width: 8px; height: 8px; }[m
+ .rail-hint { max-width: 34ch; margin: .6rem .25rem 0; color: var(--muted); font-size: .72rem; line-height: 1.45; }[m
+[32m+[m[32m.rail-view-toggle { display: none; }[m
+ [m
+ .stage { grid-area: stage; min-width: 0; min-height: 0; overflow: auto; padding: clamp(1rem,4vw,3.5rem); touch-action: pan-y; }[m
+ .card { width: min(100%,900px); margin: auto; padding: clamp(1.1rem,3vw,2.4rem); border: 1px solid rgba(235,235,235,.24); border-radius: 18px; background: rgba(10,10,11,.82); box-shadow: 0 20px 70px rgba(0,0,0,.24); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: opacity .2s,transform .2s; }[m
+[36m@@ -126,15 +129,20 @@[m [mbody.framed.v-mobile .app { max-width: 430px; }[m
+ .copy-button { align-self: stretch; }[m
+ .empty-state { margin-top: 10vh; }[m
+ .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }[m
+[31m-dialog#lb { width: min(94vw,1100px); max-width: min(94vw,1100px); max-height: 92dvh; padding: 1.2rem; border: 1px solid var(--line); border-radius: 12px; background: #0b0b0c; color: var(--text); box-shadow: 0 24px 80px rgba(0,0,0,.5); }[m
+[32m+[m[32mdialog#lb { width: 94vw; max-width: 1100px; max-height: 92vh; max-height: 92dvh; padding: 1.2rem; border: 1px solid var(--line); border-radius: 12px; background: #0b0b0c; color: var(--text); box-shadow: 0 24px 80px rgba(0,0,0,.5); }[m
+[32m+[m[32mdialog#lb:not([open]) { display: none; }[m
+[32m+[m[32mdialog#lb.fallback-open { position: fixed; z-index: 101; top: 50%; left: 50%; display: block; overflow: auto; transform: translate(-50%,-50%); }[m
+[32m+[m[32mbody.lb-fallback::after { position: fixed; z-index: 100; inset: 0; background: rgba(0,0,0,.88); content: ""; }[m
+ dialog#lb::backdrop { background: rgba(0,0,0,.88); backdrop-filter: blur(4px); }[m
+[31m-dialog#lb img { display: block; max-width: 100%; max-height: 76dvh; margin: 0 auto; border-radius: 6px; }[m
+[32m+[m[32mdialog#lb img { display: block; max-width: 100%; max-height: 76vh; max-height: 76dvh; margin: 0 auto; border-radius: 6px; }[m
+ dialog#lb p { margin: .6rem 0; color: var(--muted); }[m
+ .lb-close { display: flex; margin: 0 0 .8rem auto; }[m
+ .controls { position: relative; }[m
+ .controls summary { display: flex; align-items: center; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(11,11,12,.85); color: var(--text); font-size: .84rem; font-weight: 600; cursor: pointer; }[m
+ .controls summary::-webkit-details-marker { display: none; }[m
+[31m-.controls .panel { position: absolute; z-index: 10; top: calc(100% + .5rem); right: 0; display: grid; gap: .75rem; width: min(21rem,calc(100vw - 2rem)); max-height: min(80dvh,40rem); overflow: auto; padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: rgba(11,11,12,.97); box-shadow: 0 18px 50px rgba(0,0,0,.4); }[m
+[32m+[m[32m.controls .panel { position: absolute; z-index: 10; top: calc(100% + .5rem); right: 0; display: grid; gap: .75rem; width: calc(100vw - 2rem); max-width: 21rem; max-height: 80vh; max-height: min(80dvh,40rem); overflow: auto; padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: rgba(11,11,12,.97); box-shadow: 0 18px 50px rgba(0,0,0,.4); }[m
+[32m+[m[32m.ambient-effects { display: none; }[m
+[32m+[m[32m.ambient-effects select { min-height: 44px; padding: .45rem .65rem; border: 1px solid var(--line); border-radius: 10px; background: #101011; color: var(--text); font: 500 .86rem var(--body); }[m
+ .panel label { display: grid; gap: .2rem; color: var(--text); font-size: .82rem; }[m
+ .panel input[type="range"] { width: 100%; min-height: 34px; accent-color: var(--accent); }[m
+ .panel output { float: right; color: var(--soft); font-variant-numeric: tabular-nums; }[m
+[36m@@ -144,6 +152,8 @@[m [mdialog#lb p { margin: .6rem 0; color: var(--muted); }[m
+ body.bare .main-nav, body.bare .identity-copy, body.bare #logo-v, body.bare .controls, body.bare .rail, body.bare .stage { visibility: hidden; opacity: 0; pointer-events: none; }[m
+ body.bare .brand { justify-content: space-between; }[m
+ body.bare #c-bare { position: fixed; z-index: 5; top: calc(1rem + var(--safe-top)); right: calc(1rem + var(--safe-right)); }[m
+[32m+[m[32mbody.bare .ambient-effects { position: fixed; z-index: 5; top: calc(4.4rem + var(--safe-top)); right: calc(1rem + var(--safe-right)); display: grid; gap: .25rem; width: calc(100vw - 2rem); max-width: 19rem; max-width: min(19rem,calc(100vw - 2rem)); padding: .55rem .65rem; border: 1px solid var(--line); border-radius: 12px; background: rgba(11,11,12,.96); color: var(--text); font-size: .78rem; }[m
+[32m+[m[32mbody.bare .ambient-effects select { width: 100%; }[m
+ [m
+ @media (max-width: 1099px) {[m
+   .brand { flex-wrap: wrap; }[m
+[36m@@ -152,7 +162,7 @@[m [mbody.bare #c-bare { position: fixed; z-index: 5; top: calc(1rem + var(--safe-top[m
+ @media (max-width: 699px) {[m
+   body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; }[m
+   /* Preserve the narrow-screen editorial fallback even when app.js never runs. */[m
+[31m-  .app { height: auto; min-height: 100dvh; grid-template-areas: "brand" "rail" "stage"; grid-template-columns: minmax(0,1fr); grid-template-rows: auto auto 1fr; }[m
+[32m+[m[32m  .app { display: flex; flex-direction: column; height: auto; min-height: 100%; min-height: 100vh; min-height: 100dvh; grid-template-areas: "brand" "rail" "stage"; grid-template-columns: minmax(0,1fr); grid-template-rows: auto auto 1fr; }[m
+   body.v-mobile .brand, .brand { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: .55rem; padding: .65rem .85rem; }[m
+   .identity { gap: .6rem; }[m
+   .logo-sole { height: 32px; }[m
+[36m@@ -165,13 +175,17 @@[m [mbody.bare #c-bare { position: fixed; z-index: 5; top: calc(1rem + var(--safe-top[m
+   .nav-link { flex: 1; min-height: 44px; padding: .4rem .3rem; font-size: .8rem; }[m
+   .controls summary { min-height: 42px; padding-inline: .65rem; font-size: .76rem; }[m
+   #c-bare { min-height: 42px; padding: .4rem .65rem; font-size: .76rem; }[m
+[31m-  .controls .panel { position: fixed; top: calc(4.4rem + var(--safe-top)); right: calc(.6rem + var(--safe-right)); max-height: calc(100dvh - 5.2rem - var(--safe-top)); }[m
+[32m+[m[32m  .controls .panel { position: fixed; top: calc(4.4rem + var(--safe-top)); right: calc(.6rem + var(--safe-right)); max-height: calc(100vh - 5.2rem - var(--safe-top)); max-height: calc(100dvh - 5.2rem - var(--safe-top)); }[m
+   .rail { display: block; min-height: 0; overflow: visible; padding: .55rem .8rem .35rem; border-right: 0; border-bottom: 1px solid var(--line); }[m
+   .browse-tools { grid-template-columns: 1fr 1fr; gap: .35rem .5rem; padding: 0 0 .45rem; }[m
+   .browse-tools label { font-size: .63rem; }[m
+   .browse-tools input, .browse-tools select { min-height: 42px; font-size: .77rem; }[m
+   .browse-count { display: none; }[m
+   .rail ol { display: flex; gap: .25rem; overflow-x: auto; overscroll-behavior-x: contain; padding: .25rem 0 .45rem; scrollbar-width: thin; }[m
+[32m+[m[32m  .rail-view-toggle { display: inline-flex; align-items: center; min-height: 42px; margin: .2rem 0; padding: .35rem .7rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(11,11,12,.85); color: var(--text); font-size: .78rem; }[m
+[32m+[m[32m  .rail.list-view ol { display: flex; flex-direction: column; overflow: visible; }[m
+[32m+[m[32m  .rail.list-view li:not(.rail-section), .rail.list-view li.sub { flex: 0 0 auto; width: 100%; margin: 0; }[m
+[32m+[m[32m  .rail.list-view .rail-section { flex: 0 0 auto; align-items: center; min-height: 2rem; border-right: 0; border-bottom: 1px solid rgba(235,235,235,.14); }[m
+   .rail li:not(.rail-section), .rail li.sub { flex: 0 0 148px; margin: 0; }[m
+   .rail-section { display: flex; flex: 0 0 108px; align-items: flex-end; margin: .2rem 0; padding: .25rem .35rem; border-top: 0; border-right: 1px solid rgba(235,235,235,.18); }[m
+   .rail-section h2 { font-size: .65rem; }[m
+[36m@@ -182,7 +196,7 @@[m [mbody.bare #c-bare { position: fixed; z-index: 5; top: calc(1rem + var(--safe-top[m
+   .rail li.sub .node .dot { top: .43rem; left: .15rem; width: 7px; height: 7px; }[m
+   .rail-hint { display: block; margin: .35rem .1rem .15rem; font-size: .68rem; }[m
+   .stage { min-height: 50vh; overflow: visible; padding: .8rem .75rem calc(1rem + var(--safe-bottom)); }[m
+[31m-  .card { width: 100%; padding: 1rem; border-radius: 14px; }[m
+[32m+[m[32m  .card { width: 100%; max-width: 900px; padding: 1rem; border-radius: 14px; }[m
+   .card h1 { font-size: clamp(1.7rem,8vw,2.6rem); }[m
+   .card .text { margin-top: .9rem; font-size: .95rem; line-height: 1.65; }[m
+   .project-meta, .specs { grid-template-columns: 1fr; gap: 0; }[m
+[36m@@ -205,6 +219,10 @@[m [mbody.bare #c-bare { position: fixed; z-index: 5; top: calc(1rem + var(--safe-top[m
+   .rail-section { flex-basis: 94px; }[m
+   .browse-tools input, .browse-tools select { font-size: .74rem; }[m
+ }[m
+[32m+[m[32m@media (max-width: 699px) {[m
+[32m+[m[32m  body.bare .ambient-effects { top: calc(4rem + var(--safe-top)); right: calc(.65rem + var(--safe-right)); }[m
+[32m+[m[32m  body.bare #c-bare { top: calc(.65rem + var(--safe-top)); right: calc(.65rem + var(--safe-right)); }[m
+[32m+[m[32m}[m
+ @media (prefers-reduced-motion: reduce) {[m
+   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: .01ms !important; }[m
+ }[m
+[1mdiff --git a/Portfolio/wwwroot/index.html b/Portfolio/wwwroot/index.html[m
+[1mindex 5eda8bd..87a9d8c 100644[m
+[1m--- a/Portfolio/wwwroot/index.html[m
+[1m+++ b/Portfolio/wwwroot/index.html[m
+[36m@@ -53,6 +53,16 @@[m
+             <button type="button" id="c-reset" class="text-button">Restaurar ajustes</button>[m
+           </div>[m
+         </details>[m
+[32m+[m[32m        <label class="ambient-effects" for="c-effect">Efeito visual[m
+[32m+[m[32m          <select id="c-effect" aria-label="Efeito visual do modo ambiente">[m
+[32m+[m[32m            <option value="auto">Por projeto</option>[m
+[32m+[m[32m            <option value="1">Fumaça</option>[m
+[32m+[m[32m            <option value="2">Orgânico psicodélico</option>[m
+[32m+[m[32m            <option value="3">Fluxo fluido</option>[m
+[32m+[m[32m            <option value="0">Analógico</option>[m
+[32m+[m[32m            <option value="4">Malha digital</option>[m
+[32m+[m[32m          </select>[m
+[32m+[m[32m        </label>[m
+         <button type="button" class="btn ghost" id="c-bare" aria-pressed="false">Modo ambiente</button>[m
+       </div>[m
+     </header>[m
+[36m@@ -79,6 +89,7 @@[m
+         <p class="browse-count" id="browse-count" aria-live="polite"></p>[m
+       </div>[m
+       <ol id="rail"></ol>[m
+[32m+[m[32m      <button type="button" class="rail-view-toggle" id="rail-view-toggle" aria-pressed="false">Ver cronologia em lista</button>[m
+       <p class="rail-hint">Use as setas ou deslize para navegar. Toque ou clique no espaço visual para revelar pigmentos.</p>[m
+     </nav>[m
+ [m
+[1mdiff --git a/Portfolio/wwwroot/js/app.js b/Portfolio/wwwroot/js/app.js[m
+[1mindex 909163c..52febf8 100644[m
+[1m--- a/Portfolio/wwwroot/js/app.js[m
+[1m+++ b/Portfolio/wwwroot/js/app.js[m
+[36m@@ -6,10 +6,19 @@[m
+   var railEl = document.getElementById("rail");[m
+   var stageEl = document.getElementById("stage");[m
+   var filterEl = document.getElementById("c-category");[m
+[32m+[m[32m  var railViewToggle = document.getElementById("rail-view-toggle");[m
+[32m+[m[32m  railViewToggle.addEventListener("click", function () {[m
+[32m+[m[32m    var listView = railEl.parentNode.classList.toggle("list-view");[m
+[32m+[m[32m    railViewToggle.setAttribute("aria-pressed", String(listView));[m
+[32m+[m[32m    railViewToggle.textContent = listView ? "Ver cronologia em faixa" : "Ver cronologia em lista";[m
+[32m+[m[32m  });[m
+   var searchEl = document.getElementById("c-search");[m
+   var countEl = document.getElementById("browse-count");[m
+   var statusEl = document.getElementById("app-status");[m
+   var lastObservedHash = null;[m
+[32m+[m[32m  var effectEl = document.getElementById("c-effect");[m
+[32m+[m[32m  function wantsReducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }[m
+[32m+[m[32m  function clockNow() { return window.performance && window.performance.now ? window.performance.now() : Date.now(); }[m
+   var current = -1;[m
+   var visible = [];[m
+   var renderVersion = 0;[m
+[36m@@ -77,6 +86,29 @@[m
+     if (text !== undefined && text !== null) n.textContent = text;[m
+     return n;[m
+   }[m
+[32m+[m[32m  // Fallbacks for older Android DOM implementations.[m
+[32m+[m[32m  function appendChildren(parent) {[m
+[32m+[m[32m    for (var i = 1; i < arguments.length; i++) parent.appendChild(arguments[i]);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  function replaceContent(parent, child) {[m
+[32m+[m[32m    while (parent.firstChild) parent.removeChild(parent.firstChild);[m
+[32m+[m[32m    if (child) parent.appendChild(child);[m
+[32m+[m[32m  }[m
+[32m+[m[32m  function matchesSelector(element, selector) {[m
+[32m+[m[32m    if (!element || element.nodeType !== 1) return false;[m
+[32m+[m[32m    var method = element.matches || element.msMatchesSelector || element.webkitMatchesSelector;[m
+[32m+[m[32m    if (method) return method.call(element, selector);[m
+[32m+[m[32m    var found = document.querySelectorAll(selector);[m
+[32m+[m[32m    for (var i = 0; i < found.length; i++) if (found[i] === element) return true;[m
+[32m+[m[32m    return false;[m
+[32m+[m[32m  }[m
+[32m+[m[32m  function isControlTarget(element) {[m
+[32m+[m[32m    while (element && element !== document) {[m
+[32m+[m[32m      if (matchesSelector(element, "button, a, input, select, summary, dialog")) return true;[m
+[32m+[m[32m      element = element.parentNode;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return false;[m
+[32m+[m[32m  }[m
+   function rebuildRail() {[m
+     visible = [];[m
+     railEl.textContent = "";[m
+[36m@@ -100,7 +132,7 @@[m
+       var dot = make("span", "dot"); dot.setAttribute("aria-hidden", "true");[m
+       var when = make("span", "when", p.when || "");[m
+       var name = make("span", "name", p.title || "Sem título");[m
+[31m-      btn.append(dot, when, name);[m
+[32m+[m[32m      appendChildren(btn, dot, when, name);[m
+       btn.addEventListener("click", function () { go(i); });[m
+       li.appendChild(btn);[m
+       railEl.appendChild(li);[m
+[36m@@ -137,7 +169,7 @@[m
+       a.href = url;[m
+       var external = /^https?:/i.test(url);[m
+       if (external) { a.target = "_blank"; a.rel = "noopener noreferrer"; }[m
+[31m-      a.append(make("span", "k", label), make("span", "v", value), make("span", "go", external ? "Abrir em nova aba ↗" : "Abrir ↗"));[m
+[32m+[m[32m      appendChildren(a, make("span", "k", label), make("span", "v", value), make("span", "go", external ? "Abrir em nova aba ↗" : "Abrir ↗"));[m
+       li.appendChild(a);[m
+       if (copyEnabled) {[m
+         var copy = make("button", "btn ghost copy-button", "Copiar");[m
+[36m@@ -201,7 +233,7 @@[m
+     var card = make("article", "card");[m
+     card.setAttribute("aria-labelledby", "project-title");[m
+     var head = make("div", "card-heading");[m
+[31m-    head.append(make("p", "eyebrow", [p.featured ? "Em destaque" : "", p.kind, p.when].filter(Boolean).join(" · ")), make("h1", null, p.title || "Projeto"));[m
+[32m+[m[32m    appendChildren(head, make("p", "eyebrow", [p.featured ? "Em destaque" : "", p.kind, p.when].filter(Boolean).join(" · ")), make("h1", null, p.title || "Projeto"));[m
+     head.lastChild.id = "project-title";[m
+     if (p.subtitle) head.appendChild(make("p", "subtitle", p.subtitle));[m
+     card.appendChild(head);[m
+[36m@@ -217,12 +249,12 @@[m
+     if (p.status) meta.push(["Estado", p.status]);[m
+     if (meta.length) {[m
+       var details = make("dl", "project-meta");[m
+[31m-      meta.forEach(function (pair) { details.append(make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });[m
+[32m+[m[32m      meta.forEach(function (pair) { appendChildren(details, make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });[m
+       card.appendChild(details);[m
+     }[m
+     if (p.specs && p.specs.length) {[m
+       var specs = make("dl", "specs");[m
+[31m-      p.specs.forEach(function (pair) { specs.append(make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });[m
+[32m+[m[32m      p.specs.forEach(function (pair) { appendChildren(specs, make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });[m
+       card.appendChild(specs);[m
+     }[m
+     addLinks(card, p.links);[m
+[36m@@ -243,15 +275,15 @@[m
+     prev.addEventListener("click", function () { if (position > 0) go(visible[position - 1]); });[m
+     var next = make("button", "btn ghost", "Próximo"); next.type = "button"; next.disabled = position < 0 || position >= visible.length - 1;[m
+     next.addEventListener("click", function () { if (position >= 0 && position < visible.length - 1) go(visible[position + 1]); });[m
+[31m-    actions.append(prev, next); card.appendChild(actions);[m
+[32m+[m[32m    appendChildren(actions, prev, next); card.appendChild(actions);[m
+     return card;[m
+   }[m
+   function showEmpty() {[m
+     var card = make("section", "card empty-state");[m
+[31m-    card.append(make("p", "eyebrow", "Nenhum resultado"), make("h1", null, "Não encontrei esse conteúdo"), make("p", "text", "Tente outra palavra ou remova o filtro para voltar a explorar o portfólio."));[m
+[32m+[m[32m    appendChildren(card, make("p", "eyebrow", "Nenhum resultado"), make("h1", null, "Não encontrei esse conteúdo"), make("p", "text", "Tente outra palavra ou remova o filtro para voltar a explorar o portfólio."));[m
+     var clear = make("button", "btn", "Limpar busca e filtros"); clear.type = "button";[m
+     clear.addEventListener("click", function () { filterEl.value = "all"; searchEl.value = ""; rebuildFromControls(); }); card.appendChild(clear);[m
+[31m-    stageEl.replaceChildren(card);[m
+[32m+[m[32m    replaceContent(stageEl, card);[m
+   }[m
+   function go(index, fromHistory, force) {[m
+     if (index < 0 || index >= projects.length) return;[m
+[36m@@ -260,13 +292,17 @@[m
+     var p = projects[index];[m
+     current = index; updateRailState();[m
+     var active = railEl.querySelector('li[data-project-index="' + index + '"] .node');[m
+[31m-    if (active) active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });[m
+[31m-    shader.setTarget(p.mode || 0, p.hue || 0); shader.pulse();[m
+[32m+[m[32m    if (active && active.scrollIntoView) {[m
+[32m+[m[32m      try { active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" }); }[m
+[32m+[m[32m      catch (_) { active.scrollIntoView(false); }[m
+[32m+[m[32m    }[m
+[32m+[m[32m    var effectMode = effectEl.value === "auto" ? (p.mode || 0) : parseInt(effectEl.value, 10);[m
+[32m+[m[32m    shader.setTarget(isFinite(effectMode) ? effectMode : 1, p.hue || 0); shader.pulse();[m
+     var version = ++renderVersion;[m
+     var old = stageEl.firstElementChild;[m
+     var show = function () {[m
+       if (version !== renderVersion) return;[m
+[31m-      stageEl.replaceChildren(render(index)); stageEl.scrollTop = 0;[m
+[32m+[m[32m      replaceContent(stageEl, render(index)); stageEl.scrollTop = 0;[m
+     };[m
+     if (old) { old.classList.add("swap"); window.setTimeout(show, 150); } else show();[m
+     if (!fromHistory && location.hash !== "#" + p.id) history.pushState({ projectId: p.id }, "", "#" + p.id);[m
+[36m@@ -328,7 +364,7 @@[m
+   var touchX = null, touchY = null, touchBlocked = false;[m
+   stageEl.addEventListener("touchstart", function (event) {[m
+     if (!event.touches.length) return;[m
+[31m-    touchBlocked = !!(event.target.closest && event.target.closest("button, a, input, select, summary, dialog, .thumb"));[m
+[32m+[m[32m    touchBlocked = isControlTarget(event.target) || matchesSelector(event.target, ".thumb");[m
+     touchX = event.touches[0].clientX; touchY = event.touches[0].clientY;[m
+   }, { passive: true });[m
+   stageEl.addEventListener("touchend", function (event) {[m
+[36m@@ -355,12 +391,31 @@[m
+   warp.addEventListener("input", function () { shader.params.warp = parseFloat(warp.value); if (shader.invalidate) shader.invalidate(); });[m
+   pigment.addEventListener("input", function () { shader.params.pigment = parseFloat(pigment.value); if (shader.invalidate) shader.invalidate(); });[m
+   document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });[m
+[31m-  document.getElementById("app").addEventListener("pointerdown", function (event) {[m
+[31m-    if (event.target.closest("button, a, input, select, summary, dialog")) return;[m
+[31m-    var viewportWidth = Math.max(1, window.innerWidth), viewportHeight = Math.max(1, window.innerHeight);[m
+[31m-    shader.addStain(event.clientX / viewportWidth, event.clientY / viewportHeight);[m
+[31m-  }, { passive: true });[m
+[31m-[m
+[32m+[m[32m  var appEl = document.getElementById("app"), lastTouchAt = 0;[m
+[32m+[m[32m  function addTouchStain(x, y, target) {[m
+[32m+[m[32m    if (isControlTarget(target)) return;[m
+[32m+[m[32m    shader.addStain(x / Math.max(1, window.innerWidth), y / Math.max(1, window.innerHeight));[m
+[32m+[m[32m  }[m
+[32m+[m[32m  if (window.PointerEvent) {[m
+[32m+[m[32m    appEl.addEventListener("pointerdown", function (event) {[m
+[32m+[m[32m      if (isControlTarget(event.target)) return;[m
+[32m+[m[32m      addTouchStain(event.clientX, event.clientY, event.target);[m
+[32m+[m[32m    }, { passive: true });[m
+[32m+[m[32m    document.addEventListener("pointerdown", function () { lastInputMethod = "pointer"; }, true);[m
+[32m+[m[32m  } else {[m
+[32m+[m[32m    appEl.addEventListener("touchstart", function (event) {[m
+[32m+[m[32m      if (!event.touches || !event.touches.length) return;[m
+[32m+[m[32m      lastTouchAt = Date.now();[m
+[32m+[m[32m      addTouchStain(event.touches[0].clientX, event.touches[0].clientY, event.target);[m
+[32m+[m[32m      lastInputMethod = "pointer";[m
+[32m+[m[32m    }, { passive: true });[m
+[32m+[m[32m    appEl.addEventListener("mousedown", function (event) {[m
+[32m+[m[32m      if (Date.now() - lastTouchAt < 800) return;[m
+[32m+[m[32m      addTouchStain(event.clientX, event.clientY, event.target);[m
+[32m+[m[32m      lastInputMethod = "pointer";[m
+[32m+[m[32m    }, false);[m
+[32m+[m[32m    document.addEventListener("mousedown", function () { lastInputMethod = "pointer"; }, true);[m
+[32m+[m[32m  }[m
+   var defaults = { speed: shader.params.speed, warp: 0.6, pigment: 1 };[m
+   document.getElementById("c-reset").addEventListener("click", function () {[m
+     speed.value = defaults.speed; warp.value = defaults.warp; pigment.value = defaults.pigment;[m
+[36m@@ -373,18 +428,30 @@[m
+   bareButton.addEventListener("click", function () {[m
+     var on = document.body.classList.toggle("bare"); bareButton.setAttribute("aria-pressed", String(on)); bareButton.textContent = on ? "Mostrar portfólio" : "Modo ambiente";[m
+   });[m
+[32m+[m[32m  effectEl.addEventListener("change", function () {[m
+[32m+[m[32m    if (current < 0) return;[m
+[32m+[m[32m    var project = projects[current];[m
+[32m+[m[32m    var mode = effectEl.value === "auto" ? (project.mode || 0) : parseInt(effectEl.value, 10);[m
+[32m+[m[32m    shader.setTarget(isFinite(mode) ? mode : 1, project.hue || 0); shader.pulse();[m
+[32m+[m[32m  });[m
+ [m
+   var dialog = document.getElementById("lb"), dialogImage = dialog.querySelector("img"), dialogCaption = dialog.querySelector("p");[m
+   var closeDialog = dialog.querySelector(".lb-close"), returnFocus = null;[m
+   function openLightbox(filename, alt, caption) {[m
+     returnFocus = document.activeElement; dialogImage.src = "img/" + filename; dialogImage.alt = alt; dialogCaption.textContent = caption;[m
+[31m-    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute("open", ""); closeDialog.focus();[m
+[32m+[m[32m    if (dialog.showModal) dialog.showModal();[m
+[32m+[m[32m    else { dialog.classList.add("fallback-open"); document.body.classList.add("lb-fallback"); dialog.setAttribute("open", ""); }[m
+[32m+[m[32m    closeDialog.focus();[m
+[32m+[m[32m  }[m
+[32m+[m[32m  function closeLightbox() {[m
+[32m+[m[32m    if (dialog.close) dialog.close();[m
+[32m+[m[32m    else { dialog.removeAttribute("open"); dialog.classList.remove("fallback-open"); document.body.classList.remove("lb-fallback"); if (returnFocus) returnFocus.focus(); }[m
+   }[m
+[31m-  closeDialog.addEventListener("click", function () { if (dialog.close) dialog.close(); else dialog.removeAttribute("open"); });[m
+[31m-  dialog.addEventListener("click", function (event) { if (event.target === dialog && dialog.close) dialog.close(); });[m
+[32m+[m[32m  closeDialog.addEventListener("click", closeLightbox);[m
+[32m+[m[32m  dialog.addEventListener("click", function (event) { if (event.target === dialog && dialog.showModal) closeLightbox(); });[m
+   dialog.addEventListener("keydown", function (event) {[m
+     if (dialog.showModal || !dialog.hasAttribute("open")) return;[m
+[31m-    if (event.key === "Escape") { dialog.removeAttribute("open"); if (returnFocus) returnFocus.focus(); return; }[m
+[32m+[m[32m    if (event.key === "Escape") { closeLightbox(); return; }[m
+     if (event.key !== "Tab") return;[m
+     var focusable = dialog.querySelectorAll("button, a[href], input, [tabindex]");[m
+     if (!focusable.length) return;[m
+[36m@@ -406,18 +473,17 @@[m
+     var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);[m
+   });[m
+   var lastInputMethod = "pointer", lastLogoFocusSound = 0;[m
+[31m-  document.addEventListener("pointerdown", function () { lastInputMethod = "pointer"; }, true);[m
+   document.addEventListener("keydown", function (event) {[m
+     if (event.key === "Tab" || event.key.indexOf("Arrow") === 0 || event.key === "Enter" || event.key === " ") lastInputMethod = "keyboard";[m
+   }, true);[m
+   function attachLogoSound(element, name) {[m
+     element.addEventListener("focus", function () {[m
+       if (lastInputMethod !== "keyboard" || !window.SoleAudio) return;[m
+[31m-      lastLogoFocusSound = performance.now();[m
+[32m+[m[32m      lastLogoFocusSound = clockNow();[m
+       window.SoleAudio.playLogo(name);[m
+     });[m
+     element.addEventListener("click", function () {[m
+[31m-      if (lastInputMethod === "keyboard" && performance.now() - lastLogoFocusSound < 350) return;[m
+[32m+[m[32m      if (lastInputMethod === "keyboard" && clockNow() - lastLogoFocusSound < 350) return;[m
+       if (window.SoleAudio) window.SoleAudio.playLogo(name);[m
+     });[m
+   }[m
+[1mdiff --git a/Portfolio/wwwroot/js/shader.js b/Portfolio/wwwroot/js/shader.js[m
+[1mindex fb16f29..7ed87a3 100644[m
+[1m--- a/Portfolio/wwwroot/js/shader.js[m
+[1m+++ b/Portfolio/wwwroot/js/shader.js[m
+[36m@@ -104,14 +104,19 @@[m
+ [m
+   window.createShader = function (initialCanvas) {[m
+     var canvas = initialCanvas;[m
+[31m-    var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");[m
+[32m+[m[32m    var nowTime = window.performance && window.performance.now ? function () { return window.performance.now(); } : function () { return Date.now(); };[m
+[32m+[m[32m    var reducedMotion = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };[m
+[32m+[m[32m    var requestFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (callback) {[m
+[32m+[m[32m      return window.setTimeout(function () { callback(nowTime()); }, 33);[m
+[32m+[m[32m    };[m
+     var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;[m
+[32m+[m[32m    var hasHardwareSignal = !!(navigator.hardwareConcurrency || navigator.deviceMemory);[m
+     var lowCapacity = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||[m
+[31m-      (navigator.deviceMemory && navigator.deviceMemory <= 4) || window.innerWidth <= 820 || (connection && connection.saveData);[m
+[32m+[m[32m      (navigator.deviceMemory && navigator.deviceMemory <= 4) || window.innerWidth <= 820 || (connection && connection.saveData) || !hasHardwareSignal;[m
+     var maxDpr = lowCapacity ? 1 : 1.25;[m
+     var frameDelay = lowCapacity ? 34 : 0;[m
+     var gl = null, ctx2d = null, program = null, loc = {};[m
+[31m-    var framePending = false, frameTimer = 0, stainTimer = 0, time = 0, last = performance.now();[m
+[32m+[m[32m    var framePending = false, frameTimer = 0, stainTimer = 0, time = 0, last = nowTime();[m
+     var pulseValue = 0, modeValue = 1, paletteValue = 0.7, stainCursor = 0;[m
+     var pointer = { x: -1, y: -1, born: 0 };[m
+     var stains = [null, null, null, null, null, null];[m
+[36m@@ -123,7 +128,7 @@[m
+       setTarget: function (mode, hue) { api.target.mode = mode || 0; api.target.hue = hue || 0; scheduleFrame(); },[m
+       invalidate: function () { scheduleFrame(); },[m
+       addStain: function (x, y) {[m
+[31m-        pointer = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), born: performance.now() };[m
+[32m+[m[32m        pointer = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), born: nowTime() };[m
+         stains[stainCursor] = { x: pointer.x, y: pointer.y, born: pointer.born, hue: Math.random() * 0.19 };[m
+         stainCursor = (stainCursor + 1) % stains.length;[m
+         scheduleFrame();[m
+[36m@@ -183,7 +188,7 @@[m
+     function scheduleFrame() {[m
+       if (framePending || document.hidden || (!gl && !ctx2d)) return;[m
+       framePending = true;[m
+[31m-      var draw = function () { frameTimer = 0; requestAnimationFrame(frame); };[m
+[32m+[m[32m      var draw = function () { frameTimer = 0; requestFrame.call(window, frame); };[m
+       if (frameDelay) frameTimer = window.setTimeout(draw, frameDelay);[m
+       else draw();[m
+     }[m
+[36m@@ -197,7 +202,7 @@[m
+       }[m
+     }[m
+     window.addEventListener("resize", function () { resize(); scheduleFrame(); }, { passive: true });[m
+[31m-    document.addEventListener("visibilitychange", function () { if (!document.hidden) { last = performance.now(); scheduleFrame(); } });[m
+[32m+[m[32m    document.addEventListener("visibilitychange", function () { if (!document.hidden) { last = nowTime(); scheduleFrame(); } });[m
+     if (reducedMotion.addEventListener) reducedMotion.addEventListener("change", function (event) { if (event.matches) api.params.speed = 0; scheduleFrame(); });[m
+     else if (reducedMotion.addListener) reducedMotion.addListener(function (event) { if (event.matches) api.params.speed = 0; scheduleFrame(); });[m
+ [m
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 8488169..5477095 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -7,13 +7,14 @@[m [mPortfólio artístico em português para audiovisual, pesquisa, fotografia, vide[m
+ - Abra `Portfolio.sln` no Visual Studio e inicie o projeto `Portfolio`; o perfil local usa `http://localhost:5173`.[m
+ - O projeto ASP.NET Core serve os arquivos estáticos de `Portfolio/wwwroot`.[m
+ - Também é possível abrir `Portfolio/wwwroot/index.html` diretamente. Todo o conteúdo e a interação visual funcionam sem permissões de dispositivo.[m
+[32m+[m[32m- O projeto usa alternativas para eventos de toque, atualização de cartões, altura da tela, foco e janela ampliada em navegadores antigos. A validação final ainda deve incluir os aparelhos Android que o artista deseja atender.[m
+ [m
+ ## Experiência do portfólio[m
+ [m
+[31m-- **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links.[m
+[32m+[m[32m- **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links. No celular, a cronologia pode ser alternada entre faixa horizontal e lista vertical.[m
+ - **Sobre e Contato:** atalhos do cabeçalho levam diretamente à apresentação e aos canais de contato.[m
+ - **Navegação por conteúdos:** abre cada registro por seleção, busca ou filtro; a URL usa `#id` e a navegação funciona por teclado, toque ou botões. “Mestrado” fica em destaque próprio. Os períodos e datas conhecidos aparecem em ordem inversa; atuação contínua, desenvolvimento, experimentos e conteúdo sem data ficam em grupos distintos. A cronologia não atribui datas.[m
+[31m-- **Ambiente visual e som:** a fumaça procedural é a imagem de fundo principal (modo 1); toque/clique no espaço visual desloca sua matéria e revela manchas cromáticas na paleta de cada registro. Os modos alternativos são analógico/CRT (0), orgânico psicodélico (2), fluido (3) e malha digital (4). O fallback Canvas2D oferece fumaça e equivalentes simplificados; a preferência por movimento reduzido pausa a fumaça. Os logotipos S0LE e v1su4rt tocam sequências sintetizadas 8-bit ao clique ou ao foco por teclado, sem microfone ou arquivos de áudio externos.[m
+[32m+[m[32m- **Ambiente visual e som:** a fumaça procedural é a imagem de fundo principal (modo 1); toque/clique no espaço visual desloca sua matéria e revela manchas cromáticas na paleta de cada registro. Os modos alternativos são analógico/CRT (0), orgânico psicodélico (2), fluido (3) e malha digital (4). O seletor “Efeito visual”, disponível no Modo ambiente, permite escolher uma linguagem ou acompanhar o projeto aberto. O fallback Canvas2D oferece fumaça e equivalentes simplificados; a preferência por movimento reduzido pausa a fumaça. Os logotipos S0LE e v1su4rt tocam sequências sintetizadas 8-bit ao clique ou ao foco por teclado. O site não solicita acesso ao microfone e não usa gravações de áudio.[m
+ - **Movimento reduzido:** não há animação contínua. As manchas ficam estáticas após o toque e desaparecem ao fim do intervalo definido; o efeito respeita a preferência do sistema.[m
+ - **Sem JavaScript:** a página apresenta um resumo editorial, a ficha do mestrado, o Centro Cultural Ouvidor 63 e links principais. Filtros, navegação dinâmica e shader requerem JavaScript.[m
+ - **Imagens:** cada imagem deve ter legenda e descrição alternativa; clicar abre a versão ampliada.[m

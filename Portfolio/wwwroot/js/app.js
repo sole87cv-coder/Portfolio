@@ -6,10 +6,19 @@
   var railEl = document.getElementById("rail");
   var stageEl = document.getElementById("stage");
   var filterEl = document.getElementById("c-category");
+  var railViewToggle = document.getElementById("rail-view-toggle");
+  railViewToggle.addEventListener("click", function () {
+    var listView = railEl.parentNode.classList.toggle("list-view");
+    railViewToggle.setAttribute("aria-pressed", String(listView));
+    railViewToggle.textContent = listView ? "Ver cronologia em faixa" : "Ver cronologia em lista";
+  });
   var searchEl = document.getElementById("c-search");
   var countEl = document.getElementById("browse-count");
   var statusEl = document.getElementById("app-status");
   var lastObservedHash = null;
+  var effectEl = document.getElementById("c-effect");
+  function wantsReducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  function clockNow() { return window.performance && window.performance.now ? window.performance.now() : Date.now(); }
   var current = -1;
   var visible = [];
   var renderVersion = 0;
@@ -77,6 +86,29 @@
     if (text !== undefined && text !== null) n.textContent = text;
     return n;
   }
+  // Fallbacks for older Android DOM implementations.
+  function appendChildren(parent) {
+    for (var i = 1; i < arguments.length; i++) parent.appendChild(arguments[i]);
+  }
+  function replaceContent(parent, child) {
+    while (parent.firstChild) parent.removeChild(parent.firstChild);
+    if (child) parent.appendChild(child);
+  }
+  function matchesSelector(element, selector) {
+    if (!element || element.nodeType !== 1) return false;
+    var method = element.matches || element.msMatchesSelector || element.webkitMatchesSelector;
+    if (method) return method.call(element, selector);
+    var found = document.querySelectorAll(selector);
+    for (var i = 0; i < found.length; i++) if (found[i] === element) return true;
+    return false;
+  }
+  function isControlTarget(element) {
+    while (element && element !== document) {
+      if (matchesSelector(element, "button, a, input, select, summary, dialog")) return true;
+      element = element.parentNode;
+    }
+    return false;
+  }
   function rebuildRail() {
     visible = [];
     railEl.textContent = "";
@@ -100,7 +132,7 @@
       var dot = make("span", "dot"); dot.setAttribute("aria-hidden", "true");
       var when = make("span", "when", p.when || "");
       var name = make("span", "name", p.title || "Sem título");
-      btn.append(dot, when, name);
+      appendChildren(btn, dot, when, name);
       btn.addEventListener("click", function () { go(i); });
       li.appendChild(btn);
       railEl.appendChild(li);
@@ -137,7 +169,7 @@
       a.href = url;
       var external = /^https?:/i.test(url);
       if (external) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
-      a.append(make("span", "k", label), make("span", "v", value), make("span", "go", external ? "Abrir em nova aba ↗" : "Abrir ↗"));
+      appendChildren(a, make("span", "k", label), make("span", "v", value), make("span", "go", external ? "Abrir em nova aba ↗" : "Abrir ↗"));
       li.appendChild(a);
       if (copyEnabled) {
         var copy = make("button", "btn ghost copy-button", "Copiar");
@@ -201,7 +233,7 @@
     var card = make("article", "card");
     card.setAttribute("aria-labelledby", "project-title");
     var head = make("div", "card-heading");
-    head.append(make("p", "eyebrow", [p.featured ? "Em destaque" : "", p.kind, p.when].filter(Boolean).join(" · ")), make("h1", null, p.title || "Projeto"));
+    appendChildren(head, make("p", "eyebrow", [p.featured ? "Em destaque" : "", p.kind, p.when].filter(Boolean).join(" · ")), make("h1", null, p.title || "Projeto"));
     head.lastChild.id = "project-title";
     if (p.subtitle) head.appendChild(make("p", "subtitle", p.subtitle));
     card.appendChild(head);
@@ -217,12 +249,12 @@
     if (p.status) meta.push(["Estado", p.status]);
     if (meta.length) {
       var details = make("dl", "project-meta");
-      meta.forEach(function (pair) { details.append(make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });
+      meta.forEach(function (pair) { appendChildren(details, make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });
       card.appendChild(details);
     }
     if (p.specs && p.specs.length) {
       var specs = make("dl", "specs");
-      p.specs.forEach(function (pair) { specs.append(make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });
+      p.specs.forEach(function (pair) { appendChildren(specs, make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });
       card.appendChild(specs);
     }
     addLinks(card, p.links);
@@ -243,15 +275,15 @@
     prev.addEventListener("click", function () { if (position > 0) go(visible[position - 1]); });
     var next = make("button", "btn ghost", "Próximo"); next.type = "button"; next.disabled = position < 0 || position >= visible.length - 1;
     next.addEventListener("click", function () { if (position >= 0 && position < visible.length - 1) go(visible[position + 1]); });
-    actions.append(prev, next); card.appendChild(actions);
+    appendChildren(actions, prev, next); card.appendChild(actions);
     return card;
   }
   function showEmpty() {
     var card = make("section", "card empty-state");
-    card.append(make("p", "eyebrow", "Nenhum resultado"), make("h1", null, "Não encontrei esse conteúdo"), make("p", "text", "Tente outra palavra ou remova o filtro para voltar a explorar o portfólio."));
+    appendChildren(card, make("p", "eyebrow", "Nenhum resultado"), make("h1", null, "Não encontrei esse conteúdo"), make("p", "text", "Tente outra palavra ou remova o filtro para voltar a explorar o portfólio."));
     var clear = make("button", "btn", "Limpar busca e filtros"); clear.type = "button";
     clear.addEventListener("click", function () { filterEl.value = "all"; searchEl.value = ""; rebuildFromControls(); }); card.appendChild(clear);
-    stageEl.replaceChildren(card);
+    replaceContent(stageEl, card);
   }
   function go(index, fromHistory, force) {
     if (index < 0 || index >= projects.length) return;
@@ -260,13 +292,17 @@
     var p = projects[index];
     current = index; updateRailState();
     var active = railEl.querySelector('li[data-project-index="' + index + '"] .node');
-    if (active) active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-    shader.setTarget(p.mode || 0, p.hue || 0); shader.pulse();
+    if (active && active.scrollIntoView) {
+      try { active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" }); }
+      catch (_) { active.scrollIntoView(false); }
+    }
+    var effectMode = effectEl.value === "auto" ? (p.mode || 0) : parseInt(effectEl.value, 10);
+    shader.setTarget(isFinite(effectMode) ? effectMode : 1, p.hue || 0); shader.pulse();
     var version = ++renderVersion;
     var old = stageEl.firstElementChild;
     var show = function () {
       if (version !== renderVersion) return;
-      stageEl.replaceChildren(render(index)); stageEl.scrollTop = 0;
+      replaceContent(stageEl, render(index)); stageEl.scrollTop = 0;
     };
     if (old) { old.classList.add("swap"); window.setTimeout(show, 150); } else show();
     if (!fromHistory && location.hash !== "#" + p.id) history.pushState({ projectId: p.id }, "", "#" + p.id);
@@ -328,7 +364,7 @@
   var touchX = null, touchY = null, touchBlocked = false;
   stageEl.addEventListener("touchstart", function (event) {
     if (!event.touches.length) return;
-    touchBlocked = !!(event.target.closest && event.target.closest("button, a, input, select, summary, dialog, .thumb"));
+    touchBlocked = isControlTarget(event.target) || matchesSelector(event.target, ".thumb");
     touchX = event.touches[0].clientX; touchY = event.touches[0].clientY;
   }, { passive: true });
   stageEl.addEventListener("touchend", function (event) {
@@ -355,12 +391,31 @@
   warp.addEventListener("input", function () { shader.params.warp = parseFloat(warp.value); if (shader.invalidate) shader.invalidate(); });
   pigment.addEventListener("input", function () { shader.params.pigment = parseFloat(pigment.value); if (shader.invalidate) shader.invalidate(); });
   document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });
-  document.getElementById("app").addEventListener("pointerdown", function (event) {
-    if (event.target.closest("button, a, input, select, summary, dialog")) return;
-    var viewportWidth = Math.max(1, window.innerWidth), viewportHeight = Math.max(1, window.innerHeight);
-    shader.addStain(event.clientX / viewportWidth, event.clientY / viewportHeight);
-  }, { passive: true });
-
+  var appEl = document.getElementById("app"), lastTouchAt = 0;
+  function addTouchStain(x, y, target) {
+    if (isControlTarget(target)) return;
+    shader.addStain(x / Math.max(1, window.innerWidth), y / Math.max(1, window.innerHeight));
+  }
+  if (window.PointerEvent) {
+    appEl.addEventListener("pointerdown", function (event) {
+      if (isControlTarget(event.target)) return;
+      addTouchStain(event.clientX, event.clientY, event.target);
+    }, { passive: true });
+    document.addEventListener("pointerdown", function () { lastInputMethod = "pointer"; }, true);
+  } else {
+    appEl.addEventListener("touchstart", function (event) {
+      if (!event.touches || !event.touches.length) return;
+      lastTouchAt = Date.now();
+      addTouchStain(event.touches[0].clientX, event.touches[0].clientY, event.target);
+      lastInputMethod = "pointer";
+    }, { passive: true });
+    appEl.addEventListener("mousedown", function (event) {
+      if (Date.now() - lastTouchAt < 800) return;
+      addTouchStain(event.clientX, event.clientY, event.target);
+      lastInputMethod = "pointer";
+    }, false);
+    document.addEventListener("mousedown", function () { lastInputMethod = "pointer"; }, true);
+  }
   var defaults = { speed: shader.params.speed, warp: 0.6, pigment: 1 };
   document.getElementById("c-reset").addEventListener("click", function () {
     speed.value = defaults.speed; warp.value = defaults.warp; pigment.value = defaults.pigment;
@@ -373,18 +428,30 @@
   bareButton.addEventListener("click", function () {
     var on = document.body.classList.toggle("bare"); bareButton.setAttribute("aria-pressed", String(on)); bareButton.textContent = on ? "Mostrar portfólio" : "Modo ambiente";
   });
+  effectEl.addEventListener("change", function () {
+    if (current < 0) return;
+    var project = projects[current];
+    var mode = effectEl.value === "auto" ? (project.mode || 0) : parseInt(effectEl.value, 10);
+    shader.setTarget(isFinite(mode) ? mode : 1, project.hue || 0); shader.pulse();
+  });
 
   var dialog = document.getElementById("lb"), dialogImage = dialog.querySelector("img"), dialogCaption = dialog.querySelector("p");
   var closeDialog = dialog.querySelector(".lb-close"), returnFocus = null;
   function openLightbox(filename, alt, caption) {
     returnFocus = document.activeElement; dialogImage.src = "img/" + filename; dialogImage.alt = alt; dialogCaption.textContent = caption;
-    if (dialog.showModal) dialog.showModal(); else dialog.setAttribute("open", ""); closeDialog.focus();
+    if (dialog.showModal) dialog.showModal();
+    else { dialog.classList.add("fallback-open"); document.body.classList.add("lb-fallback"); dialog.setAttribute("open", ""); }
+    closeDialog.focus();
   }
-  closeDialog.addEventListener("click", function () { if (dialog.close) dialog.close(); else dialog.removeAttribute("open"); });
-  dialog.addEventListener("click", function (event) { if (event.target === dialog && dialog.close) dialog.close(); });
+  function closeLightbox() {
+    if (dialog.close) dialog.close();
+    else { dialog.removeAttribute("open"); dialog.classList.remove("fallback-open"); document.body.classList.remove("lb-fallback"); if (returnFocus) returnFocus.focus(); }
+  }
+  closeDialog.addEventListener("click", closeLightbox);
+  dialog.addEventListener("click", function (event) { if (event.target === dialog && dialog.showModal) closeLightbox(); });
   dialog.addEventListener("keydown", function (event) {
     if (dialog.showModal || !dialog.hasAttribute("open")) return;
-    if (event.key === "Escape") { dialog.removeAttribute("open"); if (returnFocus) returnFocus.focus(); return; }
+    if (event.key === "Escape") { closeLightbox(); return; }
     if (event.key !== "Tab") return;
     var focusable = dialog.querySelectorAll("button, a[href], input, [tabindex]");
     if (!focusable.length) return;
@@ -406,18 +473,17 @@
     var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);
   });
   var lastInputMethod = "pointer", lastLogoFocusSound = 0;
-  document.addEventListener("pointerdown", function () { lastInputMethod = "pointer"; }, true);
   document.addEventListener("keydown", function (event) {
     if (event.key === "Tab" || event.key.indexOf("Arrow") === 0 || event.key === "Enter" || event.key === " ") lastInputMethod = "keyboard";
   }, true);
   function attachLogoSound(element, name) {
     element.addEventListener("focus", function () {
       if (lastInputMethod !== "keyboard" || !window.SoleAudio) return;
-      lastLogoFocusSound = performance.now();
+      lastLogoFocusSound = clockNow();
       window.SoleAudio.playLogo(name);
     });
     element.addEventListener("click", function () {
-      if (lastInputMethod === "keyboard" && performance.now() - lastLogoFocusSound < 350) return;
+      if (lastInputMethod === "keyboard" && clockNow() - lastLogoFocusSound < 350) return;
       if (window.SoleAudio) window.SoleAudio.playLogo(name);
     });
   }
