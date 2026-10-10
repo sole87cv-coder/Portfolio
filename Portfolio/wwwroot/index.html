@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Portfólio de Sol Emanuel Calderón Vargas: audiovisual, video mapping, pesquisa, cenografia e experiências interativas.">
-  <meta name="theme-color" content="#090d14">
+  <meta name="description" content="Portfólio artístico de Sol Emanuel Calderón Vargas: audiovisual, fotografia, pesquisa e experiências visuais interativas.">
+  <meta name="theme-color" content="#0b0b0c">
   <title>Sol Emanuel Calderón Vargas · Portfólio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +30,7 @@
       </div>
       <nav class="main-nav" aria-label="Navegação principal">
         <button type="button" class="nav-link" id="nav-work">Projetos</button>
+        <button type="button" class="nav-link" id="nav-apps">Apps</button>
         <button type="button" class="nav-link" id="nav-bio">Sobre</button>
         <button type="button" class="nav-link" id="nav-contact">Contato</button>
       </nav>
@@ -45,12 +46,10 @@
             <input type="range" id="c-speed" min="0" max="3" step="0.05" value="1">
             <label for="c-warp">Distorção <output id="o-warp" for="c-warp">0.60</output></label>
             <input type="range" id="c-warp" min="0" max="2" step="0.05" value="0.6">
-            <label for="c-hue">Fase de cor <output id="o-hue" for="c-hue">0.00</output></label>
-            <input type="range" id="c-hue" min="0" max="1" step="0.01" value="0">
-            <label for="c-sens">Sensibilidade do microfone <output id="o-sens" for="c-sens">1.8</output></label>
-            <input type="range" id="c-sens" min="0.5" max="4" step="0.1" value="1.8">
-            <button type="button" id="c-mic" class="btn">Ativar microfone</button>
-            <p class="note" id="c-note" aria-live="polite">O microfone é opcional. Quando ativado, o nível de som é processado no aparelho e não é gravado.</p>
+            <label for="c-pigment">Intensidade do pigmento <output id="o-pigment" for="c-pigment">1.00</output></label>
+            <input type="range" id="c-pigment" min="0.2" max="1.5" step="0.05" value="1">
+            <p class="note">O fundo começa em escala de cinzas. Toque ou clique no espaço visual para revelar manchas de cor. Com movimento reduzido, elas ficam imóveis e desaparecem após alguns segundos.</p>
+            <button type="button" id="c-clear-ink" class="text-button">Limpar manchas</button>
             <button type="button" id="c-reset" class="text-button">Restaurar ajustes</button>
           </div>
         </details>
@@ -69,6 +68,7 @@
             <option value="collective">Coletivos e território</option>
             <option value="workshop">Oficinas e mediação</option>
             <option value="interactive">Tecnologia e interação</option>
+            <option value="apps">Apps interativos</option>
             <option value="education">Formação</option>
           </select>
         </div>
@@ -79,10 +79,29 @@
         <p class="browse-count" id="browse-count" aria-live="polite"></p>
       </div>
       <ol id="rail"></ol>
-      <p class="rail-hint">Use as setas do teclado ou deslize entre os conteúdos.</p>
+      <p class="rail-hint">Use as setas ou deslize para navegar. Toque ou clique no espaço visual para revelar pigmentos.</p>
     </nav>
 
-    <main class="stage" id="stage" aria-label="Conteúdo do portfólio" aria-live="polite" aria-atomic="false"></main>
+    <main class="stage" id="stage" aria-label="Conteúdo do portfólio" aria-live="polite" aria-atomic="false">
+      <article class="card static-content">
+        <p class="eyebrow">Portfólio artístico</p>
+        <h1>Sol Emanuel Calderón Vargas</h1>
+        <p class="subtitle">Artista audiovisual e pesquisador · São Paulo</p>
+        <p class="text">Trabalhos entre audiovisual, video mapping, fotografia, cenografia, instalações e sistemas interativos.</p>
+        <h2>Mestrado</h2>
+        <p class="text">“Constelações da Arte Autônoma: práticas, conexões e saberes em movimento na Ouvidor 63”. Pesquisa em História da Arte na Unifesp, com apoio da FAPESP.</p>
+        <h2>Centro Cultural Ouvidor 63</h2>
+        <p class="text">Atuação em registros audiovisuais, video mapping e criação coletiva. Na exposição do Memorial da Resistência, Sol apresentou o video mapping da escada e dirigiu e criou o vídeo sobre atividades dos artistas da Ouvidor 63 projetado no teto.</p>
+        <h2>Trabalhos e experiências digitais</h2>
+        <ul class="static-links">
+          <li><a href="https://psycovisao.vercel.app">Psycovisao</a></li>
+          <li><a href="https://urut.vercel.app">Urut</a></li>
+          <li><a href="https://v1su4rt.vercel.app">v1su4rt</a></li>
+          <li><a href="https://www.youtube.com/@501e87">Canal audiovisual no YouTube</a></li>
+        </ul>
+        <noscript><p class="note">Esta apresentação básica funciona sem JavaScript. Para filtros, galeria e shader interativo, ative JavaScript no navegador.</p></noscript>
+      </article>
+    </main>
   </div>
   <p class="visually-hidden" id="app-status" role="status" aria-live="polite"></p>
   <dialog id="lb" aria-label="Imagem ampliada">
@@ -92,7 +111,6 @@
   </dialog>
   <script src="js/projects.js"></script>
   <script src="js/shader.js"></script>
-  <script src="js/audio.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

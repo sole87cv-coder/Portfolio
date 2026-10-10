@@ -1,6 +1,7 @@
 (function () {
   "use strict";
   var projects = window.PROJECTS || [];
+  if (!projects.length) return;
   var shader = window.createShader(document.getElementById("gl"));
   var railEl = document.getElementById("rail");
   var stageEl = document.getElementById("stage");
@@ -19,9 +20,19 @@
     research: ["research"],
     collective: ["collective"],
     interactive: ["interactive"],
+    apps: ["apps"],
     education: ["education"],
     profile: ["profile"],
     info: ["info"]
+  };
+  var timelineGroups = {
+    featured: "Mestrado em destaque",
+    dated: "Cronologia · mais recente primeiro",
+    ongoing: "Atuação contínua",
+    development: "Em desenvolvimento",
+    experiments: "Experimentos e dispositivos",
+    undated: "Séries e conteúdos sem data",
+    profile: "Perfil e links"
   };
   var knownIds = Object.create(null);
   projects.forEach(function (project) {
@@ -69,10 +80,20 @@
   function rebuildRail() {
     visible = [];
     railEl.textContent = "";
+    var activeGroup = null;
     projects.forEach(function (p, i) {
       if (!matches(p)) return;
+      var group = p.timelineGroup || "undated";
+      if (group !== activeGroup) {
+        var heading = make("li", "rail-section");
+        heading.setAttribute("role", "presentation");
+        heading.appendChild(make("h2", null, timelineGroups[group] || timelineGroups.undated));
+        railEl.appendChild(heading);
+        activeGroup = group;
+      }
       visible.push(i);
       var li = make("li", [p.sub ? "sub" : "", p.featured ? "featured" : ""].filter(Boolean).join(" "));
+      li.setAttribute("data-project-index", String(i));
       var btn = make("button", "node");
       btn.type = "button";
       btn.setAttribute("aria-label", [p.featured ? "Em destaque" : "", p.when, p.title].filter(Boolean).join(": "));
@@ -91,11 +112,10 @@
     else updateRailState();
   }
   function updateRailState() {
-    var items = railEl.children;
+    var items = railEl.querySelectorAll("li[data-project-index]");
     for (var j = 0; j < items.length; j++) {
-      var index = visible[j];
-      items[j].classList.remove("done");
-      var button = items[j].firstChild;
+      var index = Number(items[j].getAttribute("data-project-index"));
+      var button = items[j].querySelector(".node");
       if (index === current) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");
     }
@@ -156,12 +176,23 @@
       var caption = (item.caption !== undefined ? item.caption : item[1]) || projectTitle;
       var alt = (item.alt !== undefined ? item.alt : item[2]) || caption || projectTitle;
       if (!filename || /[\\/]/.test(filename)) return;
-      var li = make("li"), button = make("button", "thumb");
+      var li = make("li"), button = make("button", "thumb"), picture = document.createElement("picture");
       button.type = "button"; button.setAttribute("aria-label", "Ampliar imagem: " + alt);
       button.addEventListener("click", function () { openLightbox(filename, alt, caption); });
       var img = document.createElement("img"); img.src = "img/" + filename; img.alt = alt; img.loading = "lazy"; img.decoding = "async";
+      if (item.responsiveWidths && item.responsiveWidths.length) {
+        var source = document.createElement("source");
+        source.type = "image/webp";
+        source.srcset = item.responsiveWidths.map(function (width) {
+          return "img/responsive/" + filename.replace(/\.[^.]+$/, "") + "-" + width + ".webp " + width + "w";
+        }).join(", ");
+        source.sizes = "(max-width: 699px) 48vw, (max-width: 1100px) 32vw, 280px";
+        picture.appendChild(source);
+        img.sizes = source.sizes;
+      }
+      if (item.width && item.height) { img.width = item.width; img.height = item.height; }
       img.addEventListener("error", function () { li.classList.add("image-unavailable"); button.disabled = true; });
-      button.appendChild(img); li.appendChild(button); li.appendChild(make("span", "cap", caption)); gallery.appendChild(li);
+      picture.appendChild(img); button.appendChild(picture); li.appendChild(button); li.appendChild(make("span", "cap", caption)); gallery.appendChild(li);
     });
     card.appendChild(gallery);
   }
@@ -204,9 +235,9 @@
       var jump = make("button", "btn ghost", label); jump.type = "button";
       jump.addEventListener("click", function () { goToId(targetId); }); actions.appendChild(jump);
     });
-    var sound = make("button", "btn", "Ouvir sinal e animar"); sound.type = "button";
-    sound.setAttribute("aria-label", "Reproduzir sinal sonoro e animar o fundo, sem gravar áudio");
-    sound.addEventListener("click", function () { shader.pulse(); window.SoleAudio.play(p.tone || [262, 330]); }); actions.appendChild(sound);
+    var pulse = make("button", "btn", "Pulso visual"); pulse.type = "button";
+    pulse.setAttribute("aria-label", "Criar um pulso visual no ambiente");
+    pulse.addEventListener("click", function () { shader.pulse(); }); actions.appendChild(pulse);
     var position = visible.indexOf(index);
     var prev = make("button", "btn ghost", "Anterior"); prev.type = "button"; prev.disabled = position <= 0;
     prev.addEventListener("click", function () { if (position > 0) go(visible[position - 1]); });
@@ -219,7 +250,7 @@
     var card = make("section", "card empty-state");
     card.append(make("p", "eyebrow", "Nenhum resultado"), make("h1", null, "Não encontrei esse conteúdo"), make("p", "text", "Tente outra palavra ou remova o filtro para voltar a explorar o portfólio."));
     var clear = make("button", "btn", "Limpar busca e filtros"); clear.type = "button";
-    clear.addEventListener("click", function () { filterEl.value = "all"; searchEl.value = ""; rebuildRail(); }); card.appendChild(clear);
+    clear.addEventListener("click", function () { filterEl.value = "all"; searchEl.value = ""; rebuildFromControls(); }); card.appendChild(clear);
     stageEl.replaceChildren(card);
   }
   function go(index, fromHistory, force) {
@@ -228,8 +259,8 @@
     if (index === current && !force) return;
     var p = projects[index];
     current = index; updateRailState();
-    var active = railEl.children[visible.indexOf(index)];
-    if (active) active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+    var active = railEl.querySelector('li[data-project-index="' + index + '"] .node');
+    if (active) active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     shader.setTarget(p.mode || 0, p.hue || 0); shader.pulse();
     var version = ++renderVersion;
     var old = stageEl.firstElementChild;
@@ -267,8 +298,19 @@
     if (!matches(p)) { filterEl.value = "all"; searchEl.value = ""; rebuildRail(); }
     go(index, true, true); return true;
   }
-  filterEl.addEventListener("change", rebuildRail);
-  searchEl.addEventListener("input", rebuildRail);
+  function rebuildFromControls() {
+    rebuildRail();
+    if (current >= 0) {
+      var selectedHash = "#" + projects[current].id;
+      if (location.hash !== selectedHash) history.replaceState({ projectId: projects[current].id }, "", selectedHash);
+      lastObservedHash = selectedHash;
+    } else {
+      history.replaceState(null, "", location.pathname + location.search);
+      lastObservedHash = "";
+    }
+  }
+  filterEl.addEventListener("change", rebuildFromControls);
+  searchEl.addEventListener("input", rebuildFromControls);
   window.addEventListener("popstate", readHash);
   window.addEventListener("hashchange", readHash);
   window.addEventListener("keydown", function (event) {
@@ -283,9 +325,10 @@
       var currentPos = visible.indexOf(current); if (currentPos > 0) go(visible[currentPos - 1]); event.preventDefault();
     }
   });
-  var touchX = null, touchY = null;
+  var touchX = null, touchY = null, touchBlocked = false;
   stageEl.addEventListener("touchstart", function (event) {
     if (!event.touches.length) return;
+    touchBlocked = !!(event.target.closest && event.target.closest("button, a, input, select, summary, dialog, .thumb"));
     touchX = event.touches[0].clientX; touchY = event.touches[0].clientY;
   }, { passive: true });
   stageEl.addEventListener("touchend", function (event) {
@@ -293,6 +336,7 @@
     var delta = event.changedTouches[0].clientX - touchX;
     var vertical = event.changedTouches[0].clientY - touchY;
     touchX = null; touchY = null;
+    if (touchBlocked) { touchBlocked = false; return; }
     if (Math.abs(vertical) > Math.abs(delta) * 0.75) return;
     var pos = visible.indexOf(current);
     if (Math.abs(delta) > 80 && pos >= 0) {
@@ -300,47 +344,28 @@
       if (target >= 0 && target < visible.length) go(visible[target]);
     }
   }, { passive: true });
+  stageEl.addEventListener("touchcancel", function () { touchX = null; touchY = null; touchBlocked = false; }, { passive: true });
 
-  var speed = document.getElementById("c-speed"), warp = document.getElementById("c-warp"), hue = document.getElementById("c-hue"), sens = document.getElementById("c-sens");
-  var micBtn = document.getElementById("c-mic"), note = document.getElementById("c-note");
-  var outputs = [[speed, "o-speed"], [warp, "o-warp"], [hue, "o-hue"], [sens, "o-sens"]];
-  function updateOutput(input, outputId) { document.getElementById(outputId).value = Number(input.value).toFixed(input === sens ? 1 : 2); }
+  var speed = document.getElementById("c-speed"), warp = document.getElementById("c-warp"), pigment = document.getElementById("c-pigment");
+  var outputs = [[speed, "o-speed"], [warp, "o-warp"], [pigment, "o-pigment"]];
+  function updateOutput(input, outputId) { document.getElementById(outputId).value = Number(input.value).toFixed(2); }
   speed.value = shader.params.speed;
   outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); pair[0].addEventListener("input", function () { updateOutput(pair[0], pair[1]); }); });
   speed.addEventListener("input", function () { shader.params.speed = parseFloat(speed.value); if (shader.invalidate) shader.invalidate(); });
   warp.addEventListener("input", function () { shader.params.warp = parseFloat(warp.value); if (shader.invalidate) shader.invalidate(); });
-  hue.addEventListener("input", function () { shader.params.hueShift = parseFloat(hue.value); if (shader.invalidate) shader.invalidate(); });
-  sens.disabled = true;
-  micBtn.addEventListener("click", function () {
-    if (window.SoleAudio.active) {
-      window.SoleAudio.stop(); shader.params.audio = 0; document.documentElement.style.setProperty("--lvl", "0");
-      sens.disabled = true; micBtn.textContent = "Ativar microfone"; note.textContent = "Microfone desligado. Nenhum áudio foi gravado."; return;
-    }
-    micBtn.disabled = true; note.textContent = "Aguardando autorização do navegador...";
-    window.SoleAudio.start().then(function () {
-      sens.disabled = false; micBtn.textContent = "Desativar microfone"; note.textContent = "Microfone ativo. O nível de som é processado localmente e não é gravado.";
-    }).catch(function () { note.textContent = "Não foi possível acessar o microfone. Verifique a permissão do navegador e tente novamente."; })
-      .finally(function () { micBtn.disabled = false; });
-  });
-  var micWasActive = false;
-  window.setInterval(function () {
-    if (window.SoleAudio.active) { shader.params.audio = window.SoleAudio.read(parseFloat(sens.value)); document.documentElement.style.setProperty("--lvl", shader.params.audio.toFixed(3)); }
-    if (window.SoleAudio.active) micWasActive = true;
-    else if (micWasActive) {
-      micWasActive = false; shader.params.audio = 0; sens.disabled = true;
-      micBtn.textContent = "Ativar microfone"; note.textContent = "Microfone desligado. Nenhum áudio foi gravado.";
-    }
-  }, 50);
-  window.addEventListener("pagehide", function () { window.SoleAudio.stop(); });
+  pigment.addEventListener("input", function () { shader.params.pigment = parseFloat(pigment.value); if (shader.invalidate) shader.invalidate(); });
+  document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });
+  document.getElementById("app").addEventListener("pointerdown", function (event) {
+    if (event.target.closest("button, a, input, select, summary, dialog")) return;
+    var bounds = document.getElementById("app").getBoundingClientRect();
+    if (bounds.width && bounds.height) shader.addStain((event.clientX - bounds.left) / bounds.width, (event.clientY - bounds.top) / bounds.height);
+  }, { passive: true });
 
-  var defaults = { speed: shader.params.speed, warp: 0.6, hue: 0, sensitivity: 1.8 };
+  var defaults = { speed: shader.params.speed, warp: 0.6, pigment: 1 };
   document.getElementById("c-reset").addEventListener("click", function () {
-    if (window.SoleAudio.active) window.SoleAudio.stop();
-    shader.params.audio = 0; document.documentElement.style.setProperty("--lvl", "0");
-    sens.disabled = true; micBtn.textContent = "Ativar microfone";
-    speed.value = defaults.speed; warp.value = defaults.warp; hue.value = defaults.hue; sens.value = defaults.sensitivity;
-    shader.params.speed = defaults.speed; shader.params.warp = defaults.warp; shader.params.hueShift = defaults.hue;
-    outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); }); note.textContent = "Ajustes restaurados. Microfone desligado.";
+    speed.value = defaults.speed; warp.value = defaults.warp; pigment.value = defaults.pigment;
+    shader.params.speed = defaults.speed; shader.params.warp = defaults.warp; shader.params.pigment = defaults.pigment;
+    shader.clearStains(); outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); });
     if (shader.invalidate) shader.invalidate();
   });
   var bareButton = document.getElementById("c-bare");
@@ -376,6 +401,10 @@
     filterEl.value = "works"; searchEl.value = ""; rebuildRail();
     var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);
   });
+  document.getElementById("nav-apps").addEventListener("click", function () {
+    filterEl.value = "apps"; searchEl.value = ""; rebuildRail();
+    var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);
+  });
   document.getElementById("logo-v").addEventListener("click", function () { goToId("v1su4rt"); });
 
   var view = document.getElementById("c-view");
@@ -389,4 +418,5 @@
 
   rebuildRail();
   if (location.hash && !readHash()) go(visible[0], true, true);
+  document.documentElement.classList.add("js-ready");
 })();

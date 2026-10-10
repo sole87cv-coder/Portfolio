@@ -1,0 +1,33 @@
+LISTA DE CORREÇÕES MANUAIS DE TEXTO
+
+Como usar
+Preencha “Texto corrigido” com a redação desejada. Depois, substitua manualmente o texto atual no arquivo e local indicados. Este documento serve como lista de trabalho e não altera os textos do site.
+
+1. Identificação no cabeçalho
+Arquivo: Portfolio/wwwroot/index.html
+Local: elemento <p class="brand-sub"> no cabeçalho
+Texto atual: Artista audiovisual · pesquisa · imagem e espaço
+Texto corrigido:
+
+
+2. Legenda de fotografia
+Arquivo: Portfolio/wwwroot/js/projects.js
+Local: legenda da fotografia VIVITAR correspondente à imagem 5
+Texto atual: Luz da lua sobre árvores e paisagem
+Texto corrigido:
+
+
+OUTRAS CORREÇÕES
+
+3.
+Arquivo:
+Local:
+Texto atual:
+Texto corrigido:
+
+
+4.
+Arquivo:
+Local:
+Texto atual:
+Texto corrigido:
