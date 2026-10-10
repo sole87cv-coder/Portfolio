@@ -73,6 +73,7 @@
   var statusEl = document.getElementById("app-status");
   var lastObservedHash = null;
   var effectEl = document.getElementById("c-effect");
+  var desktopPage = null;
   function wantsReducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
   function clockNow() { return window.performance && window.performance.now ? window.performance.now() : Date.now(); }
   var current = -1;
@@ -345,7 +346,9 @@
   function go(index, fromHistory, force) {
     if (index < 0 || index >= projects.length) return;
     if (visible.indexOf(index) < 0 && !force) return;
-    if (index === current && !force) return;
+    if (index === current && !force && !desktopPage) return;
+    desktopPage = null;
+    updateDesktopNavigation();
     var p = projects[index];
     current = index; updateRailState();
     var active = railEl.querySelector('li[data-project-index="' + index + '"] .node');
@@ -376,6 +379,8 @@
     var hash = location.hash;
     if (hash === lastObservedHash) return true;
     lastObservedHash = hash;
+    if (window.innerWidth >= 1100 && hash === "#servicos") return showDesktopPage("services", true);
+    if (window.innerWidth >= 1100 && hash === "#pesquisa-arte-interativa") return showDesktopPage("research", true);
     var index = projectIndexById(hash.slice(1));
     if (index < 0) {
       if (hash) {
@@ -396,6 +401,10 @@
   }
   function rebuildFromControls() {
     rebuildRail();
+    var desktopTopicButtons = document.querySelectorAll(".desktop-topic-panel [data-topic]");
+    for (var topicIndex = 0; topicIndex < desktopTopicButtons.length; topicIndex++) {
+      desktopTopicButtons[topicIndex].setAttribute("aria-pressed", String(desktopTopicButtons[topicIndex].getAttribute("data-topic") === filterEl.value));
+    }
     if (current >= 0) {
       var selectedHash = "#" + projects[current].id;
       if (location.hash !== selectedHash) history.replaceState({ projectId: projects[current].id }, "", selectedHash);
@@ -405,6 +414,190 @@
       lastObservedHash = "";
     }
   }
+  function updateDesktopNavigation() {
+    var active = desktopPage === "services" ? "services" : (desktopPage === "research" ? "research" : "");
+    var links = document.querySelectorAll(".desktop-nav [data-desktop-section]");
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].getAttribute("data-desktop-section") === active) links[i].setAttribute("aria-current", "page");
+      else links[i].removeAttribute("aria-current");
+    }
+  }
+  function renderDesktopEditorial(key) {
+    var card = make("article", "card desktop-editorial-card");
+    card.setAttribute("aria-labelledby", "desktop-editorial-title");
+    if (key === "research") {
+      appendChildren(card,
+        make("p", "eyebrow", "Pesquisa · em andamento"),
+        make("h1", null, "Arte interativa"),
+        make("p", "subtitle", "Descolonização da linguagem artística e sensível por meio de linguagens tecnológicas"),
+        make("p", "text", "Investigo outras formas de perceber o mundo por meio da comunicação sensível."));
+      card.querySelector("h1").id = "desktop-editorial-title";
+      card.appendChild(make("p", "research-status", "Pesquisa em andamento. Registros visuais serão acrescentados quando estiverem disponíveis."));
+      var experiment = make("section", "research-experiment");
+      experiment.setAttribute("aria-labelledby", "research-experiment-title");
+      experiment.appendChild(make("p", "eyebrow", "Experimento audiovisual interativo · 2026"));
+      var experimentTitle = make("h2", null, "v1su4rt · ESF-01");
+      experimentTitle.id = "research-experiment-title";
+      experiment.appendChild(experimentTitle);
+      experiment.appendChild(make("p", "text", "Experimento audiovisual para navegador que combina shaders GLSL ES 1.0 e animação generativa. Toques na tela ou cliques fazem surgir manchas de pigmento colorido que se expandem e se dissolvem sobre uma base em escala de cinzas."));
+      var experimentLink = make("button", "btn ghost", "Ver registro do experimento");
+      experimentLink.type = "button";
+      experimentLink.addEventListener("click", function () { goToId("v1su4rt"); });
+      experiment.appendChild(experimentLink);
+      card.appendChild(experiment);
+      return card;
+    }
+    appendChildren(card,
+      make("p", "eyebrow", "Trabalho · contratação"),
+      make("h1", null, "Serviços"),
+      make("p", "subtitle", "Campos de atuação para projetos artísticos e culturais."),
+      make("p", "text", "Converse sobre escopo, contexto e disponibilidade para uma proposta."));
+    card.querySelector("h1").id = "desktop-editorial-title";
+    var services = [
+      ["artista-visual", "Artista visual"],
+      ["iluminador", "Iluminador"],
+      ["cenografo", "Cenógrafo"],
+      ["videomaker", "Videomaker"],
+      ["fotografo", "Fotógrafo"]
+    ];
+    var grid = make("div", "service-grid");
+    grid.setAttribute("aria-label", "Serviços oferecidos");
+    services.forEach(function (service) {
+      var item = make("section", "service-item");
+      item.id = "service-" + service[0];
+      item.appendChild(make("h2", null, service[1]));
+      item.appendChild(make("p", null, "Converse sobre este campo de atuação e a necessidade do projeto."));
+      grid.appendChild(item);
+    });
+    card.appendChild(grid);
+    var action = make("div", "actions");
+    var contact = make("button", "btn", "Conversar sobre um projeto");
+    contact.type = "button";
+    contact.addEventListener("click", function () { goToId("contato"); });
+    action.appendChild(contact);
+    card.appendChild(action);
+    return card;
+  }
+  function showDesktopPage(key, fromHistory) {
+    if (window.innerWidth < 1100 || ["services", "research"].indexOf(key) < 0) return false;
+    desktopPage = key;
+    current = -1;
+    updateRailState();
+    renderVersion++;
+    replaceContent(stageEl, renderDesktopEditorial(key));
+    stageEl.scrollTop = 0;
+    updateDesktopNavigation();
+    closeDesktopMenus();
+    if (!fromHistory) {
+      var hash = key === "services" ? "#servicos" : "#pesquisa-arte-interativa";
+      if (location.hash !== hash) history.pushState({ editorialPage: key }, "", hash);
+      lastObservedHash = location.hash;
+    }
+    return true;
+  }
+  function closeDesktopMenus(except) {
+    var menus = document.querySelectorAll("[data-desktop-menu]");
+    for (var i = 0; i < menus.length; i++) {
+      if (menus[i] === except) continue;
+      var trigger = menus[i].querySelector(".desktop-nav-trigger");
+      var panel = trigger && document.getElementById(trigger.getAttribute("aria-controls"));
+      menus[i].classList.remove("is-open");
+      if (trigger) trigger.setAttribute("aria-expanded", "false");
+      if (panel) panel.hidden = true;
+      menus[i].removeAttribute("data-open-source");
+      if (menus[i]._closeTimer) { window.clearTimeout(menus[i]._closeTimer); menus[i]._closeTimer = 0; }
+    }
+  }
+  function setDesktopMenuOpen(menu, open, source) {
+    if (!menu) return;
+    var trigger = menu.querySelector(".desktop-nav-trigger");
+    var panel = trigger && document.getElementById(trigger.getAttribute("aria-controls"));
+    if (!trigger || !panel) return;
+    if (menu._closeTimer) { window.clearTimeout(menu._closeTimer); menu._closeTimer = 0; }
+    if (open) closeDesktopMenus(menu);
+    menu.classList.toggle("is-open", open);
+    trigger.setAttribute("aria-expanded", String(open));
+    panel.hidden = !open;
+    if (open && source) menu.setAttribute("data-open-source", source);
+    if (!open) menu.removeAttribute("data-open-source");
+  }
+  var desktopMenus = document.querySelectorAll("[data-desktop-menu]");
+  for (var dm = 0; dm < desktopMenus.length; dm++) (function (menu) {
+    var trigger = menu.querySelector(".desktop-nav-trigger");
+    var panel = trigger && document.getElementById(trigger.getAttribute("aria-controls"));
+    if (!trigger || !panel) return;
+    menu.addEventListener("pointerenter", function (event) {
+      if (event.pointerType === "mouse" && window.matchMedia && window.matchMedia("(min-width: 1100px) and (hover: hover) and (pointer: fine)").matches) {
+        menu._openTimer = window.setTimeout(function () { setDesktopMenuOpen(menu, true, "hover"); }, 90);
+      }
+    });
+    menu.addEventListener("pointerleave", function () {
+      if (menu._openTimer) { window.clearTimeout(menu._openTimer); menu._openTimer = 0; }
+      menu._closeTimer = window.setTimeout(function () {
+        if (!menu.contains(document.activeElement) && menu.getAttribute("data-open-source") !== "click") setDesktopMenuOpen(menu, false);
+      }, 200);
+    });
+    menu.addEventListener("focusin", function () { setDesktopMenuOpen(menu, true, "focus"); });
+    menu.addEventListener("focusout", function (event) {
+      if (!menu.contains(event.relatedTarget)) setDesktopMenuOpen(menu, false);
+    });
+    trigger.addEventListener("click", function () {
+      var open = trigger.getAttribute("aria-expanded") === "true";
+      if (open && menu.getAttribute("data-open-source") === "hover") { menu.setAttribute("data-open-source", "click"); return; }
+      setDesktopMenuOpen(menu, !open, "click");
+    });
+    panel.addEventListener("click", function (event) {
+      var target = event.target;
+      while (target && target !== panel) {
+        if (target.getAttribute("data-desktop-action") === "all-projects") {
+          filterEl.value = "all"; searchEl.value = ""; rebuildFromControls();
+          if (visible.length) go(visible[0], false, true);
+          closeDesktopMenus(); return;
+        }
+        var projectId = target.getAttribute("data-project-id");
+        if (projectId) { goToId(projectId); closeDesktopMenus(); return; }
+        var editorial = target.getAttribute("data-editorial-page");
+        if (editorial === "pesquisa-interativa") { showDesktopPage("research", false); return; }
+        var serviceTarget = target.getAttribute("data-service-target");
+        if (serviceTarget) {
+          showDesktopPage("services", false);
+          window.setTimeout(function () {
+            var section = document.getElementById("service-" + serviceTarget);
+            if (section) section.scrollIntoView({ block: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" });
+          }, 0);
+          return;
+        }
+        target = target.parentNode;
+      }
+    });
+  })(desktopMenus[dm]);
+  var desktopNavLinks = document.querySelectorAll(".desktop-nav-link");
+  for (var dn = 0; dn < desktopNavLinks.length; dn++) desktopNavLinks[dn].addEventListener("click", function () {
+    var id = this.getAttribute("data-project-id");
+    if (id) goToId(id);
+  });
+  document.addEventListener("pointerdown", function (event) {
+    if (!event.target.closest || !event.target.closest("[data-desktop-menu]")) closeDesktopMenus();
+  }, true);
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    var openMenu = document.querySelector("[data-desktop-menu].is-open");
+    if (!openMenu) return;
+    event.preventDefault();
+    var trigger = openMenu.querySelector(".desktop-nav-trigger");
+    setDesktopMenuOpen(openMenu, false);
+    if (trigger) trigger.focus();
+  });
+  var topicFilter = document.getElementById("desktop-topic-filter");
+  var topicButtons = topicFilter.querySelectorAll("[data-topic]");
+  for (var tb = 0; tb < topicButtons.length; tb++) topicButtons[tb].addEventListener("click", function () {
+    filterEl.value = this.getAttribute("data-topic");
+    searchEl.value = "";
+    rebuildFromControls();
+    for (var i = 0; i < topicButtons.length; i++) topicButtons[i].setAttribute("aria-pressed", String(topicButtons[i] === this));
+    topicFilter.open = false;
+    topicFilter.querySelector("summary").focus();
+  });
   filterEl.addEventListener("change", rebuildFromControls);
   searchEl.addEventListener("input", rebuildFromControls);
   window.addEventListener("popstate", readHash);
@@ -564,6 +757,12 @@
     document.body.classList.remove("v-desktop", "v-tablet", "v-mobile", "framed"); document.body.classList.add("v-" + chosen);
     if (mode !== "auto" && ((chosen === "mobile" && width > 460) || (chosen === "tablet" && width > 860))) document.body.classList.add("framed");
     syncMobileMenu(width <= 699);
+    if (width < 1100 && desktopPage) {
+      desktopPage = null;
+      history.replaceState(null, "", location.pathname + location.search);
+      lastObservedHash = "";
+      goToId("bio");
+    }
   }
   view.addEventListener("change", applyView); window.addEventListener("resize", applyView); applyView();
 

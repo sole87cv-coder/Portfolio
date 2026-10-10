@@ -34,6 +34,42 @@
         <button type="button" class="nav-link" id="nav-bio">Sobre</button>
         <button type="button" class="nav-link" id="nav-contact">Contato</button>
       </nav>
+      <nav class="desktop-nav" aria-label="Navegação desktop">
+        <div class="desktop-nav-item" data-desktop-menu>
+          <button type="button" class="desktop-nav-trigger" aria-expanded="false" aria-controls="desktop-projects-panel">Projetos <span aria-hidden="true">⌄</span></button>
+          <div class="desktop-menu-panel" id="desktop-projects-panel" hidden>
+            <button type="button" class="desktop-menu-link" data-desktop-action="all-projects">Ver cronologia completa</button>
+            <span class="desktop-menu-divider" aria-hidden="true"></span>
+            <button type="button" class="desktop-menu-link" data-project-id="masp">Oficina Microcidades · MASP</button>
+            <button type="button" class="desktop-menu-link" data-project-id="ouvidor63">Centro Cultural Ouvidor 63</button>
+            <button type="button" class="desktop-menu-link" data-project-id="sucata">Sucata Quântica</button>
+            <button type="button" class="desktop-menu-link" data-project-id="v1su4rt">v1su4rt · ESF-01</button>
+            <button type="button" class="desktop-menu-link" data-project-id="apps-interativos">Aplicativos interativos</button>
+            <button type="button" class="desktop-menu-link" data-project-id="fotografia-vivitar">Fotografias analógicas · VIVITAR</button>
+            <button type="button" class="desktop-menu-link" data-project-id="canal-youtube">Canal de Vídeo</button>
+          </div>
+        </div>
+        <div class="desktop-nav-item" data-desktop-menu>
+          <button type="button" class="desktop-nav-trigger" data-desktop-section="research" aria-expanded="false" aria-controls="desktop-research-panel">Pesquisa <span aria-hidden="true">⌄</span></button>
+          <div class="desktop-menu-panel" id="desktop-research-panel" hidden>
+            <button type="button" class="desktop-menu-link" data-project-id="mestrado">Mestrado</button>
+            <button type="button" class="desktop-menu-link" data-editorial-page="pesquisa-interativa">Pesquisa em andamento · Arte interativa</button>
+          </div>
+        </div>
+        <div class="desktop-nav-item" data-desktop-menu>
+          <button type="button" class="desktop-nav-trigger" data-desktop-section="services" aria-expanded="false" aria-controls="desktop-services-panel">Serviços <span aria-hidden="true">⌄</span></button>
+          <div class="desktop-menu-panel" id="desktop-services-panel" hidden>
+            <button type="button" class="desktop-menu-link" data-service-target="artista-visual">Artista visual</button>
+            <button type="button" class="desktop-menu-link" data-service-target="iluminador">Iluminador</button>
+            <button type="button" class="desktop-menu-link" data-service-target="cenografo">Cenógrafo</button>
+            <button type="button" class="desktop-menu-link" data-service-target="videomaker">Videomaker</button>
+            <button type="button" class="desktop-menu-link" data-service-target="fotografo">Fotógrafo</button>
+          </div>
+        </div>
+        <button type="button" class="desktop-nav-link" data-project-id="apps-interativos">Apps</button>
+        <button type="button" class="desktop-nav-link" data-project-id="bio">Sobre</button>
+        <button type="button" class="desktop-nav-link desktop-contact" data-project-id="contato">Contato</button>
+      </nav>
       <div class="head-actions">
         <details class="controls" id="controls">
           <summary>Ajustes visuais</summary>
@@ -73,6 +109,19 @@
 
     <nav class="rail list-view" aria-label="Navegação por projetos">
       <div class="browse-tools">
+        <details class="desktop-topic-filter" id="desktop-topic-filter">
+          <summary>Explorar por temas</summary>
+          <div class="desktop-topic-panel" aria-label="Filtrar conteúdos por tema">
+            <button type="button" data-topic="all" aria-pressed="true">Todos</button>
+            <button type="button" data-topic="works" aria-pressed="false">Trabalhos e documentação</button>
+            <button type="button" data-topic="research" aria-pressed="false">Pesquisa</button>
+            <button type="button" data-topic="collective" aria-pressed="false">Coletivos e território</button>
+            <button type="button" data-topic="workshop" aria-pressed="false">Oficinas e mediação</button>
+            <button type="button" data-topic="interactive" aria-pressed="false">Tecnologia e interação</button>
+            <button type="button" data-topic="apps" aria-pressed="false">Apps interativos</button>
+            <button type="button" data-topic="education" aria-pressed="false">Formação</button>
+          </div>
+        </details>
         <div class="filter-control">
           <label for="c-category">Explorar por tema</label>
           <select id="c-category">
