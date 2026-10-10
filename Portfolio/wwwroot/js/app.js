@@ -72,10 +72,10 @@
     projects.forEach(function (p, i) {
       if (!matches(p)) return;
       visible.push(i);
-      var li = make("li", p.sub ? "sub" : "");
+      var li = make("li", [p.sub ? "sub" : "", p.featured ? "featured" : ""].filter(Boolean).join(" "));
       var btn = make("button", "node");
       btn.type = "button";
-      btn.setAttribute("aria-label", [p.when, p.title].join(": "));
+      btn.setAttribute("aria-label", [p.featured ? "Em destaque" : "", p.when, p.title].filter(Boolean).join(": "));
       var dot = make("span", "dot"); dot.setAttribute("aria-hidden", "true");
       var when = make("span", "when", p.when || "");
       var name = make("span", "name", p.title || "Sem título");
@@ -170,7 +170,7 @@
     var card = make("article", "card");
     card.setAttribute("aria-labelledby", "project-title");
     var head = make("div", "card-heading");
-    head.append(make("p", "eyebrow", [p.kind, p.when].filter(Boolean).join(" · ")), make("h1", null, p.title || "Projeto"));
+    head.append(make("p", "eyebrow", [p.featured ? "Em destaque" : "", p.kind, p.when].filter(Boolean).join(" · ")), make("h1", null, p.title || "Projeto"));
     head.lastChild.id = "project-title";
     if (p.subtitle) head.appendChild(make("p", "subtitle", p.subtitle));
     card.appendChild(head);

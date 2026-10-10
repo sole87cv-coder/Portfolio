@@ -216,6 +216,8 @@ body { background: var(--ink); color: var(--text); }
 .node[aria-current="page"] .dot { background: var(--pink); border-color: var(--pink); box-shadow: 0 0 0 4px rgba(245,166,97,.17); }
 .node[aria-current="page"] { background: rgba(155,200,255,.08); }
 .rail li.sub { margin-left: .9rem; }
+.rail li.featured .name { color: var(--pink); font-weight: 700; }
+.rail li.featured .when { color: var(--pink); }
 .rail-hint { margin: .6rem 0 0; color: #8fa1b7; font-size: .72rem; line-height: 1.45; }
 .stage { display: flex; align-items: flex-start; padding: clamp(1rem, 4vw, 3.5rem); }
 .card { width: min(100%, 900px); margin: auto; padding: clamp(1.1rem, 3vw, 2.4rem); border-color: rgba(190,213,241,.25); border-radius: 18px; background: rgba(8,14,23,.79); box-shadow: 0 20px 70px rgba(0,0,0,.24); }
