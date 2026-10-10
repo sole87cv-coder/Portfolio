@@ -13,7 +13,7 @@ Portfólio artístico em português para audiovisual, pesquisa, fotografia, vide
 - **Explorar:** filtra obras, pesquisa, coletivos, oficinas, formação e protótipos; a busca inclui texto, atuação, colaboração, local, especificações e links.
 - **Sobre e Contato:** atalhos do cabeçalho levam diretamente à apresentação e aos canais de contato.
 - **Navegação por conteúdos:** abre cada registro por seleção, busca ou filtro; a URL usa `#id` e a navegação funciona por teclado, toque ou botões. “Mestrado” fica em destaque próprio. Os períodos e datas conhecidos aparecem em ordem inversa; atuação contínua, desenvolvimento, experimentos e conteúdo sem data ficam em grupos distintos. A cronologia não atribui datas.
-- **Ambiente visual:** shader WebGL em escala de cinzas com cinco famílias de imagem — analógica/CRT, radar, espiral, fluida e malha digital. Cada registro escolhe uma família e sua paleta de pigmento. O fallback Canvas2D tem as mesmas famílias. Velocidade, distorção e intensidade do pigmento são ajustáveis; o pulso e a limpeza das manchas são controlos de botão.
+- **Ambiente visual e som:** a fumaça procedural é a imagem de fundo principal (modo 1); toque/clique no espaço visual desloca sua matéria e revela manchas cromáticas na paleta de cada registro. Os modos alternativos são analógico/CRT (0), orgânico psicodélico (2), fluido (3) e malha digital (4). O fallback Canvas2D oferece fumaça e equivalentes simplificados; a preferência por movimento reduzido pausa a fumaça. Os logotipos S0LE e v1su4rt tocam sequências sintetizadas 8-bit ao clique ou ao foco por teclado, sem microfone ou arquivos de áudio externos.
 - **Movimento reduzido:** não há animação contínua. As manchas ficam estáticas após o toque e desaparecem ao fim do intervalo definido; o efeito respeita a preferência do sistema.
 - **Sem JavaScript:** a página apresenta um resumo editorial, a ficha do mestrado, o Centro Cultural Ouvidor 63 e links principais. Filtros, navegação dinâmica e shader requerem JavaScript.
 - **Imagens:** cada imagem deve ter legenda e descrição alternativa; clicar abre a versão ampliada.
@@ -33,7 +33,7 @@ O catálogo está em `Portfolio/wwwroot/js/projects.js`. Cada item usa um objeto
 - `images`: objetos `{ src, caption, alt, credit }`; `credit` só deve ser preenchido quando confirmado. Pares posicionais antigos continuam aceitos. Use arquivos locais de `wwwroot/img`. Imagens com variantes WebP podem incluir `width`, `height` e `responsiveWidths` para a galeria escolher a resolução adequada; o original continua a ser usado na ampliação e como alternativa a WebP.
 - `links`: objetos `{ label, text, url, copy, copyValue }`; `copy` é opcional. Pares posicionais antigos continuam aceitos.
 - `jump`: objetos `{ label, target }`; pares posicionais antigos continuam aceitos e o destino precisa existir.
-- `mode`, `hue`: família visual do shader (0 analógico/CRT, 1 radar, 2 espiral, 3 fluido, 4 malha digital) e paleta de pigmento associada ao item.
+- `mode`, `hue`: família visual do shader (0 analógico/CRT, 1 fumaça, 2 orgânico psicodélico, 3 fluido, 4 malha digital) e paleta de pigmento associada ao item.
 - `sub: true`: apresenta um experimento como subitem no menu lateral.
 
 Ao incluir um projeto, confirme datas, autoria individual/coletiva, função, local, créditos e direitos de uso das imagens. Não publique datas ou papéis ainda incertos como fatos. Escreva o resumo para leitura rápida e use `specs` para dados objetivos.
@@ -118,7 +118,7 @@ A inicialização verifica IDs, categorias, destinos de salto, protocolos de lin
 ## Validação antes da publicação
 
 - Compile a solução com o SDK .NET 10 instalado.
-- Valide a sintaxe dos três scripts JavaScript ativos com `node --check`.
+- Valide a sintaxe dos quatro scripts JavaScript ativos com `node --check`.
 - Confira a renderização em celulares, tablets e desktops, incluindo WebGL indisponível, JavaScript desativado, toque, teclado e preferência por movimento reduzido.
 - Confirme a leitura e os controles em redes lentas e com economia de dados. Verifique no inspetor do navegador se as miniaturas VIVITAR selecionam variantes WebP adequadas à largura e se JPEG atende navegadores sem suporte.
 - Não foi configurado domínio ou publicação neste repositório.
