@@ -109,6 +109,16 @@
 
     <nav class="rail list-view" aria-label="Navegação por projetos">
       <div class="browse-tools">
+        <nav class="mobile-topic-tabs" id="mobile-topic-tabs" aria-label="Temas do portfólio">
+          <button type="button" data-mobile-topic="all" aria-pressed="true">Tudo</button>
+          <button type="button" data-mobile-topic="works" aria-pressed="false">Trabalhos</button>
+          <button type="button" data-mobile-topic="research" aria-pressed="false">Pesquisa</button>
+          <button type="button" data-mobile-topic="collective" aria-pressed="false">Coletivos</button>
+          <button type="button" data-mobile-topic="workshop" aria-pressed="false">Oficinas</button>
+          <button type="button" data-mobile-topic="interactive" aria-pressed="false">Interativos</button>
+          <button type="button" data-mobile-topic="apps" aria-pressed="false">Apps</button>
+          <button type="button" data-mobile-topic="education" aria-pressed="false">Formação</button>
+        </nav>
         <details class="desktop-topic-filter" id="desktop-topic-filter">
           <summary>Explorar por temas</summary>
           <div class="desktop-topic-panel" aria-label="Filtrar conteúdos por tema">
@@ -122,7 +132,7 @@
             <button type="button" data-topic="education" aria-pressed="false">Formação</button>
           </div>
         </details>
-        <div class="filter-control">
+        <div class="filter-control category-filter">
           <label for="c-category">Explorar por tema</label>
           <select id="c-category">
             <option value="all">Todos os conteúdos</option>

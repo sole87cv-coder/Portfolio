@@ -93,6 +93,7 @@
   };
   var timelineGroups = {
     featured: "Mestrado em destaque",
+    research: "Pesquisa em andamento",
     dated: "Cronologia · mais recente primeiro",
     ongoing: "Atuação contínua",
     development: "Em desenvolvimento",
@@ -127,6 +128,7 @@
     return -1;
   }
   function matches(p) {
+    if (p.mobileOnly && !document.body.classList.contains("v-mobile")) return false;
     var allowed = categories[filterEl.value];
     if (allowed && allowed.indexOf(p.category) < 0) return false;
     var q = searchEl.value.trim().toLocaleLowerCase("pt-BR");
@@ -405,6 +407,10 @@
     for (var topicIndex = 0; topicIndex < desktopTopicButtons.length; topicIndex++) {
       desktopTopicButtons[topicIndex].setAttribute("aria-pressed", String(desktopTopicButtons[topicIndex].getAttribute("data-topic") === filterEl.value));
     }
+    var mobileTopicButtons = document.querySelectorAll(".mobile-topic-tabs [data-mobile-topic]");
+    for (var mobileTopicIndex = 0; mobileTopicIndex < mobileTopicButtons.length; mobileTopicIndex++) {
+      mobileTopicButtons[mobileTopicIndex].setAttribute("aria-pressed", String(mobileTopicButtons[mobileTopicIndex].getAttribute("data-mobile-topic") === filterEl.value));
+    }
     if (current >= 0) {
       var selectedHash = "#" + projects[current].id;
       if (location.hash !== selectedHash) history.replaceState({ projectId: projects[current].id }, "", selectedHash);
@@ -598,6 +604,57 @@
     topicFilter.open = false;
     topicFilter.querySelector("summary").focus();
   });
+  var mobileTopicTabs = document.getElementById("mobile-topic-tabs");
+  var mobileTopicButtons = mobileTopicTabs.querySelectorAll("[data-mobile-topic]");
+  function selectMobileTopic(button) {
+    if (!button) return;
+    filterEl.value = button.getAttribute("data-mobile-topic");
+    searchEl.value = "";
+    rebuildFromControls();
+    if (button.scrollIntoView) {
+      try { button.scrollIntoView({ block: "nearest", inline: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" }); }
+      catch (_) { button.scrollIntoView(false); }
+    }
+  }
+  for (var mobileTopicIndex = 0; mobileTopicIndex < mobileTopicButtons.length; mobileTopicIndex++) mobileTopicButtons[mobileTopicIndex].addEventListener("click", function () {
+    if (Date.now() - (mobileTopicTabs._swipedAt || 0) < 120 && this === mobileTopicTabs._swipeButton && this.getAttribute("data-mobile-topic") !== filterEl.value) {
+      mobileTopicTabs._swipeButton = null;
+      return;
+    }
+    mobileTopicTabs._swipeButton = null;
+    selectMobileTopic(this);
+  });
+  var mobileTopicTouch = null;
+  var mobileTopicSwipeButton = null;
+  mobileTopicTabs.addEventListener("touchstart", function (event) {
+    if (!event.touches.length) return;
+    mobileTopicTabs._swipeButton = null;
+    var target = event.target;
+    mobileTopicSwipeButton = null;
+    while (target && target !== mobileTopicTabs) {
+      if (target.getAttribute && target.getAttribute("data-mobile-topic")) { mobileTopicSwipeButton = target; break; }
+      target = target.parentNode;
+    }
+    mobileTopicTouch = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }, { passive: true });
+  mobileTopicTabs.addEventListener("touchend", function (event) {
+    if (!mobileTopicTouch || !event.changedTouches.length) { mobileTopicTouch = null; mobileTopicSwipeButton = null; return; }
+    var dx = event.changedTouches[0].clientX - mobileTopicTouch.x;
+    var dy = event.changedTouches[0].clientY - mobileTopicTouch.y;
+    mobileTopicTouch = null;
+    if (Math.abs(dx) < 48 || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
+    var activeIndex = -1;
+    for (var i = 0; i < mobileTopicButtons.length; i++) {
+      if (mobileTopicButtons[i].getAttribute("data-mobile-topic") === filterEl.value) { activeIndex = i; break; }
+    }
+    var nextIndex = activeIndex + (dx < 0 ? 1 : -1);
+    if (nextIndex < 0 || nextIndex >= mobileTopicButtons.length) return;
+    mobileTopicTabs._swipedAt = Date.now();
+    mobileTopicTabs._swipeButton = mobileTopicSwipeButton;
+    mobileTopicSwipeButton = null;
+    selectMobileTopic(mobileTopicButtons[nextIndex]);
+  }, { passive: true });
+  mobileTopicTabs.addEventListener("touchcancel", function () { mobileTopicTouch = null; mobileTopicSwipeButton = null; mobileTopicTabs._swipeButton = null; }, { passive: true });
   filterEl.addEventListener("change", rebuildFromControls);
   searchEl.addEventListener("input", rebuildFromControls);
   window.addEventListener("popstate", readHash);
@@ -762,6 +819,10 @@
       history.replaceState(null, "", location.pathname + location.search);
       lastObservedHash = "";
       goToId("bio");
+    }
+    if (!document.body.classList.contains("v-mobile") && current >= 0 && projects[current].mobileOnly) {
+      filterEl.value = "all"; searchEl.value = ""; current = -1;
+      rebuildRail();
     }
   }
   view.addEventListener("change", applyView); window.addEventListener("resize", applyView); applyView();

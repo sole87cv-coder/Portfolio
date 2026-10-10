@@ -42,6 +42,34 @@ window.PROJECTS = [
     "timelineGroup": "featured"
   },
   {
+    "id": "pesquisa-arte-interativa",
+    "mobileOnly": true,
+    "category": "research",
+    "kind": "Pesquisa em andamento",
+    "when": "Em andamento",
+    "title": "Arte interativa",
+    "subtitle": "Descolonização da linguagem artística e sensível por meio de linguagens tecnológicas",
+    "text": "Investigo outras formas de perceber o mundo por meio da comunicação sensível.",
+    "tags": [
+      "Arte interativa",
+      "Linguagens tecnológicas",
+      "Comunicação sensível"
+    ],
+    "specs": [
+      [
+        "Estado",
+        "Pesquisa em andamento · registros visuais serão acrescentados posteriormente"
+      ]
+    ],
+    "jump": [
+      [
+        "Ver experimento v1su4rt · ESF-01",
+        "v1su4rt"
+      ]
+    ],
+    "timelineGroup": "research"
+  },
+  {
     "id": "masp",
     "category": "workshop",
     "kind": "Oficina coletiva",

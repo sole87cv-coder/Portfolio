@@ -139,7 +139,7 @@ dialog#lb p { margin: .6rem 0; color: var(--muted); }
 .lb-close { display: flex; margin: 0 0 .8rem auto; }
 .controls { position: relative; }
 .mobile-menu, .mobile-only { display: none; }
-.desktop-nav, .desktop-topic-filter { display: none; }
+.desktop-nav, .desktop-topic-filter, .mobile-topic-tabs { display: none; }
 .controls summary { display: flex; align-items: center; min-height: 44px; padding: 0 .9rem; border: 1px solid var(--line); border-radius: 999px; background: rgba(11,11,12,.85); color: var(--text); font-size: .84rem; font-weight: 600; cursor: pointer; }
 .controls summary::-webkit-details-marker { display: none; }
 .controls .panel { position: absolute; z-index: 10; top: calc(100% + .5rem); right: 0; display: grid; gap: .75rem; width: calc(100vw - 2rem); max-width: 21rem; max-height: 80vh; max-height: min(80dvh,40rem); overflow: auto; padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: rgba(11,11,12,.97); box-shadow: 0 18px 50px rgba(0,0,0,.4); }
@@ -354,6 +354,33 @@ body.bare .ambient-effects select { width: 100%; }
   .controls summary { min-height: 42px; padding-inline: .65rem; font-size: .76rem; }
   #c-bare { min-height: 42px; padding: .4rem .65rem; font-size: .76rem; }
   .mobile-menu-panel .browse-tools { position: static; grid-template-columns: minmax(0,1fr); gap: .55rem; padding: 0; background: transparent; }
+  .mobile-menu-panel .mobile-topic-tabs {
+    display: flex;
+    gap: .35rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    padding: .1rem 0 .4rem;
+    touch-action: pan-x;
+  }
+  .mobile-topic-tabs button {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: .45rem .7rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(11,11,12,.82);
+    color: var(--muted);
+    font-size: .78rem;
+    scroll-snap-align: start;
+  }
+  .mobile-topic-tabs button[aria-pressed="true"], .mobile-topic-tabs button:focus-visible {
+    border-color: var(--accent);
+    background: rgba(235,235,235,.14);
+    color: var(--text);
+  }
+  .mobile-menu-panel .browse-tools > .category-filter { display: none; }
   .browse-tools label { font-size: .63rem; }
   .browse-tools input, .browse-tools select { min-height: 42px; font-size: .77rem; }
   .browse-count { display: block; }
