@@ -2,3 +2,12 @@ bin/
 obj/
 .vs/
 *.user
+node_modules/
+.DS_Store
+Thumbs.db
+*.bak
+*- Copy*
+*- backup*
+*~
+*.tmp
+_arquivo-morto/
