@@ -96,11 +96,12 @@
   window.createShader = function (canvas) {
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var api = {
-      params: { speed: reduced ? 0.25 : 1, warp: 0.6, hueShift: 0, audio: 0 },
+      params: { speed: reduced ? 0 : 1, warp: 0.6, hueShift: 0, audio: 0 },
       target: { mode: 0, hue: 0 },
       mouse: { x: 0.5, y: 0.5 },
-      pulse: function () { pulseValue = 1; },
-      setTarget: function (mode, hue) { api.target.mode = mode; api.target.hue = hue; }
+      pulse: function () { pulseValue = 1; scheduleFrame(); },
+      setTarget: function (mode, hue) { api.target.mode = mode; api.target.hue = hue; scheduleFrame(); },
+      invalidate: function () { scheduleFrame(); }
     };
 
     var pulseValue = 0;
@@ -111,6 +112,9 @@
     var gl = canvas.getContext("webgl", { antialias: false, alpha: false }) ||
              canvas.getContext("experimental-webgl");
     var prog, loc = {}, ctx2d = null;
+    var framePending = false;
+    var lowCapacity = (navigator.hardwareConcurrency || 8) <= 4;
+    var motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     if (gl) {
       try {
@@ -118,6 +122,7 @@
         gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
         gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
         gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
         gl.useProgram(prog);
         var buf = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -128,33 +133,66 @@
         ["u_res", "u_time", "u_mouse", "u_audio", "u_warp", "u_hue", "u_pulse", "u_wa", "u_wb"]
           .forEach(function (n) { loc[n] = gl.getUniformLocation(prog, n); });
       } catch (err) {
-        console.warn("WebGL indisponível, usando Canvas2D:", err);
+        console.warn("Não foi possível iniciar o shader:", err);
         gl = null;
       }
     }
     if (!gl) { ctx2d = canvas.getContext("2d"); }
+    if (!gl && !ctx2d) {
+      canvas.style.display = "none";
+      var status = document.getElementById("app-status");
+      if (status) status.textContent = "Efeitos visuais indisponíveis neste navegador. O conteúdo permanece disponível.";
+      return api;
+    }
+
+    function scheduleFrame() {
+      if (framePending || document.hidden) return;
+      framePending = true;
+      var draw = function () { requestAnimationFrame(frame); };
+      if (!motionPreference.matches && lowCapacity) window.setTimeout(draw, 34);
+      else draw();
+    }
 
     function resize() {
-      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      var dpr = Math.min(window.devicePixelRatio || 1, lowCapacity ? 1 : 1.5);
       var w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w; canvas.height = h;
         if (gl) gl.viewport(0, 0, w, h);
+        scheduleFrame();
       }
     }
     window.addEventListener("resize", resize);
+    function updatePointer(event) {
+      if (!event || !window.innerWidth || !window.innerHeight) return;
+      api.mouse.x = Math.max(0, Math.min(1, event.clientX / window.innerWidth));
+      api.mouse.y = 1 - Math.max(0, Math.min(1, event.clientY / window.innerHeight));
+      scheduleFrame();
+    }
+    window.addEventListener("pointermove", updatePointer, { passive: true });
+    window.addEventListener("pointerdown", updatePointer, { passive: true });
+    canvas.addEventListener("webglcontextlost", function () {
+      canvas.style.display = "none";
+      var status = document.getElementById("app-status");
+      if (status) status.textContent = "O efeito visual foi interrompido pelo navegador. O conteúdo continua disponível; recarregue a página para tentar novamente.";
+    });
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) scheduleFrame(); });
+    if (motionPreference.addEventListener) motionPreference.addEventListener("change", scheduleFrame);
+    else if (motionPreference.addListener) motionPreference.addListener(scheduleFrame);
 
     function frame(now) {
+      framePending = false;
+      if (document.hidden) return;
       var dt = Math.min((now - last) / 1000, 0.1);
       last = now;
       resize();
 
       time += dt * api.params.speed;
-      var k = Math.min(1, dt * 3);
+      var k = motionPreference.matches ? 1 : Math.min(1, dt * 3);
       for (var i = 0; i < 5; i++) {
         weights[i] += ((i === api.target.mode ? 1 : 0) - weights[i]) * k;
       }
-      var mk = Math.min(1, dt * 6);
+      var mk = motionPreference.matches ? 1 : Math.min(1, dt * 6);
       smooth.x += (api.mouse.x - smooth.x) * mk;
       smooth.y += (api.mouse.y - smooth.y) * mk;
       smooth.hue += (api.target.hue - smooth.hue) * k;
@@ -186,9 +224,9 @@
         ctx2d.fillStyle = g;
         ctx2d.fillRect(0, 0, w, h);
       }
-      requestAnimationFrame(frame);
+      if (!motionPreference.matches && api.params.speed > 0) scheduleFrame();
     }
-    requestAnimationFrame(frame);
+    scheduleFrame();
 
     return api;
   };

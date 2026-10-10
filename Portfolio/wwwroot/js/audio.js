@@ -22,11 +22,23 @@
       }
       return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
         stream = s;
-        analyser = c.createAnalyser();
-        analyser.fftSize = 256;
-        data = new Uint8Array(analyser.frequencyBinCount);
-        c.createMediaStreamSource(s).connect(analyser);
-        window.SoleAudio.active = true;
+        try {
+          analyser = c.createAnalyser();
+          analyser.fftSize = 256;
+          data = new Uint8Array(analyser.frequencyBinCount);
+          c.createMediaStreamSource(s).connect(analyser);
+          s.getTracks().forEach(function (track) {
+            track.addEventListener("ended", function () {
+              if (stream === s) window.SoleAudio.stop();
+            }, { once: true });
+          });
+          window.SoleAudio.active = true;
+        } catch (err) {
+          s.getTracks().forEach(function (track) { track.stop(); });
+          stream = null;
+          analyser = null;
+          throw err;
+        }
       });
     },
 
