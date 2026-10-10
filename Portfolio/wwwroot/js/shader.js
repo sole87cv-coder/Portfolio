@@ -1,4 +1,4 @@
-/* Ambiente generativo monocromático com manchas de aquarela cromática ao toque. */
+/* Ambiente generativo: fumaça em destaque, linguagem orgânica psicodélica e manchas cromáticas ao toque. */
 (function () {
   "use strict";
   var VERT = "attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }";
@@ -10,9 +10,12 @@
     "#endif",
     "uniform vec2 u_res; uniform float u_time;",
     "uniform float u_warp; uniform float u_pulse; uniform float u_mode; uniform float u_palette; uniform float u_pigment;",
-    "uniform vec4 u_stains[6];",
+    "uniform vec4 u_stains[6]; uniform vec3 u_pointer;",
     "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }",
     "float noise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x),f.y); }",
+    "float hashFast(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }",
+    "float noiseFast(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.0-2.0*f); return mix(mix(hashFast(i),hashFast(i+vec2(1.0,0.0)),f.x),mix(hashFast(i+vec2(0.0,1.0)),hashFast(i+vec2(1.0,1.0)),f.x),f.y); }",
+    "float fbm(vec2 p){ float value=0.0; float amplitude=0.5; for(int octave=0;octave<3;octave++){ value+=noiseFast(p)*amplitude; p=p*2.03+vec2(17.1,-11.7); amplitude*=0.5; } return value; }",
     "vec3 pigment(float h){ return 0.5 + 0.5*cos(6.28318*(h+vec3(0.0,0.33,0.67))); }",
     "void main(){",
     "  vec2 uv=(gl_FragCoord.xy-0.5*u_res)/u_res.y;",
@@ -26,13 +29,24 @@
     "    float tear=1.0-smoothstep(0.0,0.018,abs(uv.x-0.38*sin(uv.y*5.0+t*0.025)));",
     "    motif=band*0.09+tear*0.045;",
     "  }else if(mode<1.5){",
-    "    float rings=1.0-smoothstep(0.46,0.5,abs(fract(radius*10.0-t*0.025)-0.5));",
-    "    float sweep=1.0-smoothstep(0.0,0.025,abs(sin(atan(uv.y-0.06,uv.x*0.78)*2.0+t*0.035)));",
-    "    motif=rings*0.13+sweep*0.055;",
+    "    vec2 touchCenter=vec2((u_pointer.x-0.5)*(u_res.x/u_res.y),u_pointer.y-0.5);",
+    "    float touchInfluence=u_pointer.x>=0.0 ? exp(-dot(uv-touchCenter,uv-touchCenter)*5.0)*exp(-u_pointer.z*0.9) : 0.0;",
+    "    vec2 smokeUV=uv+vec2(sin(uv.y*3.8+t*0.10),cos(uv.x*3.2-t*0.07))*0.09;",
+    "    smokeUV+=(uv-touchCenter)*touchInfluence*0.22;",
+    "    float vapor=fbm(smokeUV*3.2+vec2(t*0.025,-t*0.11));",
+    "    float vaporDetail=fbm(smokeUV*6.4+vec2(-t*0.018,-t*0.16));",
+    "    float density=0.34+u_warp*0.055;",
+    "    float cloud=smoothstep(density,density+0.25,vapor+vaporDetail*0.22);",
+    "    float wisps=smoothstep(density+0.12,density+0.30,vapor+vaporDetail*0.38);",
+    "    motif=cloud*0.17+wisps*0.055;",
     "  }else if(mode<2.5){",
-    "    float angle=atan(uv.y-0.06,uv.x*0.78);",
-    "    float spiral=1.0-smoothstep(0.44,0.5,abs(fract(angle*1.45+radius*12.0-t*0.018)-0.5));",
-    "    motif=spiral*0.16+horizon*0.035;",
+    "    float organicField=fbm(uv*3.4+vec2(t*0.018,-t*0.014));",
+    "    vec2 organicUV=uv+0.12*vec2(sin(uv.y*5.0+organicField*5.0+t*0.025),cos(uv.x*4.0-organicField*4.0-t*0.02));",
+    "    float organicRadius=length(vec2(organicUV.x*0.78,organicUV.y-0.06));",
+    "    float petalAngle=atan(organicUV.y-0.06,organicUV.x*0.78);",
+    "    float petals=abs(sin(petalAngle*5.0+sin(organicRadius*9.0+organicField*5.0)*1.8));",
+    "    float organicBands=abs(sin(organicRadius*19.0-organicField*8.0+t*0.018));",
+    "    motif=(1.0-smoothstep(0.12,0.88,petals))*0.10+(1.0-smoothstep(0.18,0.92,organicBands))*0.065+organicField*0.025;",
     "  }else if(mode<3.5){",
     "    float flow=noise(uv*4.2+vec2(t*0.025,-t*0.018));",
     "    float contour=1.0-smoothstep(0.0,0.11,abs(fract(flow*4.0+sin(uv.x*3.0+uv.y*4.0+t*0.025))-0.5));",
@@ -98,22 +112,25 @@
     var frameDelay = lowCapacity ? 34 : 0;
     var gl = null, ctx2d = null, program = null, loc = {};
     var framePending = false, frameTimer = 0, stainTimer = 0, time = 0, last = performance.now();
-    var pulseValue = 0, modeValue = 0, paletteValue = 0, stainCursor = 0;
+    var pulseValue = 0, modeValue = 1, paletteValue = 0.7, stainCursor = 0;
+    var pointer = { x: -1, y: -1, born: 0 };
     var stains = [null, null, null, null, null, null];
     var stainValues = new Float32Array(24);
     var api = {
       params: { speed: reducedMotion.matches ? 0 : 1, warp: 0.6, pigment: 1 },
-      target: { mode: 0, hue: 0 },
+      target: { mode: 1, hue: 0.7 },
       pulse: function () { pulseValue = 1; scheduleFrame(); },
       setTarget: function (mode, hue) { api.target.mode = mode || 0; api.target.hue = hue || 0; scheduleFrame(); },
       invalidate: function () { scheduleFrame(); },
       addStain: function (x, y) {
-        stains[stainCursor] = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), born: performance.now(), hue: Math.random() * 0.19 };
+        pointer = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), born: performance.now() };
+        stains[stainCursor] = { x: pointer.x, y: pointer.y, born: pointer.born, hue: Math.random() * 0.19 };
         stainCursor = (stainCursor + 1) % stains.length;
         scheduleFrame();
       },
       clearStains: function () {
         stains = [null, null, null, null, null, null];
+        pointer = { x: -1, y: -1, born: 0 };
         if (stainTimer) window.clearTimeout(stainTimer);
         stainTimer = 0; scheduleFrame();
       }
@@ -147,7 +164,7 @@
         var position = gl.getAttribLocation(program, "p");
         gl.enableVertexAttribArray(position);
         gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-        ["u_res", "u_time", "u_warp", "u_pulse", "u_mode", "u_palette", "u_pigment"]
+        ["u_res", "u_time", "u_warp", "u_pulse", "u_mode", "u_palette", "u_pigment", "u_pointer"]
           .forEach(function (name) { loc[name] = gl.getUniformLocation(program, name); });
         loc.u_stains = gl.getUniformLocation(program, "u_stains[0]");
       }
@@ -203,7 +220,7 @@
     function drawFallback(now) {
       var width = canvas.width, height = canvas.height;
       var shortSide = Math.min(width, height), centerX = width * 0.5, centerY = height * 0.5;
-      var mode = Math.round(modeValue), tick = now * 0.00012 * api.params.speed;
+      var mode = Math.round(modeValue), tick = (reducedMotion.matches ? 0 : now * 0.00012) * api.params.speed;
       ctx2d.fillStyle = "#0b0b0c"; ctx2d.fillRect(0, 0, width, height);
       ctx2d.save();
       ctx2d.strokeStyle = "rgba(235,235,235,0.14)";
@@ -216,23 +233,36 @@
           ctx2d.beginPath(); ctx2d.moveTo(0, scanY); ctx2d.lineTo(width * 0.48 + jitter, scanY); ctx2d.lineTo(width, scanY + jitter); ctx2d.stroke();
         }
       } else if (mode === 1) {
-        for (var ring = 1; ring <= 9; ring++) {
-          ctx2d.beginPath(); ctx2d.arc(centerX, centerY, shortSide * ring / 20, 0, Math.PI * 2); ctx2d.stroke();
+        for (var puff = 0; puff < 9; puff++) {
+          var drift = (tick * 0.035 + puff * 0.13) % 1;
+          var puffX = centerX + Math.sin(puff * 1.73 + tick * 0.28) * width * 0.24;
+          var puffY = height * (0.92 - drift * 0.78);
+          var puffRadius = shortSide * (0.09 + (puff % 3) * 0.035);
+          var cloud = ctx2d.createRadialGradient(puffX, puffY, puffRadius * 0.04, puffX, puffY, puffRadius);
+          cloud.addColorStop(0, "rgba(225,225,225,0.075)");
+          cloud.addColorStop(0.55, "rgba(205,205,205,0.045)");
+          cloud.addColorStop(1, "rgba(190,190,190,0)");
+          ctx2d.fillStyle = cloud;
+          ctx2d.fillRect(puffX - puffRadius, puffY - puffRadius, puffRadius * 2, puffRadius * 2);
         }
-        var sweep = tick % (Math.PI * 2);
-        ctx2d.beginPath(); ctx2d.moveTo(centerX, centerY);
-        ctx2d.lineTo(centerX + Math.cos(sweep) * shortSide * 0.46, centerY + Math.sin(sweep) * shortSide * 0.46); ctx2d.stroke();
-        ctx2d.beginPath(); ctx2d.moveTo(centerX - shortSide * 0.46, centerY); ctx2d.lineTo(centerX + shortSide * 0.46, centerY);
-        ctx2d.moveTo(centerX, centerY - shortSide * 0.46); ctx2d.lineTo(centerX, centerY + shortSide * 0.46); ctx2d.stroke();
+        if (pointer.x >= 0 && now - pointer.born < 4000) {
+          var touchX = pointer.x * width, touchY = pointer.y * height, touchRadius = shortSide * 0.22;
+          var touchCloud = ctx2d.createRadialGradient(touchX, touchY, 0, touchX, touchY, touchRadius);
+          touchCloud.addColorStop(0, "rgba(235,235,235,0.12)");
+          touchCloud.addColorStop(1, "rgba(210,210,210,0)");
+          ctx2d.fillStyle = touchCloud;
+          ctx2d.fillRect(touchX - touchRadius, touchY - touchRadius, touchRadius * 2, touchRadius * 2);
+        }
       } else if (mode === 2) {
-        ctx2d.beginPath();
-        for (var spiralStep = 0; spiralStep <= 520; spiralStep++) {
-          var theta = spiralStep * 0.045 + tick;
-          var spiralRadius = shortSide * 0.0008 * spiralStep;
-          var spiralX = centerX + Math.cos(theta) * spiralRadius;
-          var spiralY = centerY + Math.sin(theta) * spiralRadius * 0.72;
-          if (!spiralStep) ctx2d.moveTo(spiralX, spiralY); else ctx2d.lineTo(spiralX, spiralY);
+        for (var petal = 0; petal < 7; petal++) {
+          var petalAngle = petal * Math.PI * 2 / 7 + tick * 0.35;
+          var petalX = centerX + Math.cos(petalAngle) * shortSide * 0.20;
+          var petalY = centerY + Math.sin(petalAngle) * shortSide * 0.20;
+          ctx2d.beginPath();
+          ctx2d.arc(petalX, petalY, shortSide * 0.09, 0, Math.PI * 2);
+          ctx2d.stroke();
         }
+        for (var band = 1; band <= 7; band++) { ctx2d.beginPath(); ctx2d.arc(centerX, centerY, shortSide * band * 0.055, 0, Math.PI * 2); ctx2d.stroke(); }
         ctx2d.stroke();
       } else if (mode === 3) {
         for (var wave = 0; wave < 9; wave++) {
@@ -305,6 +335,8 @@
         gl.uniform1f(loc.u_palette,paletteValue);
         gl.uniform1f(loc.u_pigment,api.params.pigment);
         gl.uniform4fv(loc.u_stains,stainValues);
+        var pointerAge = pointer.x >= 0 ? (now - pointer.born) / 1000 : 4;
+        gl.uniform3f(loc.u_pointer, pointerAge < 4 ? pointer.x : -1, pointerAge < 4 ? 1 - pointer.y : -1, pointerAge);
         gl.drawArrays(gl.TRIANGLES,0,3);
       } else if (ctx2d) drawFallback(now);
       if (!moving) pulseValue = 0;
