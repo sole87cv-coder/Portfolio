@@ -40,7 +40,8 @@
   var deferInitialSelection = false;
   function syncMobileMenu(isMobile) {
     if (isMobile) {
-      [mainNavEl, headActionsEl, railContainer].forEach(function (element) {
+      // On small screens, keep navigation and project browsing ahead of visual controls.
+      [mainNavEl, railContainer, headActionsEl].forEach(function (element) {
         if (element.parentNode !== mobileMenuPanel) mobileMenuPanel.appendChild(element);
       });
       return;
@@ -485,7 +486,8 @@
     return card;
   }
   function showDesktopPage(key, fromHistory) {
-    if (window.innerWidth < 1100 || ["services", "research"].indexOf(key) < 0) return false;
+    var mobileServices = key === "services" && window.innerWidth <= 699;
+    if ((window.innerWidth < 1100 && !mobileServices) || ["services", "research"].indexOf(key) < 0) return false;
     desktopPage = key;
     current = -1;
     updateRailState();
@@ -780,6 +782,7 @@
   document.getElementById("logo-sole").addEventListener("click", function () { goToId("bio"); });
   document.getElementById("nav-bio").addEventListener("click", function () { goToId("bio"); });
   document.getElementById("nav-contact").addEventListener("click", function () { goToId("contato"); });
+  document.getElementById("nav-services").addEventListener("click", function () { showDesktopPage("services", false); });
   document.getElementById("nav-work").addEventListener("click", function () {
     filterEl.value = "works"; searchEl.value = ""; rebuildRail();
     var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);
