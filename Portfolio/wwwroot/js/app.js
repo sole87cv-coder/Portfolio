@@ -245,7 +245,7 @@
   }
   function copyText(value, button) {
     function success() {
-      button.textContent = "Copiado";
+      button.textContent = "Contato copiado";
       button.setAttribute("aria-label", "Contato copiado");
       window.setTimeout(function () { button.textContent = "Copiar"; button.setAttribute("aria-label", "Copiar contato"); }, 1800);
     }
@@ -255,7 +255,7 @@
       var ok = false;
       try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
       field.remove();
-      if (ok) success(); else { button.textContent = "Cópia indisponível"; button.setAttribute("aria-label", "Cópia indisponível; selecione o contato no link ao lado"); }
+      if (ok) success(); else { button.textContent = "Não foi possível copiar"; button.setAttribute("aria-label", "Não foi possível copiar; selecione o contato no link ao lado"); }
     }
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(value).then(success, fallback);
     else fallback();
@@ -265,7 +265,7 @@
     var gallery = make("ul", "gallery");
     images.forEach(function (item) {
       var filename = item.src !== undefined ? item.src : item[0];
-      var caption = (item.caption !== undefined ? item.caption : item[1]) || projectTitle;
+      var caption = item.caption !== undefined ? item.caption : (item[1] !== undefined ? item[1] : projectTitle);
       var alt = (item.alt !== undefined ? item.alt : item[2]) || caption || projectTitle;
       if (!filename || /[\\/]/.test(filename)) return;
       var li = make("li"), button = make("button", "thumb"), picture = document.createElement("picture");
@@ -284,7 +284,9 @@
       }
       if (item.width && item.height) { img.width = item.width; img.height = item.height; }
       img.addEventListener("error", function () { li.classList.add("image-unavailable"); button.disabled = true; });
-      picture.appendChild(img); button.appendChild(picture); li.appendChild(button); li.appendChild(make("span", "cap", caption)); gallery.appendChild(li);
+      picture.appendChild(img); button.appendChild(picture); li.appendChild(button);
+      if (caption) li.appendChild(make("span", "cap", caption));
+      gallery.appendChild(li);
     });
     card.appendChild(gallery);
   }
@@ -341,7 +343,7 @@
   }
   function showEmpty() {
     var card = make("section", "card empty-state");
-    appendChildren(card, make("p", "eyebrow", "Nenhum resultado"), make("h1", null, "Não encontrei esse conteúdo"), make("p", "text", "Tente outra palavra ou remova o filtro para voltar a explorar o portfólio."));
+    appendChildren(card, make("p", "eyebrow", "Busca"), make("h1", null, "Não encontrei resultados"), make("p", "text", "Tente outra palavra ou limpe os filtros para ver mais trabalhos."));
     var clear = make("button", "btn", "Limpar busca e filtros"); clear.type = "button";
     clear.addEventListener("click", function () { filterEl.value = "all"; searchEl.value = ""; rebuildFromControls(); }); card.appendChild(clear);
     replaceContent(stageEl, card);
@@ -437,16 +439,16 @@
         make("p", "eyebrow", "Pesquisa · em andamento"),
         make("h1", null, "Arte interativa"),
         make("p", "subtitle", "Descolonização da linguagem artística e sensível por meio de linguagens tecnológicas"),
-        make("p", "text", "Investigo outras formas de perceber o mundo por meio da comunicação sensível."));
+        make("p", "text", "Pesquiso outras formas de perceber o mundo por meio de uma comunicação sensível."));
       card.querySelector("h1").id = "desktop-editorial-title";
-      card.appendChild(make("p", "research-status", "Pesquisa em andamento. Registros visuais serão acrescentados quando estiverem disponíveis."));
+      card.appendChild(make("p", "research-status", "Esta pesquisa está em andamento. Os registros visuais serão incluídos quando estiverem prontos."));
       var experiment = make("section", "research-experiment");
       experiment.setAttribute("aria-labelledby", "research-experiment-title");
       experiment.appendChild(make("p", "eyebrow", "Experimento audiovisual interativo · 2026"));
       var experimentTitle = make("h2", null, "v1su4rt · ESF-01");
       experimentTitle.id = "research-experiment-title";
       experiment.appendChild(experimentTitle);
-      experiment.appendChild(make("p", "text", "Experimento audiovisual para navegador que combina shaders GLSL ES 1.0 e animação generativa. Toques na tela ou cliques fazem surgir manchas de pigmento colorido que se expandem e se dissolvem sobre uma base em escala de cinzas."));
+      experiment.appendChild(make("p", "text", "Experimento audiovisual para navegador, feito com shaders GLSL ES 1.0 e animação generativa. Toques, arrastos ou cliques criam manchas de pigmento sobre uma imagem em tons de cinza. Elas se expandem e depois se dissolvem."));
       var experimentLink = make("button", "btn ghost", "Ver registro do experimento");
       experimentLink.type = "button";
       experimentLink.addEventListener("click", function () { goToId("v1su4rt"); });
@@ -457,8 +459,8 @@
     appendChildren(card,
       make("p", "eyebrow", "Trabalho · contratação"),
       make("h1", null, "Serviços"),
-      make("p", "subtitle", "Campos de atuação para projetos artísticos e culturais."),
-      make("p", "text", "Converse sobre escopo, contexto e disponibilidade para uma proposta."));
+      make("p", "subtitle", "Atuação em projetos artísticos e culturais."),
+      make("p", "text", "Entre em contato para conversar sobre o projeto, seu contexto e os próximos passos."));
     card.querySelector("h1").id = "desktop-editorial-title";
     var services = [
       ["artista-visual", "Artista visual"],
@@ -473,7 +475,7 @@
       var item = make("section", "service-item");
       item.id = "service-" + service[0];
       item.appendChild(make("h2", null, service[1]));
-      item.appendChild(make("p", null, "Converse sobre este campo de atuação e a necessidade do projeto."));
+      item.appendChild(make("p", null, "Conte um pouco sobre o projeto e o que você precisa nesta área."));
       grid.appendChild(item);
     });
     card.appendChild(grid);
@@ -619,44 +621,8 @@
     }
   }
   for (var mobileTopicIndex = 0; mobileTopicIndex < mobileTopicButtons.length; mobileTopicIndex++) mobileTopicButtons[mobileTopicIndex].addEventListener("click", function () {
-    if (Date.now() - (mobileTopicTabs._swipedAt || 0) < 120 && this === mobileTopicTabs._swipeButton && this.getAttribute("data-mobile-topic") !== filterEl.value) {
-      mobileTopicTabs._swipeButton = null;
-      return;
-    }
-    mobileTopicTabs._swipeButton = null;
     selectMobileTopic(this);
   });
-  var mobileTopicTouch = null;
-  var mobileTopicSwipeButton = null;
-  mobileTopicTabs.addEventListener("touchstart", function (event) {
-    if (!event.touches.length) return;
-    mobileTopicTabs._swipeButton = null;
-    var target = event.target;
-    mobileTopicSwipeButton = null;
-    while (target && target !== mobileTopicTabs) {
-      if (target.getAttribute && target.getAttribute("data-mobile-topic")) { mobileTopicSwipeButton = target; break; }
-      target = target.parentNode;
-    }
-    mobileTopicTouch = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-  }, { passive: true });
-  mobileTopicTabs.addEventListener("touchend", function (event) {
-    if (!mobileTopicTouch || !event.changedTouches.length) { mobileTopicTouch = null; mobileTopicSwipeButton = null; return; }
-    var dx = event.changedTouches[0].clientX - mobileTopicTouch.x;
-    var dy = event.changedTouches[0].clientY - mobileTopicTouch.y;
-    mobileTopicTouch = null;
-    if (Math.abs(dx) < 48 || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
-    var activeIndex = -1;
-    for (var i = 0; i < mobileTopicButtons.length; i++) {
-      if (mobileTopicButtons[i].getAttribute("data-mobile-topic") === filterEl.value) { activeIndex = i; break; }
-    }
-    var nextIndex = activeIndex + (dx < 0 ? 1 : -1);
-    if (nextIndex < 0 || nextIndex >= mobileTopicButtons.length) return;
-    mobileTopicTabs._swipedAt = Date.now();
-    mobileTopicTabs._swipeButton = mobileTopicSwipeButton;
-    mobileTopicSwipeButton = null;
-    selectMobileTopic(mobileTopicButtons[nextIndex]);
-  }, { passive: true });
-  mobileTopicTabs.addEventListener("touchcancel", function () { mobileTopicTouch = null; mobileTopicSwipeButton = null; mobileTopicTabs._swipeButton = null; }, { passive: true });
   filterEl.addEventListener("change", rebuildFromControls);
   searchEl.addEventListener("input", rebuildFromControls);
   window.addEventListener("popstate", readHash);
@@ -674,67 +640,135 @@
       var currentPos = visible.indexOf(current); if (currentPos > 0) go(visible[currentPos - 1]); event.preventDefault();
     }
   });
-  var touchX = null, touchY = null, touchBlocked = false;
-  stageEl.addEventListener("touchstart", function (event) {
-    if (!event.touches.length) return;
-    touchBlocked = isControlTarget(event.target) || matchesSelector(event.target, ".thumb");
-    touchX = event.touches[0].clientX; touchY = event.touches[0].clientY;
-  }, { passive: true });
-  stageEl.addEventListener("touchend", function (event) {
-    if (touchX === null || !event.changedTouches.length) return;
-    var delta = event.changedTouches[0].clientX - touchX;
-    var vertical = event.changedTouches[0].clientY - touchY;
-    touchX = null; touchY = null;
-    if (touchBlocked) { touchBlocked = false; return; }
-    if (Math.abs(vertical) > Math.abs(delta) * 0.75) return;
-    var pos = visible.indexOf(current);
-    if (Math.abs(delta) > 80 && pos >= 0) {
-      var target = pos + (delta < 0 ? 1 : -1);
-      if (target >= 0 && target < visible.length) go(visible[target]);
-    }
-  }, { passive: true });
-  stageEl.addEventListener("touchcancel", function () { touchX = null; touchY = null; touchBlocked = false; }, { passive: true });
+  var stagePointer = null, lastFallbackTouch = 0;
+  function finishStageGesture(pointerId, x, y, target) {
+    if (!stagePointer || stagePointer.id !== pointerId) return;
+    var start = stagePointer;
+    stagePointer = null;
+    if (isControlTarget(target) || matchesSelector(target, ".thumb")) return;
+    var deltaX = x - start.x, deltaY = y - start.y;
+    if (Math.abs(deltaY) > Math.abs(deltaX) * 0.75 || Math.abs(deltaX) < 80) return;
+    var position = visible.indexOf(current), next = position + (deltaX < 0 ? 1 : -1);
+    if (position >= 0 && next >= 0 && next < visible.length) go(visible[next]);
+  }
+  if (window.PointerEvent) {
+    stageEl.addEventListener("pointerdown", function (event) {
+      if (!event.isPrimary || event.button !== 0 || isControlTarget(event.target) || matchesSelector(event.target, ".thumb")) return;
+      stagePointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    }, { passive: true });
+    document.addEventListener("pointerup", function (event) {
+      if (stagePointer && stagePointer.id === event.pointerId) {
+        if (stageEl.contains(event.target)) finishStageGesture(event.pointerId, event.clientX, event.clientY, event.target);
+        else stagePointer = null;
+      }
+    }, { passive: true });
+    document.addEventListener("pointercancel", function (event) { if (stagePointer && stagePointer.id === event.pointerId) stagePointer = null; }, { passive: true });
+  } else {
+    stageEl.addEventListener("touchstart", function (event) {
+      if (event.touches.length !== 1 || isControlTarget(event.target) || matchesSelector(event.target, ".thumb")) { stagePointer = null; return; }
+      lastFallbackTouch = Date.now(); stagePointer = { id: "touch", x: event.touches[0].clientX, y: event.touches[0].clientY };
+    }, { passive: true });
+    stageEl.addEventListener("touchend", function (event) {
+      if (!event.changedTouches.length) { stagePointer = null; return; }
+      var touch = event.changedTouches[0]; finishStageGesture("touch", touch.clientX, touch.clientY, event.target);
+    }, { passive: true });
+    stageEl.addEventListener("touchcancel", function () { stagePointer = null; }, { passive: true });
+    stageEl.addEventListener("mousedown", function (event) {
+      if (Date.now() - lastFallbackTouch < 800 || event.button !== 0 || isControlTarget(event.target)) return;
+      stagePointer = { id: "mouse", x: event.clientX, y: event.clientY };
+    }, { passive: true });
+    document.addEventListener("mouseup", function (event) {
+      if (stagePointer && stagePointer.id === "mouse") {
+        if (stageEl.contains(event.target)) finishStageGesture("mouse", event.clientX, event.clientY, event.target);
+        else stagePointer = null;
+      }
+    }, { passive: true });
+  }
 
   var speed = document.getElementById("c-speed"), warp = document.getElementById("c-warp"), pigment = document.getElementById("c-pigment");
   var outputs = [[speed, "o-speed"], [warp, "o-warp"], [pigment, "o-pigment"]];
   function updateOutput(input, outputId) { document.getElementById(outputId).value = Number(input.value).toFixed(2); }
   speed.value = shader.params.speed;
-  outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); pair[0].addEventListener("input", function () { updateOutput(pair[0], pair[1]); }); });
-  speed.addEventListener("input", function () { shader.params.speed = parseFloat(speed.value); if (shader.invalidate) shader.invalidate(); });
-  warp.addEventListener("input", function () { shader.params.warp = parseFloat(warp.value); if (shader.invalidate) shader.invalidate(); });
-  pigment.addEventListener("input", function () { shader.params.pigment = parseFloat(pigment.value); if (shader.invalidate) shader.invalidate(); });
+  var sliderFrame = null;
+  function syncVisualSliders() {
+    if (sliderFrame !== null) return;
+    var request = window.requestAnimationFrame || function (callback) { return window.setTimeout(callback, 16); };
+    sliderFrame = request(function () {
+      sliderFrame = null;
+      outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); });
+      shader.params.speed = Number(speed.value);
+      shader.params.warp = Number(warp.value);
+      shader.params.pigment = Number(pigment.value);
+      if (shader.invalidate) shader.invalidate();
+    });
+  }
+  outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); pair[0].addEventListener("input", syncVisualSliders); });
   document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });
-  var lastTouchAt = 0;
+  var paintPointer = null, lastPaintX = 0, lastPaintY = 0;
   function addTouchStain(x, y, target) {
-    if (isControlTarget(target)) return;
-    shader.addStain(x / Math.max(1, window.innerWidth), y / Math.max(1, window.innerHeight));
+    if (isControlTarget(target)) return false;
+    var activeCanvas = document.getElementById("gl");
+    if (!activeCanvas) return false;
+    var bounds = activeCanvas.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return false;
+    var relativeX = (x - bounds.left) / bounds.width, relativeY = (y - bounds.top) / bounds.height;
+    if (relativeX < 0 || relativeX > 1 || relativeY < 0 || relativeY > 1) return false;
+    shader.addStain(relativeX, relativeY);
+    lastPaintX = x; lastPaintY = y;
+    return true;
+  }
+  function releasePaintPointer(pointerId) {
+    if (!paintPointer || paintPointer.id !== pointerId) return;
+    paintPointer = null;
+    if (shader.releasePointer) shader.releasePointer();
   }
   if (window.PointerEvent) {
     appEl.addEventListener("pointerdown", function (event) {
-      if (isControlTarget(event.target)) return;
-      addTouchStain(event.clientX, event.clientY, event.target);
+      if (!event.isPrimary || event.button !== 0 || isControlTarget(event.target)) return;
+      if (addTouchStain(event.clientX, event.clientY, event.target)) paintPointer = { id: event.pointerId };
     }, { passive: true });
+    document.addEventListener("pointermove", function (event) {
+      if (!paintPointer || paintPointer.id !== event.pointerId || !event.isPrimary) return;
+      var dx = event.clientX - lastPaintX, dy = event.clientY - lastPaintY;
+      if (dx * dx + dy * dy >= 256) addTouchStain(event.clientX, event.clientY, event.target);
+    }, { passive: true });
+    document.addEventListener("pointerup", function (event) { releasePaintPointer(event.pointerId); }, { passive: true });
+    document.addEventListener("pointercancel", function (event) { releasePaintPointer(event.pointerId); }, { passive: true });
     document.addEventListener("pointerdown", function () { lastInputMethod = "pointer"; }, true);
   } else {
     appEl.addEventListener("touchstart", function (event) {
       if (!event.touches || !event.touches.length) return;
-      lastTouchAt = Date.now();
+      if (event.touches.length > 1) { releasePaintPointer("touch"); return; }
+      lastFallbackTouch = Date.now();
+      paintPointer = { id: "touch" };
       addTouchStain(event.touches[0].clientX, event.touches[0].clientY, event.target);
       lastInputMethod = "pointer";
     }, { passive: true });
+    appEl.addEventListener("touchmove", function (event) {
+      if (!paintPointer || paintPointer.id !== "touch" || !event.touches || event.touches.length !== 1) return;
+      var touch = event.touches[0], dx = touch.clientX - lastPaintX, dy = touch.clientY - lastPaintY;
+      if (dx * dx + dy * dy >= 256) addTouchStain(touch.clientX, touch.clientY, event.target);
+    }, { passive: true });
+    appEl.addEventListener("touchend", function () { releasePaintPointer("touch"); }, { passive: true });
+    appEl.addEventListener("touchcancel", function () { releasePaintPointer("touch"); }, { passive: true });
     appEl.addEventListener("mousedown", function (event) {
-      if (Date.now() - lastTouchAt < 800) return;
-      addTouchStain(event.clientX, event.clientY, event.target);
+      if (Date.now() - lastFallbackTouch < 800 || event.button !== 0 || isControlTarget(event.target)) return;
+      if (addTouchStain(event.clientX, event.clientY, event.target)) paintPointer = { id: "mouse" };
       lastInputMethod = "pointer";
-    }, false);
+    }, { passive: true });
+    document.addEventListener("mousemove", function (event) {
+      if (!paintPointer || paintPointer.id !== "mouse" || !(event.buttons & 1)) return;
+      var dx = event.clientX - lastPaintX, dy = event.clientY - lastPaintY;
+      if (dx * dx + dy * dy >= 256) addTouchStain(event.clientX, event.clientY, event.target);
+    }, { passive: true });
+    document.addEventListener("mouseup", function () { releasePaintPointer("mouse"); }, { passive: true });
     document.addEventListener("mousedown", function () { lastInputMethod = "pointer"; }, true);
   }
+  window.addEventListener("blur", function () { if (paintPointer) releasePaintPointer(paintPointer.id); });
   var defaults = { speed: shader.params.speed, warp: 0.6, pigment: 1 };
   document.getElementById("c-reset").addEventListener("click", function () {
     speed.value = defaults.speed; warp.value = defaults.warp; pigment.value = defaults.pigment;
-    shader.params.speed = defaults.speed; shader.params.warp = defaults.warp; shader.params.pigment = defaults.pigment;
-    shader.clearStains(); outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); });
-    if (shader.invalidate) shader.invalidate();
+    syncVisualSliders(); shader.clearStains();
   });
   var bareButton = document.getElementById("c-bare");
   function restoreInterface() {

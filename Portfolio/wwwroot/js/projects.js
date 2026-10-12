@@ -282,7 +282,7 @@ window.PROJECTS = [
       },
       {
         "label": "Data da exposição",
-        "value": "Ainda não informada."
+        "value": "A confirmar."
       }
     ],
     "jump": [
@@ -538,11 +538,6 @@ window.PROJECTS = [
     "specs": [],
     "links": [
       [
-        "Canal",
-        "YouTube · @501e87",
-        "https://www.youtube.com/@501e87"
-      ],
-      [
         "Vídeo",
         "YouTube · 5KWj1q85Ask",
         "https://www.youtube.com/watch?v=5KWj1q85Ask&t=228s"
@@ -566,7 +561,12 @@ window.PROJECTS = [
         "Vídeo",
         "YouTube · 2PL-kG6JIKM",
         "https://youtu.be/2PL-kG6JIKM"
-      ]
+        ],
+      [
+        "Canal",
+        "YouTube · @501e87",
+        "https://www.youtube.com/@501e87"
+        ]
     ],
     "mode": 0,
     "hue": 0.72,
@@ -666,8 +666,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-08.jpg",
-        "caption": "Escadaria em espiral vista de cima",
-        "alt": "Escadaria em espiral cercada por telas de proteção, vista de cima",
+        "caption": "Escadaria em espiral",
+        "alt": "Escadaria em espiral",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -738,14 +738,14 @@ window.PROJECTS = [
     "images": [
       [
         "retrato-capa.jpg",
-        "Retrato de Sol Emanuel Calderón Vargas",
+        "",
         "Retrato em preto e branco de Sol Emanuel Calderón Vargas"
-      ],
+    ],
       [
         "retrato-rio.jpg",
-        "Sol Emanuel junto ao rio",
+        "",
         "Sol Emanuel em pé junto ao rio, com edifícios ao fundo"
-      ]
+       ]
     ],
     "jump": [
       [
@@ -779,7 +779,7 @@ window.PROJECTS = [
       [
         "Instituição",
         "Memorial da Resistência de São Paulo",
-        "https://memorialdaresistenciasp.org.br"
+        "https://discover.matterport.com/space/EdZkVLG998V"
       ],
       [
         "Coletivo",

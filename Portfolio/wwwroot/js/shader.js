@@ -69,19 +69,21 @@
     "    if(s.z>=0.0 && s.z<4.0){",
     "      vec2 center=vec2((s.x-0.5)*(u_res.x/u_res.y),s.y-0.5);",
     "      vec2 d=uv-center; float d2=dot(d,d);",
-    "      if(d2<0.14){",
+    "      if(d2<0.21){",
     "        float angle=atan(d.y,d.x);",
     "        float wobble=0.055*sin(angle*5.0+s.w*6.28)+0.032*sin(angle*9.0-s.z*2.0)+0.018*sin(angle*15.0+s.x*31.0);",
     "        float dist=sqrt(d2)*(1.0+wobble);",
-    "        float spread=0.025+0.30*(1.0-exp(-s.z*1.35));",
+    "        float spread=0.025+0.38*(1.0-exp(-s.z*1.35));",
     "        if(dist<spread+0.045){",
     "          float body=1.0-smoothstep(spread*0.70,spread+0.032,dist);",
     "          float rim=exp(-pow((dist-spread*0.86)/(spread*0.16+0.008),2.0));",
     "          float grain=0.82+0.18*hash(d*38.0+vec2(s.x*17.0,s.y*17.0));",
     "          float fade=1.0-smoothstep(2.65,4.0,s.z);",
-    "          float alpha=clamp((body*0.48+rim*0.42)*fade*u_pigment*grain,0.0,0.88);",
-    "          vec3 ink=pigment(s.w+u_palette+mode*0.035);",
-    "          col=mix(col,ink,alpha); col+=ink*rim*fade*0.045;",
+    "          float halo=1.0-smoothstep(spread,spread+0.075,dist);",
+    "          float released=s.w>=1.0 ? 1.0-smoothstep(0.0,1.6,s.w-1.0) : 1.0;",
+    "          float alpha=clamp((body*0.58+rim*0.50+halo*0.16)*fade*released*u_pigment*grain,0.0,0.94);",
+    "          vec3 ink=pigment(mod(s.w,1.0)+u_palette+mode*0.035);",
+    "          col=mix(col,ink,alpha); col+=ink*rim*fade*released*0.09;",
     "        }",
     "      }",
     "    }",
@@ -129,8 +131,14 @@
       invalidate: function () { scheduleFrame(); },
       addStain: function (x, y) {
         pointer = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)), born: nowTime() };
-        stains[stainCursor] = { x: pointer.x, y: pointer.y, born: pointer.born, hue: Math.random() * 0.19 };
+        stains[stainCursor] = { x: pointer.x, y: pointer.y, born: pointer.born, releasedAt: 0, hue: Math.random() * 0.19 };
         stainCursor = (stainCursor + 1) % stains.length;
+        scheduleFrame();
+      },
+      releasePointer: function () {
+        var releasedAt = nowTime();
+        pointer = { x: -1, y: -1, born: 0 };
+        stains.forEach(function (stain) { if (stain && !stain.releasedAt) stain.releasedAt = releasedAt; });
         scheduleFrame();
       },
       clearStains: function () {
@@ -300,11 +308,12 @@
       for (var j = 0; j < stains.length; j++) {
         var stain = stains[j]; if (!stain) continue;
         var age = (now-stain.born)/1000; if (age >= 4) { stains[j] = null; continue; }
-        var fade = 1-age/4, radius = Math.min(width,height)*(0.025+0.30*(1-Math.exp(-age*1.35)));
+        var fade = 1-age/4, radius = Math.min(width,height)*(0.025+0.38*(1-Math.exp(-age*1.35)));
         var cx = stain.x*width, cy = stain.y*height;
         var gradient = ctx2d.createRadialGradient(cx,cy,0,cx,cy,radius);
-        gradient.addColorStop(0,hueColor(api.target.hue+stain.hue,0.42*fade*api.params.pigment));
-        gradient.addColorStop(0.72,hueColor(api.target.hue+stain.hue+0.08,0.25*fade*api.params.pigment));
+        var releaseFade = stain.releasedAt ? Math.max(0, 1 - (now - stain.releasedAt) / 1600) : 1;
+        gradient.addColorStop(0,hueColor(api.target.hue+stain.hue,0.58*fade*releaseFade*api.params.pigment));
+        gradient.addColorStop(0.72,hueColor(api.target.hue+stain.hue+0.08,0.36*fade*releaseFade*api.params.pigment));
         gradient.addColorStop(1,hueColor(api.target.hue+stain.hue+0.16,0));
         ctx2d.fillStyle=gradient; ctx2d.fillRect(cx-radius,cy-radius,radius*2,radius*2);
       }
@@ -325,7 +334,7 @@
         var stain=stains[i];
         if (stain && now-stain.born<4000) {
           var age=(now-stain.born)/1000;
-          stainValues[i*4]=stain.x; stainValues[i*4+1]=1-stain.y; stainValues[i*4+2]=age; stainValues[i*4+3]=stain.hue;
+          stainValues[i*4]=stain.x; stainValues[i*4+1]=1-stain.y; stainValues[i*4+2]=age; stainValues[i*4+3]=stain.hue+(stain.releasedAt ? 1+(now-stain.releasedAt)/1000 : 0);
           active=true;
         } else {
           stains[i]=null; stainValues[i*4]=0; stainValues[i*4+1]=0; stainValues[i*4+2]=-1; stainValues[i*4+3]=0;
