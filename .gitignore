@@ -1,17 +1,20 @@
+# Artefatos de build (.NET)
 bin/
 obj/
+publish/
+
+# Estado local do Visual Studio
 .vs/
 *.user
+
+# Temporários de sistema e editores
 node_modules/
 .DS_Store
 Thumbs.db
+*.tmp
 *.bak
+*~
+
+# Cópias acidentais feitas no Explorer/OneDrive
 *- Copy*
 *- backup*
-*~
-*.tmp
-_arquivo-morto/
-_backup_*/
-src/
-Portfolio/wwwroot/
-!Portfolio/wwwroot/.gitkeep

@@ -1,0 +1,24 @@
+# Configuração compartilhada entre editores (Visual Studio, VS Code, etc.).
+# Os valores descrevem o estilo já usado pelo projeto; não reformata nada.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Máxima largura declarada: as regras de CSS e as linhas de JS do projeto são
+# densas por escolha. Um valor alto evita que formatadores quebrem o layout.
+max_line_length = 600
+
+[*.cs]
+indent_size = 4
+
+[*.{csproj,props,targets}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false

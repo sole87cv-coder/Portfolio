@@ -1,0 +1,24 @@
+ChickenScratch AOE — fonte dos títulos do portfólio
+===================================================
+
+Arquivo:  chickscratch-aoe.ttf
+Família:  ChickenScratch AOE, peso único (Regular)
+Autor:    Astigmatic (AOETI)
+Ano:      2006 — "Copyright (c) Astigmatic (AOETI), 2006", lido da própria
+          tabela de nomes do arquivo. O arquivo não traz texto de licença
+          legível, apenas o copyright.
+Uso aqui: hospedada localmente em Portfolio/wwwroot/fonts e declarada no
+          @font-face do css/style.css, aplicada na variável --display
+          (títulos dos cartões e nome do cabeçalho).
+Cobertura: testada para o português do Brasil — acentos á à â ã é ê í ó ô
+          õ ú ü ç e as formas maiúsculas existem como glifos próprios, além
+          de pontuação, aspas tipográficas e travessões.
+
+Situação de licença
+-------------------
+A inclusão deste arquivo no repositório foi autorizada pelo artista em
+outubro de 2026, que declarou dispor do direito de redistribuição. Antes de
+divulgar o portfólio em novo endereço, vale conferi a licença na página de
+origem do download (Astigmatic / AOETI) e guardar o comprovante junto deste
+arquivo. Se a licença exigir menção explícita, esta página serve como
+atribuição.

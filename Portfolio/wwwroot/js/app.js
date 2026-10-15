@@ -14,29 +14,45 @@
   var railContainer = railEl.parentNode;
   var appEl = document.getElementById("app");
   var mobileMenuSummary = mobileMenu.querySelector("summary");
+  var mobileMenuState = document.getElementById("mobile-menu-state");
+  var mobileTopicTabs = document.getElementById("mobile-topic-tabs");
+  var desktopTopicPanel = document.getElementById("desktop-topic-panel");
+  var topicFilter = document.getElementById("desktop-topic-filter");
   var brandEl = document.querySelector(".brand");
   var nativeDetails = "open" in document.createElement("details");
-  if (!nativeDetails) {
-    mobileMenu.classList.add("mobile-menu-fallback");
-    mobileMenuSummary.setAttribute("role", "button");
-    mobileMenuSummary.setAttribute("tabindex", "0");
-    mobileMenuSummary.setAttribute("aria-expanded", "false");
-  }
-  function isMobileMenuOpen() { return nativeDetails ? mobileMenu.open : mobileMenu.classList.contains("is-open"); }
-  function setMobileMenuOpen(open) {
-    if (nativeDetails) mobileMenu.open = open;
-    else {
-      mobileMenu.classList.toggle("is-open", open);
-      mobileMenuSummary.setAttribute("aria-expanded", String(open));
-    }
-  }
-  if (!nativeDetails) {
-    mobileMenuSummary.addEventListener("click", function (event) { event.preventDefault(); setMobileMenuOpen(!isMobileMenuOpen()); });
-    mobileMenuSummary.addEventListener("keydown", function (event) {
+  // Browsers without <details> get a scripted open property so CSS [open] rules and JS keep working.
+  function shimDetails(detailsEl, summaryEl) {
+    if (nativeDetails || !detailsEl || !summaryEl) return;
+    detailsEl.classList.add("fallback");
+    summaryEl.setAttribute("role", "button");
+    summaryEl.setAttribute("tabindex", "0");
+    summaryEl.setAttribute("aria-expanded", "false");
+    var toggle = function (value) {
+      detailsEl.classList.toggle("is-open", value);
+      if (value) detailsEl.setAttribute("open", "");
+      else detailsEl.removeAttribute("open");
+      summaryEl.setAttribute("aria-expanded", String(value));
+    };
+    try {
+      Object.defineProperty(detailsEl, "open", {
+        configurable: true,
+        get: function () { return detailsEl.classList.contains("is-open"); },
+        set: function (value) { toggle(!!value); }
+      });
+    } catch (_) {}
+    summaryEl.addEventListener("click", function (event) { event.preventDefault(); toggle(!detailsEl.classList.contains("is-open")); });
+    summaryEl.addEventListener("keydown", function (event) {
       if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault(); setMobileMenuOpen(!isMobileMenuOpen());
+      event.preventDefault();
+      toggle(!detailsEl.classList.contains("is-open"));
     });
   }
+  if (!nativeDetails) document.body.classList.add("no-details");
+  shimDetails(mobileMenu, mobileMenuSummary);
+  if (!nativeDetails) mobileMenu.classList.add("mobile-menu-fallback");
+  function isMobileMenuOpen() { return mobileMenu.open === undefined ? mobileMenu.hasAttribute("open") : !!mobileMenu.open; }
+  function setMobileMenuOpen(open) { mobileMenu.open = open; }
+  shimDetails(topicFilter, topicFilter.querySelector("summary"));
   var deferInitialSelection = false;
   function syncMobileMenu(isMobile) {
     if (isMobile) {
@@ -80,22 +96,27 @@
   var current = -1;
   var visible = [];
   var renderVersion = 0;
-  var categories = {
-    all: null,
-    works: ["works"],
-    workshop: ["workshop"],
-    research: ["research"],
-    collective: ["collective"],
-    interactive: ["interactive"],
-    apps: ["apps"],
-    education: ["education"],
-    profile: ["profile"],
-    info: ["info"]
-  };
+  var topics = [
+    { key: "all", label: "Tudo", cats: null },
+    { key: "works", label: "Trabalhos", cats: ["works"] },
+    { key: "research", label: "Pesquisa", cats: ["research"] },
+    { key: "collective", label: "Coletivos", cats: ["collective"] },
+    { key: "workshop", label: "Oficinas", cats: ["workshop"] },
+    { key: "interactive", label: "Interativos", cats: ["interactive"] },
+    { key: "apps", label: "Apps", cats: ["apps"] },
+    { key: "education", label: "Formação", cats: ["education"] },
+    { key: "profile", label: "Perfil", cats: ["profile", "info"] }
+  ];
+  var categories = {};
+  topics.forEach(function (topic) { categories[topic.key] = topic.cats; });
+  function topicByKey(key) {
+    for (var i = 0; i < topics.length; i++) if (topics[i].key === key) return topics[i];
+    return null;
+  }
   var timelineGroups = {
     featured: "Mestrado em destaque",
     research: "Pesquisa em andamento",
-    dated: "Cronologia · mais recente primeiro",
+    dated: "Cronologia",
     ongoing: "Atuação contínua",
     development: "Em desenvolvimento",
     experiments: "Experimentos e dispositivos",
@@ -103,26 +124,34 @@
     profile: "Perfil e links"
   };
   var knownIds = Object.create(null);
+  var knownCategories = Object.create(null);
+  topics.forEach(function (topic) {
+    (topic.cats || []).forEach(function (name) { knownCategories[name] = true; });
+  });
   projects.forEach(function (project) {
     if (knownIds[project.id]) console.error("ID de projeto repetido:", project.id);
     knownIds[project.id] = true;
-    if (!Object.prototype.hasOwnProperty.call(categories, project.category)) console.error("Categoria de projeto desconhecida:", project.id, project.category);
+    if (!knownCategories[project.category]) console.error("Categoria de projeto sem tema correspondente:", project.id, project.category);
   });
   projects.forEach(function (project) {
     if (!project.id || !project.title || !project.category) console.warn("Registro sem id, título ou categoria:", project);
     (project.jump || []).forEach(function (link) {
-      var target = link.target !== undefined ? link.target : link[1];
-      if (!target || !knownIds[target]) console.warn("Destino de navegação inválido:", project.id, link);
+      if (!link.target || !knownIds[link.target]) console.warn("Destino de navegação inválido:", project.id, link);
     });
     (project.links || []).forEach(function (link) {
-      var url = link.url !== undefined ? link.url : link[2];
-      if (!url || !/^(https?:|mailto:|tel:)/i.test(url)) console.warn("Link inválido:", project.id, link);
+      if (!link.url || !/^(https?:|mailto:|tel:)/i.test(link.url)) console.warn("Link inválido:", project.id, link);
     });
     (project.images || []).forEach(function (image) {
-      var src = image.src !== undefined ? image.src : image[0];
-      if (!src || /[\\/]/.test(src)) console.warn("Arquivo de imagem inválido:", project.id, image);
+      if (!image.src || /[\\/]/.test(image.src)) console.warn("Arquivo de imagem inválido:", project.id, image);
     });
   });
+  function validateMenuTargets() {
+    var refs = document.querySelectorAll("[data-project-id]");
+    for (var i = 0; i < refs.length; i++) {
+      var id = refs[i].getAttribute("data-project-id");
+      if (!knownIds[id]) console.error("Menu aponta para conteúdo inexistente:", id);
+    }
+  }
 
   function projectIndexById(id) {
     for (var i = 0; i < projects.length; i++) if (projects[i].id === id) return i;
@@ -135,8 +164,8 @@
     var q = searchEl.value.trim().toLocaleLowerCase("pt-BR");
     if (!q) return true;
     var text = [p.title, p.subtitle, p.text, p.when, p.kind, p.role, p.collaborators, p.location,
-      (p.tags || []).join(" "), (p.specs || []).map(function (pair) { return pair.label !== undefined ? pair.label + " " + pair.value : pair.join(" "); }).join(" "),
-      (p.links || []).map(function (link) { return Array.isArray(link) ? link.join(" ") : [link.label, link.text, link.url].join(" "); }).join(" ")]
+      (p.tags || []).join(" "), (p.specs || []).map(function (pair) { return pair.label + " " + pair.value; }).join(" "),
+      (p.links || []).map(function (link) { return [link.label, link.text, link.url].join(" "); }).join(" ")]
       .join(" ").toLocaleLowerCase("pt-BR");
     return text.indexOf(q) >= 0;
   }
@@ -169,19 +198,79 @@
     }
     return false;
   }
+  function visibleProjects() {
+    var onMobile = document.body.classList.contains("v-mobile");
+    var list = [];
+    projects.forEach(function (p) { if (!p.mobileOnly || onMobile) list.push(p); });
+    return list;
+  }
+  function topicCount(topic) {
+    var total = 0;
+    visibleProjects().forEach(function (p) {
+      if (topic.cats && topic.cats.indexOf(p.category) < 0) return;
+      total++;
+    });
+    return total;
+  }
+  function topicText(topic) { return topic.label + " (" + topicCount(topic) + ")"; }
+  function makeTopicButton(attribute, topic) {
+    var button = make("button", null, topicText(topic));
+    button.type = "button";
+    button.setAttribute(attribute, topic.key);
+    button.setAttribute("aria-pressed", topic.key === filterEl.value ? "true" : "false");
+    button.addEventListener("click", function () { chooseTopic(topic.key, attribute === "data-topic"); });
+    return button;
+  }
+  function buildTopicControls() {
+    mobileTopicTabs.textContent = "";
+    desktopTopicPanel.textContent = "";
+    filterEl.textContent = "";
+    topics.forEach(function (topic) {
+      mobileTopicTabs.appendChild(makeTopicButton("data-mobile-topic", topic));
+      desktopTopicPanel.appendChild(makeTopicButton("data-topic", topic));
+      var option = make("option", null, topicText(topic));
+      option.value = topic.key;
+      filterEl.appendChild(option);
+    });
+  }
+  function refreshTopicCounts() {
+    var chips = mobileTopicTabs.querySelectorAll("[data-mobile-topic]");
+    var panelButtons = desktopTopicPanel.querySelectorAll("[data-topic]");
+    for (var i = 0; i < topics.length; i++) {
+      var text = topicText(topics[i]);
+      if (chips[i]) chips[i].textContent = text;
+      if (panelButtons[i]) panelButtons[i].textContent = text;
+      if (filterEl.options[i]) filterEl.options[i].textContent = text;
+    }
+  }
+  function updateBrowseCount() {
+    var total = visibleProjects().length;
+    var hidden = projects.length - total;
+    var text = visible.length === total
+      ? total + (total === 1 ? " conteúdo" : " conteúdos")
+      : visible.length + " de " + total + " conteúdos";
+    var topic = topicByKey(filterEl.value);
+    if (topic && topic.key !== "all") text += " · " + topic.label;
+    var query = searchEl.value.trim();
+    if (query) text += " · busca: " + query;
+    if (hidden) text += " · " + hidden + (hidden === 1 ? " conteúdo só no celular" : " conteúdos só no celular");
+    countEl.textContent = text;
+  }
   function rebuildRail() {
+    var focused = document.activeElement && matchesSelector(document.activeElement, "li[data-project-index] .node")
+      ? document.activeElement.parentNode.getAttribute("data-project-index") : null;
     visible = [];
     railEl.textContent = "";
-    var activeGroup = null;
+    var emittedGroups = {};
     projects.forEach(function (p, i) {
       if (!matches(p)) return;
       var group = p.timelineGroup || "undated";
-      if (group !== activeGroup) {
+      if (!emittedGroups[group]) {
+        emittedGroups[group] = true;
         var heading = make("li", "rail-section");
         heading.setAttribute("role", "presentation");
         heading.appendChild(make("h2", null, timelineGroups[group] || timelineGroups.undated));
         railEl.appendChild(heading);
-        activeGroup = group;
       }
       visible.push(i);
       var li = make("li", [p.sub ? "sub" : "", p.featured ? "featured" : ""].filter(Boolean).join(" "));
@@ -197,11 +286,16 @@
       li.appendChild(btn);
       railEl.appendChild(li);
     });
-    countEl.textContent = visible.length + (visible.length === 1 ? " item" : " itens");
+    updateBrowseCount();
     if (current >= 0 && visible.indexOf(current) < 0) current = -1;
-    if (visible.length && current < 0 && !deferInitialSelection) go(visible[0], true, true);
+    if (visible.length && current < 0 && !deferInitialSelection) go(visible[0], true, false);
     if (!visible.length) showEmpty();
     else updateRailState();
+    if (focused !== null) {
+      var restored = railEl.querySelector('li[data-project-index="' + focused + '"] .node');
+      if (restored) restored.focus();
+    }
+    updateDesktopNavigation();
   }
   function updateRailState() {
     var items = railEl.querySelectorAll("li[data-project-index]");
@@ -216,13 +310,10 @@
     if (!links || !links.length) return;
     var list = make("ul", "links");
     links.forEach(function (link) {
-      var label = link.label !== undefined ? link.label : link[0];
-      var value = link.text !== undefined ? link.text : link[1];
-      var url = link.url !== undefined ? link.url : link[2];
-      var copyEnabled = link.copy === true || link[3] === "copy";
-      if ((link.type === "group") || (Array.isArray(link) && link.length === 2)) {
-        var group = make("li", "group"); group.appendChild(make("h3", null, link.title || value)); list.appendChild(group); return;
-      }
+      var label = link.label;
+      var value = link.text;
+      var url = link.url;
+      var copyEnabled = link.copy === true;
       if (!url || !/^(https?:|mailto:|tel:)/i.test(url)) return;
       var li = make("li");
       var a = document.createElement("a");
@@ -264,9 +355,9 @@
     if (!images || !images.length) return;
     var gallery = make("ul", "gallery");
     images.forEach(function (item) {
-      var filename = item.src !== undefined ? item.src : item[0];
-      var caption = item.caption !== undefined ? item.caption : (item[1] !== undefined ? item[1] : projectTitle);
-      var alt = (item.alt !== undefined ? item.alt : item[2]) || caption || projectTitle;
+      var filename = item.src;
+      var caption = item.caption === undefined ? projectTitle : item.caption;
+      var alt = item.alt || caption || projectTitle;
       if (!filename || /[\\/]/.test(filename)) return;
       var li = make("li"), button = make("button", "thumb"), picture = document.createElement("picture");
       button.type = "button"; button.setAttribute("aria-label", "Ampliar imagem: " + alt);
@@ -285,7 +376,7 @@
       if (item.width && item.height) { img.width = item.width; img.height = item.height; }
       img.addEventListener("error", function () { li.classList.add("image-unavailable"); button.disabled = true; });
       picture.appendChild(img); button.appendChild(picture); li.appendChild(button);
-      if (caption) li.appendChild(make("span", "cap", caption));
+      if (caption) li.appendChild(make("span", "cap", item.credit ? caption + " · Crédito: " + item.credit : caption));
       gallery.appendChild(li);
     });
     card.appendChild(gallery);
@@ -312,23 +403,21 @@
     if (p.status) meta.push(["Estado", p.status]);
     if (meta.length) {
       var details = make("dl", "project-meta");
-      meta.forEach(function (pair) { appendChildren(details, make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });
+      meta.forEach(function (pair) { appendChildren(details, make("dt", null, pair[0]), make("dd", null, pair[1])); });
       card.appendChild(details);
     }
     if (p.specs && p.specs.length) {
       var specs = make("dl", "specs");
-      p.specs.forEach(function (pair) { appendChildren(specs, make("dt", null, pair.label !== undefined ? pair.label : pair[0]), make("dd", null, pair.value !== undefined ? pair.value : pair[1])); });
+      p.specs.forEach(function (pair) { appendChildren(specs, make("dt", null, pair.label), make("dd", null, pair.value)); });
       card.appendChild(specs);
     }
     addLinks(card, p.links);
     addImages(card, p.images, p.title);
     var actions = make("div", "actions");
     (p.jump || []).forEach(function (item) {
-      var targetId = item.target !== undefined ? item.target : item[1];
-      var label = item.label !== undefined ? item.label : item[0];
-      if (projectIndexById(targetId) < 0) return;
-      var jump = make("button", "btn ghost", label); jump.type = "button";
-      jump.addEventListener("click", function () { goToId(targetId); }); actions.appendChild(jump);
+      if (projectIndexById(item.target) < 0) return;
+      var jump = make("button", "btn ghost", item.label); jump.type = "button";
+      jump.addEventListener("click", function () { goToId(item.target); }); actions.appendChild(jump);
     });
     var pulse = make("button", "btn", "Pulso visual"); pulse.type = "button";
     pulse.setAttribute("aria-label", "Criar um pulso visual no ambiente");
@@ -361,7 +450,7 @@
       try { active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" }); }
       catch (_) { active.scrollIntoView(false); }
     }
-    var effectMode = effectEl.value === "auto" ? (p.mode || 0) : parseInt(effectEl.value, 10);
+    var effectMode = effectEl.value === "auto" ? (isFinite(p.mode) ? p.mode : 1) : parseInt(effectEl.value, 10);
     shader.setTarget(isFinite(effectMode) ? effectMode : 1, p.hue || 0); shader.pulse();
     var version = ++renderVersion;
     var old = stageEl.firstElementChild;
@@ -384,8 +473,8 @@
     var hash = location.hash;
     if (hash === lastObservedHash) return true;
     lastObservedHash = hash;
-    if (window.innerWidth >= 1100 && hash === "#servicos") return showDesktopPage("services", true);
-    if (window.innerWidth >= 1100 && hash === "#pesquisa-arte-interativa") return showDesktopPage("research", true);
+    if (hash === "#servicos") return showDesktopPage("services", true);
+    if (hash === "#pesquisa") return showDesktopPage("research", true);
     var index = projectIndexById(hash.slice(1));
     if (index < 0) {
       if (hash) {
@@ -414,44 +503,68 @@
     for (var mobileTopicIndex = 0; mobileTopicIndex < mobileTopicButtons.length; mobileTopicIndex++) {
       mobileTopicButtons[mobileTopicIndex].setAttribute("aria-pressed", String(mobileTopicButtons[mobileTopicIndex].getAttribute("data-mobile-topic") === filterEl.value));
     }
+    syncMobileMenuState();
     if (current >= 0) {
       var selectedHash = "#" + projects[current].id;
       if (location.hash !== selectedHash) history.replaceState({ projectId: projects[current].id }, "", selectedHash);
       lastObservedHash = selectedHash;
-    } else {
+    } else if (desktopPage) {
+      var editorialHash = "#" + (desktopPage === "services" ? "servicos" : "pesquisa");
+      if (location.hash !== editorialHash) history.replaceState({ editorialPage: desktopPage }, "", editorialHash);
+      lastObservedHash = editorialHash;
+    } else if (location.hash) {
       history.replaceState(null, "", location.pathname + location.search);
       lastObservedHash = "";
     }
   }
+  function syncMobileMenuState() {
+    if (!mobileMenuState) return;
+    var topic = topicByKey(filterEl.value);
+    var query = searchEl.value.trim();
+    mobileMenuState.textContent = topic && topic.key !== "all" ? " · " + topic.label : (query ? " · busca" : "");
+  }
   function updateDesktopNavigation() {
-    var active = desktopPage === "services" ? "services" : (desktopPage === "research" ? "research" : "");
+    var active = desktopPage === "services" ? "services"
+      : (desktopPage === "research" ? "research"
+      : (current >= 0 && projects[current] ? "projects" : ""));
     var links = document.querySelectorAll(".desktop-nav [data-desktop-section]");
     for (var i = 0; i < links.length; i++) {
       if (links[i].getAttribute("data-desktop-section") === active) links[i].setAttribute("aria-current", "page");
       else links[i].removeAttribute("aria-current");
+    }
+    var activeId = current >= 0 && projects[current] ? projects[current].id : null;
+    var refs = document.querySelectorAll("[data-project-id], [data-editorial-page]");
+    for (var r = 0; r < refs.length; r++) {
+      var projectId = refs[r].getAttribute("data-project-id");
+      var editorial = refs[r].getAttribute("data-editorial-page");
+      if ((projectId && projectId === activeId) || (editorial && editorial === desktopPage)) refs[r].setAttribute("aria-current", "page");
+      else refs[r].removeAttribute("aria-current");
     }
   }
   function renderDesktopEditorial(key) {
     var card = make("article", "card desktop-editorial-card");
     card.setAttribute("aria-labelledby", "desktop-editorial-title");
     if (key === "research") {
+      var research = projects[projectIndexById("pesquisa-arte-interativa")];
+      var experimentRecord = projects[projectIndexById("v1su4rt")];
+      if (!research || !experimentRecord) return card;
       appendChildren(card,
-        make("p", "eyebrow", "Pesquisa · em andamento"),
-        make("h1", null, "Arte interativa"),
-        make("p", "subtitle", "Descolonização da linguagem artística e sensível por meio de linguagens tecnológicas"),
-        make("p", "text", "Pesquiso outras formas de perceber o mundo por meio de uma comunicação sensível."));
+        make("p", "eyebrow", research.kind),
+        make("h1", null, research.title),
+        make("p", "subtitle", research.subtitle),
+        make("p", "text", research.text));
       card.querySelector("h1").id = "desktop-editorial-title";
       card.appendChild(make("p", "research-status", "Esta pesquisa está em andamento. Os registros visuais serão incluídos quando estiverem prontos."));
       var experiment = make("section", "research-experiment");
       experiment.setAttribute("aria-labelledby", "research-experiment-title");
-      experiment.appendChild(make("p", "eyebrow", "Experimento audiovisual interativo · 2026"));
-      var experimentTitle = make("h2", null, "v1su4rt · ESF-01");
+      experiment.appendChild(make("p", "eyebrow", [experimentRecord.kind, experimentRecord.when].join(" · ")));
+      var experimentTitle = make("h2", null, experimentRecord.title);
       experimentTitle.id = "research-experiment-title";
       experiment.appendChild(experimentTitle);
-      experiment.appendChild(make("p", "text", "Experimento audiovisual para navegador, feito com shaders GLSL ES 1.0 e animação generativa. Toques, arrastos ou cliques criam manchas de pigmento sobre uma imagem em tons de cinza. Elas se expandem e depois se dissolvem."));
+      experiment.appendChild(make("p", "text", experimentRecord.text));
       var experimentLink = make("button", "btn ghost", "Ver registro do experimento");
       experimentLink.type = "button";
-      experimentLink.addEventListener("click", function () { goToId("v1su4rt"); });
+      experimentLink.addEventListener("click", function () { goToId(experimentRecord.id); });
       experiment.appendChild(experimentLink);
       card.appendChild(experiment);
       return card;
@@ -462,22 +575,16 @@
       make("p", "subtitle", "Atuação em projetos artísticos e culturais."),
       make("p", "text", "Entre em contato para conversar sobre o projeto, seu contexto e os próximos passos."));
     card.querySelector("h1").id = "desktop-editorial-title";
-    var services = [
-      ["artista-visual", "Artista visual"],
-      ["iluminador", "Iluminador"],
-      ["cenografo", "Cenógrafo"],
-      ["videomaker", "Videomaker"],
-      ["fotografo", "Fotógrafo"]
-    ];
+    var list = window.SERVICES || [];
     var grid = make("div", "service-grid");
     grid.setAttribute("aria-label", "Serviços oferecidos");
-    services.forEach(function (service) {
+    for (var s = 0; s < list.length; s++) {
       var item = make("section", "service-item");
-      item.id = "service-" + service[0];
-      item.appendChild(make("h2", null, service[1]));
+      item.id = "service-" + list[s].id;
+      item.appendChild(make("h2", null, list[s].label));
       item.appendChild(make("p", null, "Conte um pouco sobre o projeto e o que você precisa nesta área."));
       grid.appendChild(item);
-    });
+    }
     card.appendChild(grid);
     var action = make("div", "actions");
     var contact = make("button", "btn", "Conversar sobre um projeto");
@@ -488,8 +595,7 @@
     return card;
   }
   function showDesktopPage(key, fromHistory) {
-    var mobileServices = key === "services" && window.innerWidth <= 699;
-    if ((window.innerWidth < 1100 && !mobileServices) || ["services", "research"].indexOf(key) < 0) return false;
+    if (["services", "research"].indexOf(key) < 0) return false;
     desktopPage = key;
     current = -1;
     updateRailState();
@@ -499,8 +605,8 @@
     updateDesktopNavigation();
     closeDesktopMenus();
     if (!fromHistory) {
-      var hash = key === "services" ? "#servicos" : "#pesquisa-arte-interativa";
-      if (location.hash !== hash) history.pushState({ editorialPage: key }, "", hash);
+      var editorialHash = key === "services" ? "#servicos" : "#pesquisa";
+      if (location.hash !== editorialHash) history.pushState({ editorialPage: key }, "", editorialHash);
       lastObservedHash = location.hash;
     }
     return true;
@@ -531,6 +637,36 @@
     if (open && source) menu.setAttribute("data-open-source", source);
     if (!open) menu.removeAttribute("data-open-source");
   }
+  function buildDesktopMenus() {
+    var projectsPanel = document.getElementById("desktop-projects-panel");
+    if (projectsPanel) {
+      projectsPanel.textContent = "";
+      var all = make("button", "desktop-menu-link", "Ver cronologia completa");
+      all.type = "button";
+      all.setAttribute("data-desktop-action", "all-projects");
+      var divider = make("span", "desktop-menu-divider");
+      divider.setAttribute("role", "presentation");
+      appendChildren(projectsPanel, all, divider);
+      projects.forEach(function (p) {
+        if (!p.menu) return;
+        var item = make("button", "desktop-menu-link", p.title);
+        item.type = "button";
+        item.setAttribute("data-project-id", p.id);
+        projectsPanel.appendChild(item);
+      });
+    }
+    var servicesPanel = document.getElementById("desktop-services-panel");
+    if (servicesPanel) {
+      servicesPanel.textContent = "";
+      (window.SERVICES || []).forEach(function (service) {
+        var item = make("button", "desktop-menu-link", service.label);
+        item.type = "button";
+        item.setAttribute("data-service-target", service.id);
+        servicesPanel.appendChild(item);
+      });
+    }
+  }
+  buildDesktopMenus();
   var desktopMenus = document.querySelectorAll("[data-desktop-menu]");
   for (var dm = 0; dm < desktopMenus.length; dm++) (function (menu) {
     var trigger = menu.querySelector(".desktop-nav-trigger");
@@ -567,10 +703,11 @@
         var projectId = target.getAttribute("data-project-id");
         if (projectId) { goToId(projectId); closeDesktopMenus(); return; }
         var editorial = target.getAttribute("data-editorial-page");
-        if (editorial === "pesquisa-interativa") { showDesktopPage("research", false); return; }
+        if (editorial) { showDesktopPage(editorial, false); return; }
         var serviceTarget = target.getAttribute("data-service-target");
         if (serviceTarget) {
           showDesktopPage("services", false);
+          closeDesktopMenus();
           window.setTimeout(function () {
             var section = document.getElementById("service-" + serviceTarget);
             if (section) section.scrollIntoView({ block: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" });
@@ -598,41 +735,40 @@
     setDesktopMenuOpen(openMenu, false);
     if (trigger) trigger.focus();
   });
-  var topicFilter = document.getElementById("desktop-topic-filter");
-  var topicButtons = topicFilter.querySelectorAll("[data-topic]");
-  for (var tb = 0; tb < topicButtons.length; tb++) topicButtons[tb].addEventListener("click", function () {
-    filterEl.value = this.getAttribute("data-topic");
+  function chooseTopic(key, fromDesktopPanel) {
+    filterEl.value = key;
     searchEl.value = "";
     rebuildFromControls();
-    for (var i = 0; i < topicButtons.length; i++) topicButtons[i].setAttribute("aria-pressed", String(topicButtons[i] === this));
-    topicFilter.open = false;
-    topicFilter.querySelector("summary").focus();
-  });
-  var mobileTopicTabs = document.getElementById("mobile-topic-tabs");
-  var mobileTopicButtons = mobileTopicTabs.querySelectorAll("[data-mobile-topic]");
-  function selectMobileTopic(button) {
-    if (!button) return;
-    filterEl.value = button.getAttribute("data-mobile-topic");
-    searchEl.value = "";
-    rebuildFromControls();
-    if (button.scrollIntoView) {
-      try { button.scrollIntoView({ block: "nearest", inline: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" }); }
-      catch (_) { button.scrollIntoView(false); }
+    if (fromDesktopPanel) {
+      topicFilter.open = false;
+      topicFilter.querySelector("summary").focus();
+      return;
     }
+    var chip = mobileTopicTabs.querySelector('[data-mobile-topic="' + key + '"]');
+    if (chip && chip.scrollIntoView) {
+      try { chip.scrollIntoView({ block: "nearest", inline: "nearest", behavior: wantsReducedMotion() ? "auto" : "smooth" }); }
+      catch (_) { chip.scrollIntoView(false); }
+    }
+    var firstResult = railEl.querySelector("li[data-project-index] .node");
+    if (firstResult && isMobileMenuOpen()) firstResult.focus();
   }
-  for (var mobileTopicIndex = 0; mobileTopicIndex < mobileTopicButtons.length; mobileTopicIndex++) mobileTopicButtons[mobileTopicIndex].addEventListener("click", function () {
-    selectMobileTopic(this);
-  });
+  buildTopicControls();
+  validateMenuTargets();
   filterEl.addEventListener("change", rebuildFromControls);
-  searchEl.addEventListener("input", rebuildFromControls);
+  var searchTimer = 0;
+  searchEl.addEventListener("input", function () {
+    if (searchTimer) window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(function () { searchTimer = 0; rebuildFromControls(); }, 140);
+  });
   window.addEventListener("popstate", readHash);
   window.addEventListener("hashchange", readHash);
   window.addEventListener("keydown", function (event) {
     var tag = event.target && event.target.tagName;
     if (event.key === "Escape" && isMobileMenuOpen()) { setMobileMenuOpen(false); mobileMenuSummary.focus(); return; }
+    if (event.key === "Escape" && controls.open) { closeControls(); controlsSummary.focus(); return; }
     if (event.key === "Escape" && document.body.classList.contains("bare")) { restoreInterface(); return; }
     if (document.getElementById("lb").open) return;
-    if (["INPUT", "TEXTAREA", "SELECT", "BUTTON"].indexOf(tag) >= 0) return;
+    if (["INPUT", "TEXTAREA", "SELECT"].indexOf(tag) >= 0) return;
     if (event.key === "ArrowDown" || event.key === "ArrowRight") {
       var pos = visible.indexOf(current); if (pos < visible.length - 1) go(visible[pos + 1]); event.preventDefault();
     }
@@ -705,6 +841,10 @@
   outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); pair[0].addEventListener("input", syncVisualSliders); });
   document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });
   var paintPointer = null, lastPaintX = 0, lastPaintY = 0;
+  function paintStepReached(dx, dy) {
+    var reference = Math.max(12, Math.min(window.innerWidth, window.innerHeight) * 0.022);
+    return dx * dx + dy * dy >= reference * reference;
+  }
   function addTouchStain(x, y, target) {
     if (isControlTarget(target)) return false;
     var activeCanvas = document.getElementById("gl");
@@ -713,7 +853,9 @@
     if (!bounds.width || !bounds.height) return false;
     var relativeX = (x - bounds.left) / bounds.width, relativeY = (y - bounds.top) / bounds.height;
     if (relativeX < 0 || relativeX > 1 || relativeY < 0 || relativeY > 1) return false;
-    shader.addStain(relativeX, relativeY);
+    var reference = Math.max(1, Math.min(bounds.width, bounds.height));
+    var start = !paintPointer;
+    shader.addStain(relativeX, relativeY, start ? 0 : (x - lastPaintX) / reference, start ? 0 : (y - lastPaintY) / reference);
     lastPaintX = x; lastPaintY = y;
     return true;
   }
@@ -730,7 +872,7 @@
     document.addEventListener("pointermove", function (event) {
       if (!paintPointer || paintPointer.id !== event.pointerId || !event.isPrimary) return;
       var dx = event.clientX - lastPaintX, dy = event.clientY - lastPaintY;
-      if (dx * dx + dy * dy >= 256) addTouchStain(event.clientX, event.clientY, event.target);
+      if (paintStepReached(dx, dy)) addTouchStain(event.clientX, event.clientY, event.target);
     }, { passive: true });
     document.addEventListener("pointerup", function (event) { releasePaintPointer(event.pointerId); }, { passive: true });
     document.addEventListener("pointercancel", function (event) { releasePaintPointer(event.pointerId); }, { passive: true });
@@ -747,7 +889,7 @@
     appEl.addEventListener("touchmove", function (event) {
       if (!paintPointer || paintPointer.id !== "touch" || !event.touches || event.touches.length !== 1) return;
       var touch = event.touches[0], dx = touch.clientX - lastPaintX, dy = touch.clientY - lastPaintY;
-      if (dx * dx + dy * dy >= 256) addTouchStain(touch.clientX, touch.clientY, event.target);
+      if (paintStepReached(dx, dy)) addTouchStain(touch.clientX, touch.clientY, event.target);
     }, { passive: true });
     appEl.addEventListener("touchend", function () { releasePaintPointer("touch"); }, { passive: true });
     appEl.addEventListener("touchcancel", function () { releasePaintPointer("touch"); }, { passive: true });
@@ -759,32 +901,95 @@
     document.addEventListener("mousemove", function (event) {
       if (!paintPointer || paintPointer.id !== "mouse" || !(event.buttons & 1)) return;
       var dx = event.clientX - lastPaintX, dy = event.clientY - lastPaintY;
-      if (dx * dx + dy * dy >= 256) addTouchStain(event.clientX, event.clientY, event.target);
+      if (paintStepReached(dx, dy)) addTouchStain(event.clientX, event.clientY, event.target);
     }, { passive: true });
     document.addEventListener("mouseup", function () { releasePaintPointer("mouse"); }, { passive: true });
     document.addEventListener("mousedown", function () { lastInputMethod = "pointer"; }, true);
   }
   window.addEventListener("blur", function () { if (paintPointer) releasePaintPointer(paintPointer.id); });
-  var defaults = { speed: shader.params.speed, warp: 0.6, pigment: 1 };
+  var defaults = shader.defaults || { speed: shader.params.speed, warp: 0.6, pigment: 1 };
   document.getElementById("c-reset").addEventListener("click", function () {
     speed.value = defaults.speed; warp.value = defaults.warp; pigment.value = defaults.pigment;
     syncVisualSliders(); shader.clearStains();
   });
   var bareButton = document.getElementById("c-bare");
-  function restoreInterface() {
-    document.body.classList.remove("bare"); bareButton.setAttribute("aria-pressed", "false"); bareButton.textContent = "Modo ambiente";
+  var controls = document.getElementById("controls");
+  var controlsSummary = controls.querySelector("summary");
+  shimDetails(controls, controlsSummary);
+  var ambientHint = document.getElementById("ambient-hint");
+  var chromeTimer = 0;
+  function withinControls(element) { return !!(element && element !== document && controls.contains(element)); }
+  function closeControls() {
+    if (!controls.open) return;
+    if (withinControls(document.activeElement)) controlsSummary.focus();
+    controls.open = false;
+  }
+  function bumpChrome() {
+    document.body.classList.remove("chrome-dim");
+    if (chromeTimer) window.clearTimeout(chromeTimer);
+    chromeTimer = window.setTimeout(function () {
+      chromeTimer = 0;
+      closeControls();
+      if (document.body.classList.contains("bare")) document.body.classList.add("chrome-dim");
+    }, document.body.classList.contains("bare") ? 4200 : 9000);
+  }
+  controls.addEventListener("input", bumpChrome);
+  controls.addEventListener("toggle", function () { if (controls.open) bumpChrome(); });
+  ["pointermove", "wheel", "keydown", "touchstart"].forEach(function (type) { document.addEventListener(type, bumpChrome, { passive: true }); });
+  document.addEventListener("pointerdown", function (event) {
+    if (controls.open && !withinControls(event.target)) closeControls();
+  }, true);
+  function setInterfaceMode(on) {
+    document.body.classList.toggle("bare", on);
+    bareButton.setAttribute("aria-pressed", String(on));
+    bareButton.textContent = on ? "Mostrar portfólio" : "Modo ambiente";
+    ambientHint.classList.toggle("is-shown", on);
+    // No celular os ajustes vivem dentro do <details> do menu, fechado em modo ambiente; eles voltam ao cabeçalho para permanecerem alcançáveis.
+    syncMobileMenu(on ? false : window.innerWidth <= 699);
+    bumpChrome();
+    if (on) return;
     if (window.innerWidth <= 699) { setMobileMenuOpen(true); mobileMenuSummary.focus(); }
     else bareButton.focus();
   }
-  bareButton.addEventListener("click", function () {
-    var on = document.body.classList.toggle("bare"); bareButton.setAttribute("aria-pressed", String(on)); bareButton.textContent = on ? "Mostrar portfólio" : "Modo ambiente";
-    if (on && window.innerWidth <= 699) { setMobileMenuOpen(false); mobileMenuSummary.focus(); }
-  });
+  function restoreInterface() { setInterfaceMode(false); }
+  function toggleBare() { setInterfaceMode(!document.body.classList.contains("bare")); }
+  bareButton.addEventListener("click", toggleBare);
   effectEl.addEventListener("change", function () {
     if (current < 0) return;
     var project = projects[current];
-    var mode = effectEl.value === "auto" ? (project.mode || 0) : parseInt(effectEl.value, 10);
+    var mode = effectEl.value === "auto" ? (isFinite(project.mode) ? project.mode : 1) : parseInt(effectEl.value, 10);
     shader.setTarget(isFinite(mode) ? mode : 1, project.hue || 0); shader.pulse();
+  });
+  function fireControlChange(element) {
+    try { element.dispatchEvent(new window.Event("change", { bubbles: true })); }
+    catch (_) {
+      var legacy = document.createEvent("HTMLEvents");
+      legacy.initEvent("change", true, false);
+      element.dispatchEvent(legacy);
+    }
+  }
+  document.addEventListener("keydown", function (event) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    var target = event.target, tag = target && target.tagName;
+    if (["INPUT", "TEXTAREA", "SELECT"].indexOf(tag) >= 0 || (target && target.isContentEditable)) return;
+    if (document.getElementById("lb").open) return;
+    var key = (event.key || "").toLowerCase();
+    if (key === "a") { event.preventDefault(); toggleBare(); return; }
+    if (key === "c") {
+      event.preventDefault();
+      if (controls.open) closeControls();
+      else { controls.open = true; controlsSummary.focus(); bumpChrome(); }
+      return;
+    }
+    if (key === "x") { event.preventDefault(); shader.clearStains(); return; }
+    if (key === "0") { event.preventDefault(); effectEl.value = "auto"; fireControlChange(effectEl); return; }
+    if (key >= "1" && key <= "5") {
+      var option = effectEl.options[Number(key)];
+      if (!option) return;
+      event.preventDefault();
+      effectEl.value = option.value;
+      fireControlChange(effectEl);
+    }
   });
 
   var dialog = document.getElementById("lb"), dialogImage = dialog.querySelector("img"), dialogCaption = dialog.querySelector("p");
@@ -817,14 +1022,16 @@
   document.getElementById("nav-bio").addEventListener("click", function () { goToId("bio"); });
   document.getElementById("nav-contact").addEventListener("click", function () { goToId("contato"); });
   document.getElementById("nav-services").addEventListener("click", function () { showDesktopPage("services", false); });
-  document.getElementById("nav-work").addEventListener("click", function () {
-    filterEl.value = "works"; searchEl.value = ""; rebuildRail();
-    var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);
-  });
-  document.getElementById("nav-apps").addEventListener("click", function () {
-    filterEl.value = "apps"; searchEl.value = ""; rebuildRail();
-    var featured = visible.length ? visible[0] : -1; if (featured >= 0) go(featured, false, true);
-  });
+  function showTopicFromNav(key) {
+    filterEl.value = key;
+    searchEl.value = "";
+    current = -1;
+    rebuildFromControls();
+    if (current >= 0) go(current, false, true);
+    closeDesktopMenus();
+  }
+  document.getElementById("nav-work").addEventListener("click", function () { showTopicFromNav("works"); });
+  document.getElementById("nav-apps").addEventListener("click", function () { showTopicFromNav("apps"); });
   var lastInputMethod = "pointer", lastLogoFocusSound = 0;
   document.addEventListener("keydown", function (event) {
     if (event.key === "Tab" || event.key.indexOf("Arrow") === 0 || event.key === "Enter" || event.key === " ") lastInputMethod = "keyboard";
@@ -850,17 +1057,12 @@
     var chosen = mode === "auto" ? (width < 700 ? "mobile" : (width < 1100 ? "tablet" : "desktop")) : mode;
     document.body.classList.remove("v-desktop", "v-tablet", "v-mobile", "framed"); document.body.classList.add("v-" + chosen);
     if (mode !== "auto" && ((chosen === "mobile" && width > 460) || (chosen === "tablet" && width > 860))) document.body.classList.add("framed");
-    syncMobileMenu(width <= 699);
-    if (width < 1100 && desktopPage) {
-      desktopPage = null;
-      history.replaceState(null, "", location.pathname + location.search);
-      lastObservedHash = "";
-      goToId("bio");
-    }
+    syncMobileMenu(width <= 699 && !document.body.classList.contains("bare"));
     if (!document.body.classList.contains("v-mobile") && current >= 0 && projects[current].mobileOnly) {
       filterEl.value = "all"; searchEl.value = ""; current = -1;
-      rebuildRail();
+      rebuildFromControls();
     }
+    refreshTopicCounts();
   }
   view.addEventListener("change", applyView); window.addEventListener("resize", applyView); applyView();
 
@@ -872,6 +1074,7 @@
   deferInitialSelection = true;
   rebuildRail();
   deferInitialSelection = false;
+  syncMobileMenuState();
   if (initialHash) { lastObservedHash = null; readHash(); }
   else if (mobileHome >= 0) go(mobileHome, true, true);
   else if (visible.length) go(visible[0]);

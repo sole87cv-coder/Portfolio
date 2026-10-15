@@ -1,33 +1,481 @@
-LISTA DE CORREÇÕES MANUAIS DE TEXTO
+GUIA DE MANUTENÇÃO DO PORTFÓLIO · P0rtaS0le
+Arquivo de trabalho do artista. Este documento não é publicado no site.
+Versão: outubro de 2026.
 
-Como usar
-Preencha “Texto corrigido” com a redação desejada. Depois, substitua manualmente o texto atual no arquivo e local indicados. Este documento serve como lista de trabalho e não altera os textos do site.
+
+====================================================================
+0. COMO LER ESTE GUIA
+====================================================================
+
+O site foi feito para que quase toda mudança de conteúdo aconteça em
+UM arquivo só: Portfolio/wwwroot/js/projects.js. As outras partes
+(aparência, comportamento, fundo generativo) são código e devem ser
+tocadas apenas quando você quiser mudar a forma, não o texto.
+
+Regra de ouro, na ordem:
+  1. Mudou TEXTO, ficha, link, imagem ou serviço?  -> js/projects.js
+  2. Mudou COR, TIPO DE LETRA, TAMANHO, ESPAÇO?    -> css/style.css
+  3. Mudou MENU, TEMA, AGRUPAMENTO, ORDEM?         -> js/app.js
+  4. Mudou o FUNDO GENERATIVO?                     -> js/shader.js
+  5. Nunca escreva o mesmo texto em dois lugares.
+
+
+====================================================================
+1. ONDE MORA CADA COISA
+====================================================================
+
+Portfolio/wwwroot/ ............ única cópia do site. Não existe segunda
+                                versão na raiz do repositório; não há
+                                nada para "sincronizar à mão".
+
+  index.html .................. estrutura da página, botões do cabeçalho,
+                                rótulos fixos e o bloco de texto que aparece
+                                para quem está SEM JavaScript (veja §8).
+
+  css/style.css ............... cores, espaçamentos, responsivo e
+                                TIPOGRAFIA (§10).
+
+  js/projects.js .............. TODO o conteúdo editorial: os 19 registros,
+                                as legendas, as fichas, os links, as
+                                imagens e a lista de serviços
+                                (window.SERVICES, no fim do arquivo).
+
+  js/app.js ................... comportamento: busca, temas, menus,
+                                cronologia, cartões, luz ampliada. Também
+                                guarda os RÓTULDOS dos menus (§6).
+
+  js/shader.js ................ fundo generativo (fumaça, analógico,
+                                orgânico, fluxo, malha) e o fallback Canvas2D.
+
+  js/audio.js ................. sons 8-bit dos logotipos S0LE e v1su4rt.
+
+  img/ ........................ originais (JPG de foto, PNG de logotipo).
+  img/responsive/ ............. variantes WebP menores (§9).
+  fonts/ ...................... fonte dos títulos, hospedada localmente (§10).
+
+Fora do wwwroot:
+  Portfolio/Program.cs, Portfolio/Portfolio.csproj ... servidor local ASP.NET.
+  dev-serve.ps1 ....................................... atalho para subir o servidor.
+
+
+====================================================================
+2. ANTES DE MEXER EM QUALQUER COISA
+====================================================================
+
+1) Cópia de segurança. Se o projeto está no GitHub, crie um ramo
+   (branch) novo ou, no mínimo, confirme que não há mudanças pendentes:
+   faça commit do estado atual antes de editar.
+
+2) Suba o servidor local e deixe essa janela aberta:
+   .\dev-serve.ps1      e abra   http://localhost:5173
+   Alternativa sem .NET: dentro de Portfolio/wwwroot, execute
+   python -m http.server 8123   e abra   http://127.0.0.1:8123/index.html
+
+3) Abra o console do navegador (F12 > Console) e deixe visível. O site
+   AVISA sozinho quando algo fica inconsistente:
+     "ID de projeto repetido: ..."
+     "Categoria de projeto sem tema correspondente: ..."
+     "Destino de navegação inválido: ..."
+     "Link inválido: ..."
+     "Arquivo de imagem inválido: ..."
+     "Menu aponta para conteúdo inexistente: ..."
+   Console limpo = estrutura ok. Console com aviso vermelho = pare e corrija
+   antes de continuar.
+
+
+====================================================================
+3. MUDAR UM TEXTO · PASSO A PASSO
+====================================================================
+
+Exemplo real: trocar o parágrafo da apresentação (bio).
+
+1) Abra js/projects.js no Bloco de Notas, no VS Code ou no editor que usar.
+2) Procure (Ctrl+L ou Ctrl+F) pela linha:   "id": "bio",
+3) Alguns passos abaixo está o campo:       "text": "Artista audiovisual e ..."
+4) Troque somente o que fica ENTRE as aspas. Mantenha a vírgula no fim da linha.
+5) Salve o arquivo, volte ao navegador e recarregue (F5).
+6) Confirme no console que não apareceu aviso.
+
+É isso. O menu, a busca, a cronologia, o tema do fundo e a URL (#bio) se
+ajustam sozinhos a partir desse registro. Você não precisa editar o HTML
+nem o app.js para mudar texto.
+
+Como encontrar o texto certo quando não sabe o registro:
+  - pesquise no projects.js um pedaço EXATO da frase que está na tela;
+  - se a frase não estiver no projects.js, ela é fixa: procure no index.html
+    (cabeçalho, rodapé, bloco sem JavaScript) ou no app.js (rótulos de menu
+    e títulos de grupo, §6).
+
+Atenção ao peso das palavras: datas, autores, instituições, papéis e
+créditos são fatos. Se você não tem a informação confirmada, deixe o campo
+vazio ou omita a linha — o site continua funcionando. Não complete lacuna
+por inferência; o portfólio é o registro da sua obra.
+
+
+====================================================================
+4. TABELA DE CAMPOS DE projects.js
+====================================================================
+
+Cada registro é um bloco entre chaves { ... }, separado do próximo por
+vírgula. Campos possíveis:
+
+  id .............. endereço do conteúdo (#bio, #ouvidor63). Único, curto,
+                    sem espaço, sem acento, sem maiúscula. NÃO mude depois de
+                    publicar: links e botões de salto apontam para ele.
+  category ........ em qual tema o item aparece. Valores atuais: works,
+                    research, collective, workshop, interactive, apps,
+                    education, profile, info. Ver §6.
+  kind ............ tipo (ex.: "Instalação", "Video mapping", "Perfil").
+  when ............ período exibido na linha do tempo (ex.: "2024", "2019-").
+                    Não invente data; use "-" para o que segue em curso.
+  title ........... título do cartão e do item no menu lateral.
+  subtitle ........ linha logo abaixo do título.
+  text ............ parágrafo principal. Escreva em texto corrido (§5).
+  role ............ sua atuação no projeto ("Direção e video mapping").
+  collaborators ... equipe e colaborações, como você confirma.
+  location ........ local.
+  status .......... estado editorial ("Em desenvolvimento", "Operacional"),
+                    quando confirmado. Estado não é data.
+  tags ............ lista de temas/linguagens; entram na busca.
+                    Formato: ["Video mapping", "Luz"],
+  specs ........... ficha técnica em pares:
+                    [{ "label": "Instituição", "value": "Unifesp" }]
+  images .......... galeria, ver §9.
+  links ........... saídas: [{ "label", "text", "url" }]; url precisa começar
+                    com https:, mailto: ou tel:. Add "copy": true para ganhar
+                    o botão "Copiar" (útil para e-mail e WhatsApp).
+  jump ............ atalhos para outros registros:
+                    [{ "label": "Sucata Quântica", "target": "sucata" }]
+                    o "target" tem que existir, senão o console avisa.
+  timelineGroup ... agrupamento da cronologia (§6).
+  menu ............ true coloca o registro no menu "Projetos" do desktop.
+                    Sem a linha, o item não aparece naquele menu.
+  sub ............. true mostra o item como linha menor (subitem) na cronologia.
+  featured ........ true acrescenta a etiqueta "Em destaque".
+  mobileOnly ...... true o item só aparece na prévia de celular.
+  mode ............ linguagem do fundo para este registro (§7).
+  hue ............. paleta do pigmento, de 0 a 1 (§7).
+
+Ordem dos campos dentro do bloco é livre. Ordem dos BLOCOS no arquivo é a
+ordem do menu lateral quando dois registros pertencem ao mesmo grupo.
+
+
+====================================================================
+5. O QUE QUEBRA O ARQUIVO (erros comuns)
+====================================================================
+
+São erros de digitação que derrubam o site inteiro, porque o navegador
+desiste de ler o arquivo. Todos se manifestam como "o site parou de
+mostrar conteúdo" + uma linha vermelha no console.
+
+  - Esquecer a vírgula no fim de um bloco ou de um campo.
+  - Usar aspas duplas dentro do texto:  "exposição "Constelações""  -> errado.
+    Use aspas tipográficas:  "exposição “Constelações”"  -> certo.
+  - Quebrar a linha no meio do texto. Cada campo texto fica em uma linha só.
+    Se quiser parágrafo novo, use " · " ou divida entre subtitle e text.
+  - Barra invertida ( \ ) no caminho de imagem. Sempre / e, ainda assim,
+    o campo src aceita só o nome do arquivo (§9).
+  - Acento, espaço ou maiúscula no id.
+  - id repetido: dois registros com o mesmo id -> o console avisa e o
+    navegador só consegue abrir o primeiro.
+  - Colar HTML (<b>, <br>, <a href>) dentro dos campos. Nada no site aceita
+    markup; o texto apareceria como um trecho de código na tela.
+  - URL que começa com http: -> o link é descartado silenciosamente.
+  - Salvar o arquivo em codificação que não seja UTF-8 (o acento vira "?").
+    No Bloco de Notas: Salvar como > Codificação: UTF-8.
+
+
+====================================================================
+6. MENUS, TEMAS E AGRUPAMENTOS (mexer aqui exige app.js)
+====================================================================
+
+Existem três controles equivalentes para o mesmo filtro, e todos são
+GERADOS automaticamente a partir de uma única lista:
+
+  - chips na barra de temas (celular)
+  - painel "Explorar por temas" (desktop)
+  - seletor "Explorar por tema" (tablet) e dentro do menu do celular
+
+No topo do js/app.js está a lista:
+
+      var topics = [
+        { key: "all", label: "Tudo", cats: null },
+        { key: "works", label: "Trabalhos", cats: ["works"] },
+        ...
+        { key: "profile", label: "Perfil", cats: ["profile", "info"] }
+      ];
+
+Para adicionar um tema novo:
+  1) Acrescente uma linha na lista, com chave curta, rótulo e as categorias
+     que ele reúne, por exemplo
+     { key: "exposicoes", label: "Exposições", cats: ["works"] },
+  2) dê a category correspondente aos registros em projects.js;
+  3) recarregue. Os três controles, as contagens entre parênteses e o
+     seletor de prévia se atualizam sozinhos. Nunca duplique botão de tema
+     no index.html.
+
+Para renomear um tema: mude só o campo label. O key fica no endereço e no
+filtro interno; trocá-lo não é necessário e muda URLs.
+
+Agrupamento da cronologia, logo abaixo, em:
+
+      var timelineGroups = { featured: ..., research: ..., dated: ...,
+      ongoing: ..., development: ..., experiments: ..., undated: ...,
+      profile: ... };
+
+  - o campo timelineGroup de cada registro escolhe o grupo;
+  - renomear um valor de timelineGroups muda o título na tela;
+  - um valor fora da lista faz o item cair em "Séries e conteúdos sem data";
+  - a ORDEM mostrada é a ordem dos registros no projects.js: destaques e
+    pesquisa abrem, depois a cronologia invertida, depois os grupos contínuos.
+    O texto que explica isso ao lado da lista está no index.html
+    (classe rail-order) e precisa continuar verdadeiro se você mudar a ordem.
+
+Menu "Projetos" do desktop: não é mais escrito à mão. Ele lista o botão
+"Ver cronologia completa" seguido de todo registro que tenha "menu": true.
+Para entrar ou sair desse menu, acrescente ou apague essa linha no registro.
+
+Menu "Serviços" e a página de serviços: ambos leem a lista no fim do
+projects.js:
+
+      window.SERVICES = [ { "id": "artista-visual", "label": "Artista visual" }, ... ];
+
+  - label = o que aparece no menu e como título na página;
+  - id = âncora interna (service-<id>), sem espaço nem acento;
+  - incluir um item aqui já o coloca nos dois lugares. Se a lista for
+    apagada, o menu e a página ficam vazios.
+
+Páginas editoriais (Serviços e Pesquisa): endereço fixo #servicos e
+#pesquisa, funcionam em qualquer largura. Elas montam o cartão a partir dos
+registros reais (mestrado, v1su4rt, pesquisa-arte-interativa) e da lista de
+serviços; por isso não há texto duplicado para manter.
+
+
+====================================================================
+7. FUNDO GENERATIVO POR REGISTRO (só dois números)
+====================================================================
+
+  mode ... 0 analógico/CRT · 1 fumaça · 2 orgânico psicodélico ·
+           3 fluxo · 4 malha digital
+  hue .... 0 a 1, a cor do pigmento revelado ao toque
+
+Mudar esses dois valores não afeta nada além do fundo. O seletor
+"Efeito visual" dos ajustes permite sobrepor a escolha do visitante;
+"Por projeto" devolve o comando ao mode/hue do registro. Para alterar a
+aparência de uma das cinco linguagens, aí sim é preciso editar shader.js.
+
+
+====================================================================
+8. TEXTO QUE EXISTE EM DOIS LUGARES (as duas exceções)
+====================================================================
+
+a) Bloco sem JavaScript. Dentro do index.html há um cartão
+   <article class="card static-content"> com nome, minibio, mestrado,
+   Ouvidor 63 e alguns links. Ele é o que a pessoa vê com JavaScript
+   desativado (e o que aparece por meio segundo antes do primeiro cartão).
+   Se você reescrever a bio, revise este bloco para não contradizer
+   projects.js. Quem tem JavaScript nunca vê esse texto.
+
+b) Cabeçalho e rótulos de interface. brand-name, brand-sub, o resumo de
+   identidade do cartão de perfil, o texto "Ordem: ..." (rail-order), a
+   dica da cronologia (rail-hint) e os rótulos dos ajustes vivem no
+   index.html. Estão lá porque são estrutura, não conteúdo. Para mudá-los,
+   edite o index.html e nada mais.
+
+c) Contato. e-mail, Instagram e WhatsApp aparecem no registro "contato" de
+   projects.js e são dados pessoais: só ficam públicos com sua aprovação
+   explícita. Antes de publicar, confira se esses três continuam corretos
+   e autorizados.
+
+
+====================================================================
+9. IMAGENS · COMO ENTRAR UMA FOTO OU ILUSTRAÇÃO NO SITE
+====================================================================
+
+1) Nomeie o arquivo com letras minúsculas, traços e sem acento:
+   mapping-escadas.jpg, ilustracao-fita-ws2811.jpg.
+2) Coloque o original em Portfolio/wwwroot/img/ (JPG para fotografia e
+   ilustração, PNG para logotipo com transparência).
+3) Gere variantes menores em Portfolio/wwwroot/img/responsive/ com o MESMO
+   nome-base, seguidas da largura:
+       img/responsive/mapping-escadas-480.webp
+       img/responsive/mapping-escadas-960.webp
+   O nome é o que o site procura; trocar o nome da variante quebra a escolha
+   automática de resolução.
+4) No registro, declare:
+
+   "images": [
+     {
+       "src": "mapping-escadas.jpg",
+       "caption": "Escada da Ouvidor 63",
+       "alt": "Projeção colorida sobe a escada de concreto de um prédio antigo",
+       "credit": "Foto: ...",
+       "width": 1600,
+       "height": 1067,
+       "responsiveWidths": [480, 960]
+     }
+   ],
+
+   - src: só o nome do arquivo, sem "img/" e sem barras;
+   - alt: DESCREVE a imagem para quem não a vê, não repete o título;
+   - caption: legenda curta; credit: só quando o crédito for confirmado;
+     para imagem gerada por IA, deixe isso explicito na legenda ou no crédito,
+     como já foi feito nos registros de eletrônica;
+   - width/height: dimensões do original, para o navegador reservar espaço;
+   - responsiveWidths: as larguras que existem em img/responsive. Sem essa
+     linha, o site usa o arquivo original (funciona, mas pesa mais).
+
+5) Recarregue e confira: imagem faltando some da galeria e o console avisa
+   "Arquivo de imagem inválido".
+6) Peso: mantenha o original abaixo de ~1600 px de largura e de ~400 KB.
+   Em rede lenta, o que conta é o tamanho do arquivo, não a resolução.
+7) Direitos: foto de terceiros, rosto de outras pessoas e material
+   institucional pedem permissão. Confirme antes de publicar.
+
+
+====================================================================
+10. TIPOGRAFIA (o que fazer para trocar a letra)
+====================================================================
+
+Hoje o site usa duas famílias:
+
+  TÍTULOS ... ChickenScratch AOE, arquivo local
+              Portfolio/wwwroot/fonts/chickscratch-aoe.ttf
+              Aplicada em h1 e h2 dos cartões e no nome do cabeçalho.
+  CORPO ..... DM Sans (carregada do Google Fonts), com fontes do sistema
+              como alternativa. Textos longos, botões, fichas e menus.
+
+Tudo é decidido por duas variáveis no começo do css/style.css:
+
+      --display: "ChickenScratch AOE", "Space Grotesk", system-ui, sans-serif;
+      --body:    "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  - quer a mesma cara em tudo? troque a lista de --body colocando
+    "ChickenScratch AOE" na frente. Não apague as fontes seguintes: elas são
+    o que aparece enquanto o arquivo baixa ou se ele falhar.
+  - quer só os títulos com outra letra? mexa apenas em --display.
+  - a fonte do título tem UM peso só. Os títulos pedem font-weight: 700, mas
+    como o @font-face declara 100-900 o navegador usa o mesmo desenho em vez
+    de inventar um negrito. A hierarquia vem do tamanho, não do peso.
+  - letras manuscritas precisam de mais espaço: os títulos usam
+    letter-spacing levemente positivo e line-height maior. Se trocar a fonte,
+    revê esses dois valores, senão o texto fecha em si mesmo.
+  - para TROCAR a fonte hospedada: copie o .ttf (ou .woff2) para fonts/,
+    edite o bloco @font-face no topo do css/style.css (nome da família e o
+    caminho em src: url(...)) e escreva esse mesmo nome na frente de
+    --display. São três mudanças e nenhuma linha de JavaScript.
+  - teste sempre com acentos (á à â ã é ê í ó ô õ ú ü ç, e as versões
+    maiúsculas): a ChickenScratch cobre todos eles; nem toda fonte cobre, e
+    caractere ausente volta a aparecer na fonte de cima, o que produz
+    misturas estranhas no meio de uma palavra.
+  - o <link> do Google Fonts no topo do index.html serve apenas para a DM
+    Sans e o Space Grotesk de reserva. Remover essa linha não derruba o
+    site: o texto passa a usar a fonte do sistema.
+  - provérbio de teste rápido: digite na barra de endereço
+      javascript:document.fonts.check('700 40px "ChickenScratch AOE"')
+    e espere true.
+
+
+====================================================================
+11. CONFERIR ANTES DE PUBLICAR
+====================================================================
+
+Estrutura
+  [ ] F12 sem linha vermelha, nos três modos (celular, tablet, desktop).
+  [ ] dotnet build Portfolio.sln conclui (o build só valida o projeto que
+      serve os arquivos estáticos; um obj/ antigo gera aviso falso de
+      arquivo ausente - reconstrua antes de confiar em 404).
+  [ ] Cada link do menu abre o conteúdo esperado e a URL mostra #id correto.
+  [ ] Botões Anterior/Próximo e as setas do teclado andam pela lista filtrada.
+  [ ] Busca por uma palavra inexistente mostra o cartão "Não encontrei
+      resultados" e o botão de limpar funciona.
+
+Visual
+  [ ] 413 px: nada de barra horizontal, alvos de toque de 44 px, menu
+      "Menu" fecha ao escolher um conteúdo.
+  [ ] ~800 px: o seletor de tema substitui os chips; Serviços e Pesquisa
+      abrem normalmente.
+  [ ] 1280 px: menus Projetos/Pesquisa/Serviços abrem por hover e por
+      teclado (Tab + Enter, Esc fecha e devolve o foco ao botão).
+  [ ] O item aberto aparece com destaque no menu lateral, no menu Projetos
+      e no cabeçalho (aria-current).
+  [ ] Imagens: abrir e fechar a luz ampliada; WebP responsivo de fato
+      escolhido (Inspetor > Network, filtro Img).
+  [ ] Fundo: trocar de registro dissolve uma linguagem na outra; arrastar
+      dentro do mesmo gesto não apaga a tinta anterior; os ajustes se
+      apagam sozinhos e voltam com qualquer movimento.
+  [ ] Sem JavaScript (ou com o arquivo app.js bloqueado): o bloco estático
+      do index.html continua legível e honesto em relação aos textos novos.
+
+Conteúdo (o que o console não vê)
+  [ ] Datas, papéis, instituições e créditos confirmados.
+  [ ] Legendas e textos alternativos de todas as imagens.
+  [ ] Créditos e permissões de imagem resolvidos.
+  [ ] E-mail, Instagram e WhatsApp autorizados a ficar públicos.
+
+
+====================================================================
+12. LISTA DE CORREÇÕES MANUAIS DE TEXTO
+====================================================================
+
+Como usar: preencha "Texto corrigido" com a redação desejada e faça a troca
+no arquivo e no local indicados (§3). Este documento é uma lista de
+trabalho: ele não altera o site sozinho. Anote aqui toda mudança pedida,
+inclusive as que ainda dependem de confirmação - assim nada se perde entre
+uma conversa e outra.
 
 1. Identificação no cabeçalho
 Arquivo: Portfolio/wwwroot/index.html
 Local: elemento <p class="brand-sub"> no cabeçalho
-Texto atual: Artista audiovisual · pesquisa · imagem e espaço
+Texto atual: Artista audiovisual · pesquisa · imagem e som
 Texto corrigido:
 
 
 2. Legenda de fotografia
 Arquivo: Portfolio/wwwroot/js/projects.js
-Local: legenda da fotografia VIVITAR correspondente à imagem 5
+Local: registro "fotografia-vivitar", campo images, legenda da imagem 5
 Texto atual: Luz da lua sobre árvores e paisagem
 Texto corrigido:
 
 
-OUTRAS CORREÇÕES
-
-3.
-Arquivo:
-Local:
-Texto atual:
+3. Registro da bio
+Arquivo: Portfolio/wwwroot/js/projects.js
+Local: registro "bio", campo text
+Texto atual: (parágrafo da apresentação)
 Texto corrigido:
+Obs.: se mudar este texto, revise também o bloco sem JavaScript do
+index.html (§8a) para que os dois não se contradigam.
 
 
 4.
 Arquivo:
+Local: (id do registro + campo)
+Texto atual:
+Texto corrigido:
+
+
+5.
+Arquivo:
 Local:
 Texto atual:
 Texto corrigido:
+
+
+6.
+Arquivo:
+Local:
+Texto atual:
+Texto corrigido:
+
+
+====================================================================
+13. PENDÊNCIAS EDITORIAIS CONHECIDAS
+====================================================================
+
+- Data da exposição no Memorial da Resistência e créditos adicionais de equipe.
+- Título formal e referência final da pesquisa de mestrado (2023-2025).
+- Créditos e direitos de uso das imagens de cada registro.
+- Autorização explícita para manter e-mail institucional e WhatsApp públicos.
+- Estado atual dos protótipos de eletrônica e demonstrações autorizadas
+  (hoje eles aparecem com ilustrações conceituais marcadas como tal).
+- Revisão da legenda de retrato-capa.jpg e da identificação das fotos VIVITAR.
