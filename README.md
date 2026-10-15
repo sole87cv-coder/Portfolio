@@ -129,7 +129,7 @@ A inicialização verifica IDs, categorias, destinos de salto, protocolos de lin
 - O artista confirmou que a exposição do Memorial da Resistência foi uma extensão da pesquisa apoiada pela FAPESP, com video mapping da escada e direção e criação do vídeo projetado no teto. Confirmar a data da exposição e créditos adicionais da equipe, quando aplicáveis.
 - Confirmar o título formal e a referência final da pesquisa de mestrado de 2023–2025.
 - Confirmar créditos e direitos de uso das imagens em cada registro.
-- Confirmar publicação do e-mail institucional e do WhatsApp pessoal.
+- Confirmar a publicação do e-mail institucional (`sol.emanuel@unifesp.br`) e do WhatsApp pessoal. O artista confirmou `v1su4rt87@gmail.com` como canal principal em 2026-10-15; o institucional ficou como referência secundária e pode ser retirado sem tocar nos demais canais.
 - Confirmar estado atual dos protótipos e se há demonstrações autorizadas.
 - Revisar a legenda/contexto fotográfico de `retrato-capa.jpg` e a identificação contextual das fotos VIVITAR.
 

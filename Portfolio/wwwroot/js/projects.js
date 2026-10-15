@@ -874,8 +874,8 @@ window.PROJECTS = [
     "links": [
       {
         "label": "E-mail",
-        "text": "sol.emanuel@unifesp.br",
-        "url": "mailto:sol.emanuel@unifesp.br",
+        "text": "v1su4rt87@gmail.com",
+        "url": "mailto:v1su4rt87@gmail.com",
         "copy": true
       },
       {
@@ -887,6 +887,12 @@ window.PROJECTS = [
         "label": "WhatsApp",
         "text": "+55 11 95793-6951",
         "url": "https://wa.me/5511957936951",
+        "copy": true
+      },
+      {
+        "label": "E-mail institucional",
+        "text": "sol.emanuel@unifesp.br",
+        "url": "mailto:sol.emanuel@unifesp.br",
         "copy": true
       }
     ],

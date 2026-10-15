@@ -282,10 +282,15 @@ b) Cabeçalho e rótulos de interface. brand-name, brand-sub, o resumo de
    index.html. Estão lá porque são estrutura, não conteúdo. Para mudá-los,
    edite o index.html e nada mais.
 
-c) Contato. e-mail, Instagram e WhatsApp aparecem no registro "contato" de
-   projects.js e são dados pessoais: só ficam públicos com sua aprovação
-   explícita. Antes de publicar, confira se esses três continuam corretos
-   e autorizados.
+c) Contato. os canais aparecem no registro "contato" de projects.js, nesta
+   ordem: e-mail pessoal (principal), Instagram, WhatsApp e e-mail
+   institucional (secundário). São dados pessoais e só ficam públicos com
+   sua aprovação. Para acrescentar um canal, copie um bloco {label, text,
+   url, copy} inteiro e ajuste as quatro linhas; "copy": true cria o botão
+   Copiar e, sem "copyValue", ele copia o que vier depois de mailto:.
+   O domínio unifesp.br é vinculado à instituição e pode deixar de existir
+   quando o vínculo terminar: por isso o e-mail pessoal é o principal e o
+   institucional aparece por último, como referência de pesquisa.
 
 
 ====================================================================
@@ -475,7 +480,9 @@ Texto corrigido:
 - Data da exposição no Memorial da Resistência e créditos adicionais de equipe.
 - Título formal e referência final da pesquisa de mestrado (2023-2025).
 - Créditos e direitos de uso das imagens de cada registro.
-- Autorização explícita para manter e-mail institucional e WhatsApp públicos.
+- Autorização explícita para manter o WhatsApp e o e-mail institucional
+  públicos. O e-mail pessoal v1su4rt87@gmail.com foi confirmado pelo artista
+  em 2026-10-15 como canal principal.
 - Estado atual dos protótipos de eletrônica e demonstrações autorizadas
   (hoje eles aparecem com ilustrações conceituais marcadas como tal).
 - Revisão da legenda de retrato-capa.jpg e da identificação das fotos VIVITAR.
