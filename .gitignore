@@ -18,3 +18,8 @@ Thumbs.db
 # Cópias acidentais feitas no Explorer/OneDrive
 *- Copy*
 *- backup*
+
+# Cópia de publicação usada só pelo Vercel. Gerada durante o deploy, nunca à mão:
+# a única fonte do site continua sendo Portfolio/wwwroot.
+dist/
+.vercel/

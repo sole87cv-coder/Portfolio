@@ -9,6 +9,15 @@ Portfólio artístico em português para audiovisual, pesquisa, fotografia, vide
 - Também é possível abrir `Portfolio/wwwroot/index.html` diretamente. Todo o conteúdo e a interação visual funcionam sem permissões de dispositivo.
 - O projeto usa alternativas para eventos de toque, atualização de cartões, altura da tela, foco e janela ampliada em navegadores antigos. A validação final ainda deve incluir os aparelhos Android que o artista deseja atender.
 
+## Publicar no Vercel
+
+- O site é 100% estático, então a implantação não compila nada. O `vercel.json` na raiz do repositório diz isso ao Vercel: `framework: null` corresponde ao predefinido "Other" (desliga o reconhecimento automático de estrutura, que é o que fazia o projeto ser recusado), `installCommand: ""` pula o `npm install` (não existe `package.json`), `buildCommand` copia `Portfolio/wwwroot` para `dist` e `outputDirectory: "dist"` publica essa cópia como raiz do domínio.
+- Importe o repositório na equipe mantendo a Pasta raiz como raiz do repositório. Não aponte a pasta raiz para `Portfolio/wwwroot`: nesse caso o `vercel.json` deixa de ser lido e o Vercel volta a tentar reconhecer uma estrutura que não existe. Confirme, em Configurações → Implantação, que Estrutura predefinida está como "Outros", Comando de compilação como a cópia do `vercel.json` e Diretório de saída como `dist`.
+- Depois do primeiro deploy, cada push em `master` gera uma versão de produção, e cada push em outro ramo gera uma prévia. Conteúdo novo aparece sem nenhuma etapa manual.
+- `dist` existe apenas dentro da implantação e está no `.gitignore`. Não edite nem crie essa pasta na sua máquina: a única fonte continua sendo `Portfolio/wwwroot`, e uma cópia local seria exatamente a duplicação que o projeto eliminou.
+- O endereço `.vercel.app` é escolhido pelo Vercel no primeiro deploy; domínio próprio se configura em Configurações → Domínios. Só depois de fixado o endereço vale acrescentar `og:url`, `link rel="canonical"` e `sitemap.xml`, porque esses campos exigem a URL absoluta.
+- O servidor ASP.NET Core (`.\dev-serve.ps1`) continua sendo só a leitura local. Ele não participate do deploy e não precisa estar no Vercel.
+
 ## Experiência do portfólio
 
 - **Explorar:** filtra obras, pesquisa, coletivos, oficinas, interativos, apps, formação e perfil; cada tema mostra a quantidade de conteúdos, e a linha acima da cronologia diz quantos estão visíveis, qual tema e busca estão ativos e quantos registros só aparecem no celular. A busca inclui texto, atuação, colaboração, local, especificações e links, com atualização contida para não reagir a cada tecla. No celular, a Minibio é a leitura inicial e a navegação, busca, filtros e ajustes ficam agrupados no menu recolhível, cujo rótulo indica o tema em uso. A cronologia abre em lista vertical, com opção de faixa horizontal, e um aviso explica a ordem dos grupos.
@@ -60,6 +69,7 @@ Todo o site existe uma única vez, em `Portfolio/wwwroot`. Não há cópia na ra
 - `Portfolio/wwwroot/img`: retratos e documentação visual, com variantes em `img/responsive`.
 - `Portfolio/Program.cs` e `Portfolio/Portfolio.csproj`: servidor local ASP.NET Core.
 - `dev-serve.ps1`: atalho para subir o servidor de desenvolvimento.
+- `vercel.json`: configuração de implantação — copia `Portfolio/wwwroot` para `dist` e publica essa cópia como raiz do domínio.
 - `CORRECOES-MANUAIS.txt`: guia de manutenção do artista — onde mora cada texto, como alterá-lo, como adicionar conteúdo, imagens, temas e sem quebrar a arquitetura.
 
 ## Publicação
@@ -79,8 +89,8 @@ Este repositório não contém atualmente uma configuração `vercel.json`; conf
 - O efeito tem três níveis de detalhe. Aparelhos com até 4 núcleos/memória, telas estreitas, economia de dados ou sinal fraco começam no nível mais simples; nos demais, o shader mede o tempo real dos últimos 36 quadros e, se a mediana passar de 24 ms, desce um nível (reduz octavas, detalhes e resolução) e segura por três segundos antes de tentar de novo. O nível nunca sobe sozinho, para o fundo não ficar oscilando.
 - Imagens são carregadas sob demanda no cartão atual. A série VIVITAR usa miniaturas WebP responsivas de 480 px e 960 px (ou 720 px nas imagens verticais), com JPEG original como alternativa e para ampliação; outros registros ainda usam os arquivos originais.
 - Fontes: os títulos usam ChickenScratch AOE, hospedada em `Portfolio/wwwroot/fonts/chickscratch-aoe.ttf` e declarada no `@font-face` do `css/style.css` (um único peso; a família fica na variável `--display`). O corpo do texto continua com DM Sans, do Google Fonts, com fontes de sistema como alternativa (`--body`). Sem a rede, o corpo cai na fonte do sistema e os títulos seguem locais.
-- Não foi configurado provedor, domínio ou publicação. Para hospedagem estática, a pasta servida é `Portfolio/wwwroot`; configure HTTPS no provedor. Para hospedagem ASP.NET Core, publique o projeto usando o SDK compatível com `net10.0`.
-- Confirme os direitos de uso e os créditos das imagens antes da publicação. Os contatos existentes permanecem inalterados e precisam de confirmação do artista para permanecer públicos.
+- A publicação está preparada, mas ainda não executada: o `vercel.json` na raiz do repositório define o deploy estático de `Portfolio/wwwroot`, e HTTPS vem do provedor. A hospedagem ASP.NET Core continua disponível para uso local ou outro provedor, publicando o projeto com o SDK compatível com `net10.0`.
+- Confirme os direitos de uso e os créditos das imagens antes de publicar. O canal principal de contato é o e-mail pessoal confirmado pelo artista; o e-mail institucional e o WhatsApp permanecem publicados por decisão dele e precisam de aprovação explícita a cada revisão.
 
 ## Modelo editorial para novos registros
 

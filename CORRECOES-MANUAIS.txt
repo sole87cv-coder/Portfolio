@@ -56,6 +56,7 @@ Portfolio/wwwroot/ ............ única cópia do site. Não existe segunda
 Fora do wwwroot:
   Portfolio/Program.cs, Portfolio/Portfolio.csproj ... servidor local ASP.NET.
   dev-serve.ps1 ....................................... atalho para subir o servidor.
+  vercel.json ......................................... receita da implantação no Vercel (§14).
 
 
 ====================================================================
@@ -486,3 +487,54 @@ Texto corrigido:
 - Estado atual dos protótipos de eletrônica e demonstrações autorizadas
   (hoje eles aparecem com ilustrações conceituais marcadas como tal).
 - Revisão da legenda de retrato-capa.jpg e da identificação das fotos VIVITAR.
+
+
+====================================================================
+14. PUBLICAR · VERCEL
+====================================================================
+
+O que o Vercel recebe
+- O site é estático: a implantação não compila nada, só copia arquivos.
+- vercel.json, na raiz do repositório, tem quatro chaves, e nenhuma dessas
+  decisões precisa ser tomada no painel:
+    framework .............. null, que equivale a "Outros". Sem isto o Vercel
+                             tenta reconhecer uma estrutura (Next, Vite,
+                             Astro) que não existe e o projeto falha.
+    installCommand ......... string vazia, que pula a instalação. Não há
+                             package.json no repositório.
+    buildCommand ........... copia Portfolio/wwwroot para dentro de dist.
+    outputDirectory ........ "dist", publicado como raiz do domínio.
+
+Por que copiar em vez de apontar direto
+- O Vercel serve apenas o conteúdo do Diretório de saída. Se ele usasse
+  Portfolio/wwwroot sem cópia, o site nasceria em /Portfolio/wwwroot/index.html
+  e a URL raiz daria 404. A cópia é o que faz o wwwroot virar a raiz.
+- "Root Directory" do painel NÃO deve apontar para Portfolio/wwwroot: o
+  vercel.json mora um nível acima e deixaria de ser lido. Root Directory fica
+  vazio, na raiz do repositório.
+
+Como publicar (uma vez)
+1) Suba o ramo master. O push já faz isto.
+2) Em vercel.com, dentro da sua equipe: New Project → Import Git Repository →
+   escolha o repositório.
+3) Confira a tela de configuração: Framework Preset "Other", Build Command e
+   Output Directory herdados do vercel.json, Root Directory vazio.
+4) Deploy. Anote a URL .vercel.app criada: ela é o endereço real do portfólio.
+5) Depois disso, cada push em master refaz o deploy sozinho. Conteúdo novo no
+   projects.js aparece no site sem nenhuma etapa manual.
+
+O que NÃO fazer
+- Não crie dist na sua máquina. Ele está no .gitignore e só existe durante a
+  implantação; uma cópia local seria a duplicação que o projeto eliminou.
+- Não mova wwwroot para a raiz do repositório. O guia inteiro, o dev-serve.ps1
+  e o servidor ASP.NET apontam para Portfolio/wwwroot.
+- Não acrescente package.json para "ajudar" o Vercel: sem ele a implantação já
+  funciona, e com ele o Vercel passa a esperar dependências que não existem.
+- O servidor local em http://localhost:5173 continua sendo ASP.NET Core e não
+  participa do deploy. Ele serve a mesma pasta, então o que você vê localmente
+  é o que vai ao ar.
+
+Depois do primeiro deploy
+- Só então vale fixar um endereço absoluto: og:url, link rel="canonical" e
+  sitemap.xml exigem a URL completa. Enquanto o endereço não existir, qualquer
+  valor escrito ali seria chute.
