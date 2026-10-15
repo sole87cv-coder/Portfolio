@@ -11,3 +11,7 @@ Thumbs.db
 *~
 *.tmp
 _arquivo-morto/
+_backup_*/
+src/
+Portfolio/wwwroot/
+!Portfolio/wwwroot/.gitkeep
