@@ -478,15 +478,20 @@ Texto corrigido:
 13. PENDÊNCIAS EDITORIAIS CONHECIDAS
 ====================================================================
 
-- Data da exposição no Memorial da Resistência e créditos adicionais de equipe.
+- Data da exposição do Memorial da Resistência confirmada pelo artista em
+  2026-10-15: 6 de dezembro de 2025 (já está nos specs do registro).
+- Créditos adicionais de equipe nessa exposição.
 - Título formal e referência final da pesquisa de mestrado (2023-2025).
 - Créditos e direitos de uso das imagens de cada registro.
 - Autorização explícita para manter o WhatsApp e o e-mail institucional
   públicos. O e-mail pessoal v1su4rt87@gmail.com foi confirmado pelo artista
   em 2026-10-15 como canal principal.
-- Estado atual dos protótipos de eletrônica e demonstrações autorizadas
-  (hoje eles aparecem com ilustrações conceituais marcadas como tal).
-- Revisão da legenda de retrato-capa.jpg e da identificação das fotos VIVITAR.
+- Estado atual dos protótipos de eletrônica. Em 2026-10-15 o artista reescreveu
+  as legendas e passou a assinar as três imagens como F, F1 e F2. Os arquivos
+  ainda são os ilustrações geradas (ilustracao-*.jpg): se existirem fotos reais
+  dos protótipos, entre com elas em img/ e troque o campo src (§9).
+- Revisão da legenda de retrato-capa.jpg. As legendas e os textos alternativos
+  das fotos VIVITAR foram revisados pelo artista na mesma data.
 
 
 ====================================================================

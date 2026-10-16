@@ -287,7 +287,7 @@ window.PROJECTS = [
       },
       {
         "label": "Data da exposição",
-        "value": "A confirmar."
+        "value": "6 de dezembro de 2025."
       }
     ],
     "jump": [
@@ -301,8 +301,8 @@ window.PROJECTS = [
     "images": [
       {
         "src": "lab-novas-midias.jpg",
-        "caption": "Sinalização do Laboratório Novas Mídias na Ouvidor 63",
-        "alt": "Cartaz do Laboratório Novas Mídias exposto na Ouvidor 63"
+        "caption": "Sinalização do Laboratório Novas Mídias",
+        "alt": "Cartaz do Laboratório Novas Mídias exposto na Red Bull Station"
       },
       {
         "src": "mapping-escadas.jpg",
@@ -311,8 +311,8 @@ window.PROJECTS = [
       },
       {
         "src": "projecao-teto.jpg",
-        "caption": "Projeção de luz no teto de uma sala",
-        "alt": "Projeção azul no teto de uma sala escura"
+        "caption": "Projeção de luz no teto de uma sala no Memorial da Resistência",
+        "alt": "Projeção no teto, moradores da Ouvidor 63 performando"
       }
     ],
     "links": [
@@ -381,9 +381,9 @@ window.PROJECTS = [
     "images": [
       {
         "src": "ilustracao-fita-ws2811.jpg",
-        "caption": "Ilustração conceitual · não é registro do protótipo",
-        "alt": "Ilustração conceitual de uma fita de LEDs endereçáveis acesa em rosa, azul e âmbar sobre uma bancada escura, com uma placa de microcontrolador desfocada ao fundo",
-        "credit": "imagem gerada por IA",
+        "caption": "Protótipo",
+        "alt": "Fita de LEDs endereçáveis, com uma placa de microcontrolador",
+        "credit": "F",
         "width": 1280,
         "height": 1024,
         "responsiveWidths": [
@@ -467,9 +467,9 @@ window.PROJECTS = [
     "images": [
       {
         "src": "ilustracao-cyber-synth.jpg",
-        "caption": "Ilustração conceitual · não é registro do protótipo",
-        "alt": "Ilustração conceitual de uma placa ESP32 sobre uma mesa escura, conectada a um alto-falante e a um trecho de fita de LEDs coloridos, ao lado de um celular que exibe controles deslizantes iluminados",
-        "credit": "imagem gerada por IA",
+        "caption": "Ilustração conceitual",
+        "alt": "Placa ESP32, Alto-falante, LEDs",
+        "credit": "F1",
         "width": 1280,
         "height": 1024,
         "responsiveWidths": [
@@ -519,9 +519,9 @@ window.PROJECTS = [
     "images": [
       {
         "src": "ilustracao-kx-101.jpg",
-        "caption": "Ilustração conceitual · não é registro do protótipo",
-        "alt": "Ilustração conceitual de um painel de sintetizador com quatro botões de arcade iluminados em vermelho, azul, verde e âmbar, potenciômetros metálicos entre eles e uma moldura de fita de LEDs multicolorida, com a placa e a fiação visíveis ao fundo",
-        "credit": "imagem gerada por IA",
+        "caption": "Ilustração conceitual",
+        "alt": "Painel de sintetizador com quatro botões de arcade iluminados em vermelho, azul, verde e âmbar, potenciômetros metálicos entre eles e uma moldura de fita de LEDs, com a placa e a fiação visíveis ao fundo",
+        "credit": "F2",
         "width": 1280,
         "height": 1024,
         "responsiveWidths": [
@@ -626,7 +626,7 @@ window.PROJECTS = [
     "menu": true,
     "category": "works",
     "kind": "Fotografia analógica",
-    "when": "Data não informada",
+    "when": "Atemporal",
     "title": "Fotografias analógicas · VIVITAR",
     "subtitle": "Série fotográfica",
     "text": "Fotografias feitas em filme com uma câmera VIVITAR: grão, luz e um tempo que não se corrige depois.",
@@ -639,8 +639,8 @@ window.PROJECTS = [
     "images": [
       {
         "src": "vivitar-analogica-01.jpg",
-        "caption": "Formas claras sobre uma superfície escura e granulada",
-        "alt": "Formas luminosas abstratas sobre fundo escuro com textura granulada",
+        "caption": "Superfície escura e granulada",
+        "alt": "Texturas granuladas",
         "width": 720,
         "height": 1080,
         "responsiveWidths": [
@@ -650,8 +650,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-02.jpg",
-        "caption": "Pessoa em um quarto à luz de uma vela",
-        "alt": "Pessoa sentada em um quarto escuro, iluminada por uma vela",
+        "caption": "Luz da vela",
+        "alt": "Iluminado",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -661,8 +661,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-03.jpg",
-        "caption": "Rastros de luz em uma avenida entre edifícios",
-        "alt": "Avenida urbana entre edifícios, com rastros de luz de veículos",
+        "caption": "Anhangabaú, Rio do Mau Espírito",
+        "alt": "Rastros de luz",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -672,7 +672,7 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-04.jpg",
-        "caption": "Rastros de luz em uma composição abstrata",
+        "caption": "Rastros de luz, erros visuais?",
         "alt": "Linhas luminosas atravessam uma composição escura e abstrata",
         "width": 1512,
         "height": 1003,
@@ -683,8 +683,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-05.jpg",
-        "caption": "Luz da lua sobre árvores e paisagem",
-        "alt": "Lua brilhante sobre uma paisagem escura com árvores em silhueta",
+        "caption": "Sombra",
+        "alt": "Silhueta",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -694,8 +694,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-06.jpg",
-        "caption": "Paisagem vista a partir de um primeiro plano desfocado",
-        "alt": "Primeiro plano texturizado e desfocado diante de árvores e paisagem",
+        "caption": "Desfocado",
+        "alt": "Paisagem desfocada",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -705,8 +705,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-07.jpg",
-        "caption": "Luz entre nuvens sobre árvores",
-        "alt": "Luz da lua filtrada por nuvens acima de árvores em silhueta",
+        "caption": "Entre nuvens e árvores",
+        "alt": "Luz do Sol filtrada por nuvens acima de árvores em silhueta",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -716,8 +716,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-08.jpg",
-        "caption": "Escadaria em espiral",
-        "alt": "Escadaria em espiral",
+        "caption": "Espiral",
+        "alt": "Espiral, Ubatuba",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -727,7 +727,7 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-09.jpg",
-        "caption": "Planta em contraluz",
+        "caption": "Contraluz",
         "alt": "Planta de folhas estreitas em primeiro plano diante de uma luz intensa",
         "width": 1512,
         "height": 1003,
@@ -738,8 +738,8 @@ window.PROJECTS = [
       },
       {
         "src": "vivitar-analogica-10.jpg",
-        "caption": "Parede grafitada, roupas estendidas e edifícios",
-        "alt": "Parede com grafites e roupas estendidas diante de edifícios urbanos",
+        "caption": "Ouvidor 63",
+        "alt": "Arte",
         "width": 1512,
         "height": 1003,
         "responsiveWidths": [
@@ -759,7 +759,7 @@ window.PROJECTS = [
     "when": "Perfil",
     "title": "Sol Emanuel Calderón Vargas",
     "subtitle": "Artista audiovisual e pesquisador",
-    "text": "Sou colombiano e vivo em São Paulo desde 2014. Me licenciei em Artes Visuais e fiz mestrado em História da Arte na Unifesp. Trabalho entre audiovisual, video mapping, iluminação, cenografia, instalações imersivas e sistemas interativos. Minha prática se entrelaça à experiência da Ocupação Artística Ouvidor 63 e à pesquisa sobre artistas autônomos e nômades, realizada com bolsa FAPESP. Desde 2019 integro a Sucata Quântica, onde crio cenografias, expografias e dispositivos de iluminação com materiais reaproveitados e tecnologias alternativas. Em cada projeto persigo a mesma pergunta: como imagem, som e luz podem ativar espaços, memórias e formas de criação coletiva.",
+    "text": "Sou colombiano e vivo em São Paulo desde 2014. Terminei a licenciatura em Artes Visuais e fiz mestrado em História da Arte na Unifesp. Trabalho entre audiovisual, video mapping, iluminação, cenografia, instalações imersivas e sistemas interativos. Minha prática se entrelaça à experiência da Ocupação Artística Ouvidor 63 e à pesquisa sobre artistas autônomos e nômades, realizada com bolsa FAPESP. Desde 2019 integro a Sucata Quântica, onde crio cenografias, expografias e dispositivos de iluminação com materiais reaproveitados e tecnologias alternativas. Em cada projeto persigo a mesma pergunta: como imagem, som e luz podem ativar espaços, memórias e formas de criação coletiva.",
     "tags": [
       "Audiovisual",
       "Video mapping",
@@ -770,7 +770,7 @@ window.PROJECTS = [
     "specs": [
       {
         "label": "Origem",
-        "value": "Colômbia; radicado em São Paulo desde 2014"
+        "value": "Colômbia; mora em São Paulo desde 2014"
       },
       {
         "label": "Licenciatura",
