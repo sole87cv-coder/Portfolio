@@ -217,7 +217,7 @@
     var button = make("button", null, topicText(topic));
     button.type = "button";
     button.setAttribute(attribute, topic.key);
-    button.setAttribute("aria-pressed", topic.key === filterEl.value ? "true" : "false");
+    button.setAttribute("aria-pressed", String(topic.key === (filterEl.value || "all")));
     button.addEventListener("click", function () { chooseTopic(topic.key, attribute === "data-topic"); });
     return button;
   }
@@ -277,11 +277,11 @@
       li.setAttribute("data-project-index", String(i));
       var btn = make("button", "node");
       btn.type = "button";
-      btn.setAttribute("aria-label", [p.featured ? "Em destaque" : "", p.when, p.title].filter(Boolean).join(": "));
+      btn.setAttribute("aria-label", [p.title, p.when, p.featured ? "Em destaque" : ""].filter(Boolean).join(", "));
       var dot = make("span", "dot"); dot.setAttribute("aria-hidden", "true");
       var when = make("span", "when", p.when || "");
       var name = make("span", "name", p.title || "Sem título");
-      appendChildren(btn, dot, when, name);
+      appendChildren(btn, dot, name, when);
       btn.addEventListener("click", function () { go(i); });
       li.appendChild(btn);
       railEl.appendChild(li);

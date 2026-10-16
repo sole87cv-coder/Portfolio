@@ -251,6 +251,31 @@ Páginas editoriais (Serviços e Pesquisa): endereço fixo #servicos e
 registros reais (mestrado, v1su4rt, pesquisa-arte-interativa) e da lista de
 serviços; por isso não há texto duplicado para manter.
 
+Aparência do menu (css/style.css, outubro de 2026): a leitura segue uma
+escada fixa de três degraus, sempre na mesma ordem dentro do item:
+
+    título (.node .name) ....... .94rem  ~15px  é o degrau mais alto
+    data (.node .when) ......... .78rem  ~12,5px
+    cabeçalho do grupo (h2) .... .75rem  ~12px, em caixa alta natural
+
+Mais três regras sustentam a escada e valem conferir se continuam verdadeiras
+quando você mexer no CSS:
+
+  - os títulos de grupo não usam MAISÚSCULA nem espaço entre letras; a
+    hierarquia vem do tamanho e da cor, não do formato.
+  - no menu do celular existe UMA rolagem só: o painel rola e o cabeçalho do
+    grupo fica fixo no topo enquanto o grupo passa (.rail.list-view
+    .rail-section, position: sticky). Não devolva max-height/overflow ao ol
+    interno: isso recria a segunda janela de rolagem.
+  - os chips de temas quebram em linhas (.mobile-topic-tabs, flex-wrap: wrap)
+    em vez de rolar para o lado. Todos aparecem de uma vez.
+  - item selecionado tem as três marcas ao mesmo tempo: fundo claro, barra
+    de cor na esquerda e ponto cheio. Item em destaque (featured) só fica
+    mais firme, com peso 600 - ele não concorre com a seleção.
+  - os tamanhos base vivem fora das media queries. Os blocos de celular só
+    ajustam o que realmente precisa mudar; se você precisa aumentar o título
+    do menu, mude o valor base, não o do celular.
+
 
 ====================================================================
 7. FUNDO GENERATIVO POR REGISTRO (só dois números)
