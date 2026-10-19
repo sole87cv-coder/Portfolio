@@ -116,7 +116,7 @@ window.PROJECTS = [
       {
         "src": "masp-oficina.jpg",
         "caption": "Registro audiovisual da Oficina Microcidades",
-        "alt": "Registro da oficina sob o Vão Livre do MASP, com a van amarela da Sucata Quântica"
+        "alt": "Registro da oficina sob o Vão Livre do MASP, com a Kombi amarela da Sucata Quântica"
       }
     ],
     "mode": 3,
@@ -228,8 +228,8 @@ window.PROJECTS = [
     "images": [
       {
         "src": "sucata-van.jpg",
-        "caption": "Van da Sucata Quântica montada como estação de trabalho",
-        "alt": "Van amarela da Sucata Quântica equipada com ferramentas e materiais de trabalho"
+        "caption": "Kombi da Sucata Quântica montada como estação de trabalho",
+        "alt": "Kombi amarela da Sucata Quântica equipada com ferramentas e materiais de trabalho"
       }
     ],
     "links": [
@@ -563,6 +563,41 @@ window.PROJECTS = [
         "label": "v1su4rt",
         "text": "v1su4rt.vercel.app",
         "url": "https://v1su4rt.vercel.app"
+      },
+      {
+        "label": "Florcloud",
+        "text": "florcloud.vercel.app",
+        "url": "https://florcloud.vercel.app"
+      }
+    ],
+    "images": [
+      {
+        "src": "app-psycovisao.webp",
+        "caption": "Psyco_Visão · painel de ajustes",
+        "alt": "Tela do app Psyco_Visão com o painel Ajustes aberto, as abas Sonho, Som, Ouvir e Sistema, o controle Mostrar vídeo em Visível e o status Olho Cego no topo",
+        "width": 487,
+        "height": 431
+      },
+      {
+        "src": "app-urut.webp",
+        "caption": "Urut · controles sobre a fumaça",
+        "alt": "Tela do app Urut com controles deslizantes de sensibilidade de áudio e giroscópio, Fumaça e Folha, velocidade e escolha entre Auto, P&B e Cor, sobre fumaça em preto e branco",
+        "width": 487,
+        "height": 431
+      },
+      {
+        "src": "app-v1su4rt.webp",
+        "caption": "v1su4rt · contornos em pigmento",
+        "alt": "Tela do app v1su4rt com anéis concêntricos coloridos sobre fundo preto e o botão Ativar interações na parte inferior",
+        "width": 487,
+        "height": 431
+      },
+      {
+        "src": "app-florcloud.webp",
+        "caption": "Florcloud · painel de interação",
+        "alt": "Tela do app Florcloud com o botão Ativar interações e os controles de sensibilidade do áudio e do giroscópio, intensidade da nuvem de pontos e mistura de cor, com uma forma alaranjada à direita",
+        "width": 487,
+        "height": 431
       }
     ],
     "mode": 4,
@@ -576,7 +611,7 @@ window.PROJECTS = [
     "kind": "Canal audiovisual",
     "when": "YouTube",
     "title": "Canal de vídeo",
-    "subtitle": "YouTube · @501e87",
+    "subtitle": "YouTube · @v1su4rt",
     "text": "Canal onde ficam videoarte, filminutos, videoinstalações e registros artísticos: o que continua existindo depois que a projeção se apaga.",
     "tags": [
       "Videoarte",
@@ -613,8 +648,8 @@ window.PROJECTS = [
       },
       {
         "label": "Canal",
-        "text": "YouTube · @501e87",
-        "url": "https://www.youtube.com/@501e87"
+        "text": "YouTube · @v1su4rt-Vj",
+        "url": "https://www.youtube.com/@v1su4rt-Vj"
       }
     ],
     "mode": 0,

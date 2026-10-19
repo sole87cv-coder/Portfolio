@@ -171,7 +171,7 @@ body.bare .ambient-effects select { width: 100%; }
 body.bare .controls { position: fixed; z-index: 6; top: calc(1rem + var(--safe-top)); left: calc(1rem + var(--safe-left)); }
 body.bare .controls .panel { right: auto; left: 0; }
 .ambient-hint { display: none; }
-body.bare .ambient-hint.is-shown { position: fixed; z-index: 5; bottom: calc(1rem + var(--safe-bottom)); left: calc(1rem + var(--safe-left)); right: calc(1rem + var(--safe-right)); max-width: 24rem; margin: 0; padding: .5rem .65rem; border: 1px solid var(--line); border-radius: 12px; background: rgba(11,11,12,.9); color: var(--muted); font-size: .78rem; line-height: 1.5; }
+body.bare .ambient-hint.is-shown { display: block; position: fixed; z-index: 5; bottom: calc(1rem + var(--safe-bottom)); left: calc(1rem + var(--safe-left)); right: calc(1rem + var(--safe-right)); max-width: 24rem; margin: 0; padding: .5rem .65rem; border: 1px solid var(--line); border-radius: 12px; background: rgba(11,11,12,.9); color: var(--muted); font-size: .78rem; line-height: 1.5; }
 body.bare .controls, body.bare .ambient-effects, body.bare #c-bare, body.bare .desktop-nav, body.bare .ambient-hint.is-shown { transition: opacity .45s ease; }
 body.bare.chrome-dim .controls, body.bare.chrome-dim .ambient-effects, body.bare.chrome-dim #c-bare, body.bare.chrome-dim .desktop-nav, body.bare.chrome-dim .ambient-hint.is-shown { opacity: 0; pointer-events: none; }
 .mobile-menu-state { color: var(--soft); font-weight: 500; }
@@ -266,6 +266,7 @@ body.no-details .fallback > summary::-webkit-details-marker { display: none; }
   .desktop-menu-link[aria-current="page"] { background: var(--accent); color: #111; font-weight: 600; }
   .desktop-menu-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .desktop-menu-divider { display: block; height: 1px; margin: .25rem .5rem; background: var(--line); }
+  .desktop-menu-group { display: block; padding: .5rem .7rem .1rem; color: var(--muted); font-size: .72rem; font-weight: 600; letter-spacing: .02em; }
   .desktop-topic-filter { position: relative; display: block; }
   .browse-tools > .filter-control:first-of-type { display: none; }
   .desktop-topic-filter > summary {
@@ -396,11 +397,17 @@ body.no-details .fallback > summary::-webkit-details-marker { display: none; }
   .mobile-menu-panel .browse-tools { position: static; grid-template-columns: minmax(0,1fr); gap: .55rem; padding: 0; background: transparent; }
   .mobile-menu-panel .mobile-topic-tabs {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: .35rem;
-    padding: .1rem 0 .4rem;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+    padding: .1rem 0 .5rem;
+    scrollbar-width: thin;
   }
   .mobile-topic-tabs button {
+    flex: 0 0 auto;
     min-height: 44px;
     padding: .45rem .7rem;
     border: 1px solid var(--line);

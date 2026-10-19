@@ -85,6 +85,8 @@
     railViewToggle.setAttribute("aria-pressed", String(listView));
     railViewToggle.textContent = listView ? "Ver cronologia em faixa" : "Ver cronologia em lista";
   });
+  // No celular o painel é longo: o alternador fica no topo da lista para encurtar o caminho até a faixa.
+  railEl.parentNode.insertBefore(railViewToggle, railEl);
   var searchEl = document.getElementById("c-search");
   var countEl = document.getElementById("browse-count");
   var statusEl = document.getElementById("app-status");
@@ -647,8 +649,14 @@
       var divider = make("span", "desktop-menu-divider");
       divider.setAttribute("role", "presentation");
       appendChildren(projectsPanel, all, divider);
+      var lastGroup = null;
       projects.forEach(function (p) {
         if (!p.menu) return;
+        var group = p.timelineGroup || "undated";
+        if (group !== lastGroup) {
+          lastGroup = group;
+          projectsPanel.appendChild(make("span", "desktop-menu-group", timelineGroups[group] || timelineGroups.undated));
+        }
         var item = make("button", "desktop-menu-link", p.title);
         item.type = "button";
         item.setAttribute("data-project-id", p.id);
@@ -681,7 +689,7 @@
       if (menu._openTimer) { window.clearTimeout(menu._openTimer); menu._openTimer = 0; }
       menu._closeTimer = window.setTimeout(function () {
         if (!menu.contains(document.activeElement) && menu.getAttribute("data-open-source") !== "click") setDesktopMenuOpen(menu, false);
-      }, 200);
+      }, 320);
     });
     menu.addEventListener("focusin", function () { setDesktopMenuOpen(menu, true, "focus"); });
     menu.addEventListener("focusout", function (event) {
@@ -841,6 +849,7 @@
   outputs.forEach(function (pair) { updateOutput(pair[0], pair[1]); pair[0].addEventListener("input", syncVisualSliders); });
   document.getElementById("c-clear-ink").addEventListener("click", function () { shader.clearStains(); });
   var paintPointer = null, lastPaintX = 0, lastPaintY = 0;
+  var stopGhost = function () {};
   function paintStepReached(dx, dy) {
     var reference = Math.max(12, Math.min(window.innerWidth, window.innerHeight) * 0.022);
     return dx * dx + dy * dy >= reference * reference;
@@ -855,6 +864,7 @@
     if (relativeX < 0 || relativeX > 1 || relativeY < 0 || relativeY > 1) return false;
     var reference = Math.max(1, Math.min(bounds.width, bounds.height));
     var start = !paintPointer;
+    stopGhost();
     shader.addStain(relativeX, relativeY, start ? 0 : (x - lastPaintX) / reference, start ? 0 : (y - lastPaintY) / reference);
     lastPaintX = x; lastPaintY = y;
     return true;
@@ -931,11 +941,50 @@
       chromeTimer = 0;
       closeControls();
       if (document.body.classList.contains("bare")) document.body.classList.add("chrome-dim");
-    }, document.body.classList.contains("bare") ? 4200 : 9000);
+    }, document.body.classList.contains("bare") ? 2800 : 9000);
   }
   controls.addEventListener("input", bumpChrome);
   controls.addEventListener("toggle", function () { if (controls.open) bumpChrome(); });
-  ["pointermove", "wheel", "keydown", "touchstart"].forEach(function (type) { document.addEventListener(type, bumpChrome, { passive: true }); });
+  ["wheel", "keydown", "touchstart"].forEach(function (type) { document.addEventListener(type, bumpChrome, { passive: true }); });
+  // O mouse parado sobre a tela não acorda os ajustes: só movimento intencional (≥24px acumulados) ou perto da faixa superior.
+  var moveAnchorX = null, moveAnchorY = 0, moveAccum = 0;
+  document.addEventListener("pointermove", function (event) {
+    if (moveAnchorX === null) { moveAnchorX = event.clientX; moveAnchorY = event.clientY; moveAccum = 0; }
+    moveAccum += Math.abs(event.clientX - moveAnchorX) + Math.abs(event.clientY - moveAnchorY);
+    moveAnchorX = event.clientX; moveAnchorY = event.clientY;
+    if (event.clientY < 96 || moveAccum >= 24) {
+      moveAccum = 0;
+      bumpChrome();
+    }
+  }, { passive: true });
+  // Em modo ambiente a tela desenha sozinha manchas-fantasma, um convite silencioso para pintar. A primeira mancha do usuário encerra o efeito por sessão.
+  var ghostTimer = 0;
+  function prefersReducedMotion() {
+    return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }
+  function ghostOnce() {
+    if (!document.body.classList.contains("bare") || prefersReducedMotion()) return;
+    var x = 0.15 + Math.random() * 0.7;
+    var y = 0.25 + Math.random() * 0.5;
+    shader.addStain(x, y, (Math.random() - 0.5) * 0.02, (Math.random() - 0.5) * 0.02);
+    if (shader.releasePointer) shader.releasePointer();
+  }
+  function scheduleGhost(delay) {
+    window.clearTimeout(ghostTimer);
+    ghostTimer = window.setTimeout(function () {
+      ghostTimer = 0;
+      ghostOnce();
+      if (document.body.classList.contains("bare") && !prefersReducedMotion()) scheduleGhost(7000);
+    }, delay);
+  }
+  function startGhost() {
+    if (prefersReducedMotion()) return;
+    scheduleGhost(3500);
+  }
+  stopGhost = function () {
+    window.clearTimeout(ghostTimer);
+    ghostTimer = 0;
+  };
   document.addEventListener("pointerdown", function (event) {
     if (controls.open && !withinControls(event.target)) closeControls();
   }, true);
@@ -946,6 +995,7 @@
     ambientHint.classList.toggle("is-shown", on);
     // No celular os ajustes vivem dentro do <details> do menu, fechado em modo ambiente; eles voltam ao cabeçalho para permanecerem alcançáveis.
     syncMobileMenu(on ? false : window.innerWidth <= 699);
+    if (on) startGhost(); else stopGhost();
     bumpChrome();
     if (on) return;
     if (window.innerWidth <= 699) { setMobileMenuOpen(true); mobileMenuSummary.focus(); }
