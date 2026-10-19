@@ -32,6 +32,26 @@ window.PROJECTS = [
         "value": "FAPESP, processo 2023/03423-1"
       }
     ],
+    "images": [
+      {
+        "src": "mestrado-gt-grupo-de-pesquisa.webp",
+        "width": 588,
+        "height": 324,
+        "caption": "Sessões de grupo de trabalho do Grupo de Pesquisa"
+      },
+      {
+        "src": "mestrado-trajetorias-em-revolta.webp",
+        "width": 837,
+        "height": 640,
+        "caption": "Capa do livro Trajetórias em Revolta"
+      },
+      {
+        "src": "mestrado-projeto-ocupacoes-cartaz.webp",
+        "width": 641,
+        "height": 643,
+        "caption": "Cartaz do Projeto Ocupações"
+      }
+    ],
     "jump": [
       {
         "label": "Centro Cultural Ouvidor 63",
@@ -230,6 +250,96 @@ window.PROJECTS = [
         "src": "sucata-van.jpg",
         "caption": "Kombi da Sucata Quântica montada como estação de trabalho",
         "alt": "Kombi amarela da Sucata Quântica equipada com ferramentas e materiais de trabalho"
+      },
+      {
+        "src": "sucata-cinema.webp",
+        "width": 961,
+        "height": 1464,
+        "caption": ""
+      },
+      {
+        "src": "sucata-raios-e-trovoes.webp",
+        "width": 1600,
+        "height": 918,
+        "caption": ""
+      },
+      {
+        "src": "sucata-jam-session.webp",
+        "width": 585,
+        "height": 995,
+        "caption": ""
+      },
+      {
+        "src": "sucata-a-luz-do-sons.webp",
+        "width": 1600,
+        "height": 918,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-102030.webp",
+        "width": 770,
+        "height": 571,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-102346.webp",
+        "width": 834,
+        "height": 541,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-102547.webp",
+        "width": 663,
+        "height": 794,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-102912.webp",
+        "width": 812,
+        "height": 540,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-104244.webp",
+        "width": 727,
+        "height": 549,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-104818.webp",
+        "width": 457,
+        "height": 262,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-105202.webp",
+        "width": 776,
+        "height": 509,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-114305.webp",
+        "width": 824,
+        "height": 675,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-114557.webp",
+        "width": 543,
+        "height": 456,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-101139.webp",
+        "width": 800,
+        "height": 791,
+        "caption": ""
+      },
+      {
+        "src": "sucata-historico-101528.webp",
+        "width": 855,
+        "height": 785,
+        "caption": ""
       }
     ],
     "links": [
@@ -313,6 +423,96 @@ window.PROJECTS = [
         "src": "projecao-teto.jpg",
         "caption": "Projeção de luz no teto de uma sala no Memorial da Resistência",
         "alt": "Projeção no teto, moradores da Ouvidor 63 performando"
+      },
+      {
+        "src": "ouvidor-memoria-0000.webp",
+        "width": 1080,
+        "height": 487,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-memoria-0003.webp",
+        "width": 960,
+        "height": 960,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-freak-000.webp",
+        "width": 1600,
+        "height": 900,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-img-0122.webp",
+        "width": 1192,
+        "height": 1600,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-img-0172.webp",
+        "width": 1600,
+        "height": 1067,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-img-0214.webp",
+        "width": 1600,
+        "height": 1067,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-img-0228.webp",
+        "width": 1600,
+        "height": 1252,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-img-0290.webp",
+        "width": 1413,
+        "height": 1600,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-s0le-0019.webp",
+        "width": 1600,
+        "height": 1066,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-s0le-0025.webp",
+        "width": 1600,
+        "height": 1066,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-sole-000.webp",
+        "width": 1600,
+        "height": 746,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-000.webp",
+        "width": 1600,
+        "height": 1200,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-003.webp",
+        "width": 1274,
+        "height": 1600,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-123159.webp",
+        "width": 657,
+        "height": 551,
+        "caption": ""
+      },
+      {
+        "src": "ouvidor-123448.webp",
+        "width": 632,
+        "height": 496,
+        "caption": ""
       }
     ],
     "links": [
@@ -943,6 +1143,38 @@ window.PROJECTS = [
     ],
     "mode": 0,
     "hue": 0.9,
+    "timelineGroup": "profile"
+  },
+  {
+    "id": "apoiar",
+    "category": "info",
+    "kind": "Apoio",
+    "title": "Apoio espontâneo",
+    "subtitle": "Pix livre para um artista autônomo e migrante",
+    "text": "Trabalho por conta própria, como artista migrante. Um Pix livre paga material de sucata, passagem, hospedagem e horas de ateliê para os projetos continuarem. Não existe valor mínimo nem contrapartida: é apoio de quem quer ver o trabalho seguir.",
+    "support": {
+      "keyLabel": "Chave Pix (telefone)",
+      "key": "(11) 95793-6951",
+      "copy": "11957936951",
+      "qr": "pix-qr.png",
+      "qrWidth": 456,
+      "qrHeight": 456,
+      "alt": "QR Code Pix para doação de apoio espontâneo"
+    },
+    "tags": [],
+    "specs": [],
+    "jump": [
+      {
+        "label": "Canais de contato",
+        "target": "contato"
+      },
+      {
+        "label": "Projetos que esse apoio sustenta",
+        "target": "sucata"
+      }
+    ],
+    "mode": 0,
+    "hue": 0.75,
     "timelineGroup": "profile"
   }
 ];

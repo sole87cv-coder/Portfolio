@@ -336,11 +336,12 @@
     });
     card.appendChild(list);
   }
-  function copyText(value, button) {
+  function copyText(value, button, what) {
+    var label = what || "contato";
     function success() {
-      button.textContent = "Contato copiado";
-      button.setAttribute("aria-label", "Contato copiado");
-      window.setTimeout(function () { button.textContent = "Copiar"; button.setAttribute("aria-label", "Copiar contato"); }, 1800);
+      button.textContent = label.charAt(0).toUpperCase() + label.slice(1) + " copiado";
+      button.setAttribute("aria-label", label.charAt(0).toUpperCase() + label.slice(1) + " copiado");
+      window.setTimeout(function () { button.textContent = "Copiar"; button.setAttribute("aria-label", "Copiar " + label); }, 1800);
     }
     function fallback() {
       var field = make("textarea"); field.value = value; field.setAttribute("readonly", "");
@@ -352,6 +353,30 @@
     }
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(value).then(success, fallback);
     else fallback();
+  }
+  function addSupport(card, support) {
+    if (!support) return;
+    var box = make("section", "support");
+    // Ficha própria de Apoio: o título e o texto podem vir do registro (support.title/text) ou do cabeçalho da ficha.
+    if (support.title) {
+      var title = make("h2", "support-title", support.title); title.id = "support-title";
+      box.setAttribute("aria-labelledby", "support-title");
+      box.appendChild(title);
+    }
+    if (support.text) box.appendChild(make("p", "support-text", support.text));
+    var body = make("div", "support-body");
+    var img = document.createElement("img");
+    img.src = "img/" + support.qr; img.alt = support.alt; img.decoding = "async";
+    img.width = support.qrWidth; img.height = support.qrHeight;
+    var key = make("div", "support-key");
+    appendChildren(key, make("span", "k", support.keyLabel), make("code", null, support.key));
+    var copy = make("button", "btn ghost copy-button", "Copiar"); copy.type = "button";
+    copy.setAttribute("aria-label", "Copiar " + support.keyLabel.toLowerCase());
+    copy.addEventListener("click", function () { copyText(support.copy, copy, "chave pix"); });
+    key.appendChild(copy);
+    appendChildren(body, img, key);
+    box.appendChild(body);
+    card.appendChild(box);
   }
   function addImages(card, images, projectTitle) {
     if (!images || !images.length) return;
@@ -415,6 +440,7 @@
     }
     addLinks(card, p.links);
     addImages(card, p.images, p.title);
+    addSupport(card, p.support);
     var actions = make("div", "actions");
     (p.jump || []).forEach(function (item) {
       if (projectIndexById(item.target) < 0) return;
@@ -1071,6 +1097,7 @@
   document.getElementById("logo-sole").addEventListener("click", function () { goToId("bio"); });
   document.getElementById("nav-bio").addEventListener("click", function () { goToId("bio"); });
   document.getElementById("nav-contact").addEventListener("click", function () { goToId("contato"); });
+  document.getElementById("nav-support").addEventListener("click", function () { goToId("apoiar"); });
   document.getElementById("nav-services").addEventListener("click", function () { showDesktopPage("services", false); });
   function showTopicFromNav(key) {
     filterEl.value = key;
