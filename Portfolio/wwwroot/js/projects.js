@@ -1169,8 +1169,20 @@ window.PROJECTS = [
         "target": "contato"
       },
       {
-        "label": "Projetos que esse apoio sustenta",
-        "target": "sucata"
+        "label": "Arte interativa",
+        "target": "pesquisa-arte-interativa"
+      },
+      {
+        "label": "Eletrônica embarcada",
+        "target": "embarcados"
+      },
+      {
+        "label": "Aplicativos interativos",
+        "target": "apps-interativos"
+      },
+      {
+        "label": "Laboratório audiovisual integrado",
+        "target": "lab-integrado"
       }
     ],
     "mode": 0,
