@@ -365,16 +365,13 @@
     }
     if (support.text) box.appendChild(make("p", "support-text", support.text));
     var body = make("div", "support-body");
-    var img = document.createElement("img");
-    img.src = "img/" + support.qr; img.alt = support.alt; img.decoding = "async";
-    img.width = support.qrWidth; img.height = support.qrHeight;
     var key = make("div", "support-key");
     appendChildren(key, make("span", "k", support.keyLabel), make("code", null, support.key));
     var copy = make("button", "btn ghost copy-button", "Copiar"); copy.type = "button";
     copy.setAttribute("aria-label", "Copiar " + support.keyLabel.toLowerCase());
     copy.addEventListener("click", function () { copyText(support.copy, copy, "chave pix"); });
     key.appendChild(copy);
-    appendChildren(body, img, key);
+    body.appendChild(key);
     box.appendChild(body);
     card.appendChild(box);
   }

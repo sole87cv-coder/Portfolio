@@ -1155,11 +1155,7 @@ window.PROJECTS = [
     "support": {
       "keyLabel": "Chave Pix (telefone)",
       "key": "(11) 95793-6951",
-      "copy": "11957936951",
-      "qr": "pix-qr.png",
-      "qrWidth": 456,
-      "qrHeight": 456,
-      "alt": "QR Code Pix para doação de apoio espontâneo"
+      "copy": "11957936951"
     },
     "tags": [],
     "specs": [],
