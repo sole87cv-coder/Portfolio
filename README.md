@@ -1,156 +1,213 @@
-# Portfólio interativo — Sol Emanuel Calderón Vargas
+# Portfólio — Sol Emanuel Calderón Vargas
 
-Portfólio artístico em português para audiovisual, pesquisa, fotografia, video mapping, cenografia, práticas coletivas e experiências interativas. O mestrado abre a navegação como destaque. Os demais itens são organizados em cronologia inversa e em áreas separadas para atuação contínua, experiências em desenvolvimento, séries sem data, perfil e links. O shader monocromático muda de linguagem visual de acordo com o item; toque ou clique revela pigmentos que se expandem e se dissolvem.
+Portfólio com uma página estática de rolagem por idioma: PT-BR em `Portfolio/wwwroot/index.html`, ES em `es/index.html`, EN em `en/index.html` e FR em `fr/index.html`. A leitura segue **Início → Trabalho → Pesquisa → Sobre → Contato**, com os mesmos registros, fatos, IDs e recursos em todas as versões. Textos, fichas, serviços publicados, links e galerias estão no HTML; JavaScript acrescenta interação, não monta nem traduz o conteúdo editorial.
+
+Implementação e demonstração verificadas localmente em Chrome/Playwright; resultados e limitações estão abaixo. A galeria VIVITAR abre no topo, sem duplicar fotos, junto de uma área explícita para experimentar os cinco shaders com mouse, toque, teclado e sensores opcionais. **Opção A escolhida:** o fundo generativo permanece nas margens e as folhas protegem a leitura. Não houve commit, push, deploy ou configuração de domínio.
 
 ## Abrir localmente
 
-- Execute `.\dev-serve.ps1` no PowerShell, ou abra `Portfolio.sln` no Visual Studio e inicie o projeto `Portfolio`. O perfil local usa `http://localhost:5173`.
-- O projeto ASP.NET Core serve os arquivos estáticos de `Portfolio/wwwroot`, que é a única cópia do site. Não há segunda versão na raiz do repositório, e nada precisa ser sincronizado à mão.
-- Também é possível abrir `Portfolio/wwwroot/index.html` diretamente. Todo o conteúdo e a interação visual funcionam sem permissões de dispositivo.
-- O projeto usa alternativas para eventos de toque, atualização de cartões, altura da tela, foco e janela ampliada em navegadores antigos. A validação final ainda deve incluir os aparelhos Android que o artista deseja atender.
+- Abra `Portfolio/wwwroot/index.html` diretamente para conferir a leitura. Recursos como copiar Pix dependem das condições de segurança do navegador.
+- Para servir os mesmos arquivos por HTTP, execute `python -m http.server 8123 --directory Portfolio/wwwroot` na raiz do repositório e abra `http://127.0.0.1:8123/index.html`, se Python já estiver disponível.
+- Alternativa local: com o SDK .NET 10 instalado, execute `.\dev-serve.ps1` ou inicie `Portfolio` pelo Visual Studio. O perfil usa `http://localhost:5173` e o projeto tem `TargetFramework` `net10.0`.
+- ASP.NET Core serve `wwwroot` apenas no desenvolvimento local; **não participa do deploy estático**.
+
+## Estrutura e fonte de conteúdo
+
+| Arquivo/pasta | Responsabilidade |
+| --- | --- |
+| `Portfolio/wwwroot/index.html` | Fonte editorial PT-BR: apresentação, trabalhos, pesquisa, formação, contatos, apoio, serviços, links e imagens. |
+| `Portfolio/wwwroot/es/index.html`, `en/index.html`, `fr/index.html` | Versões editoriais completas em espanhol, inglês e francês, com os mesmos fatos e IDs. |
+| `Portfolio/wwwroot/css/style.css` | Papel, tipografia, cores do sistema, responsividade e composição do canvas. |
+| `Portfolio/wwwroot/js/app.js` | Âncoras, registros, pintura, Ambiente, ampliação, Pix, idioma e sensores opt-in da demonstração. |
+| `Portfolio/wwwroot/js/shader.js` | Cinco linguagens generativas, manchas, WebGL, alternativa Canvas2D e diagnóstico. |
+| `Portfolio/wwwroot/js/audio.js` | Sons 8-bit dos logotipos e feedback breve de menus, chamadas, registros e Ambiente, após acionamento. |
+| `Portfolio/wwwroot/js/projects.js` | Contrato de referência dos sete serviços; não deve guardar uma segunda cópia do portfólio. |
+| `Portfolio/wwwroot/img/` e `img/responsive/` | Imagens originais e variantes existentes, declaradas explicitamente no HTML. |
+| `Portfolio/wwwroot/fonts/chickscratch-aoe.ttf` | Fonte local dos títulos; comprovação da licença de redistribuição pendente (D6). |
+| `Portfolio/Program.cs`, `Portfolio/Portfolio.csproj`, `dev-serve.ps1` | Servidor local opcional. |
+| `vercel.json` | Configuração existente de publicação estática. |
+| `CORRECOES-MANUAIS.txt` | Guia prático de edição para o artista. |
+
+### Contrato de serviços
+
+`projects.js` contém somente `window.SERVICES`, com **sete objetos**, cada um com `id`, `label`, `line` e `status`. Não é um mecanismo de renderização: `app.js` não lê essa lista para construir a página. Os cinco serviços `OK` são escritos manualmente em `#servicos`, dentro de Contato; os dois `CONFIRMAR` ficam fora da página.
+
+| Serviço | Estado | Âncora publicada |
+| --- | --- | --- |
+| Video mapping e projeção | `OK` | `service-video-mapping` |
+| Imagem ao vivo (VJ) | `CONFIRMAR` | Não publicada |
+| Videomaker | `OK` | `service-videomaker` |
+| Fotografia (book, ensaio, eventos) | `CONFIRMAR` | Não publicada |
+| Cenografia e iluminação | `OK` | `service-cenografia-iluminacao` |
+| Oficinas | `OK` | `service-oficinas` |
+| Aplicativos interativos | `OK` | `service-apps-interativos` |
+
+A lista de serviços é a única referência auxiliar em JavaScript. Descrições de trabalhos, biografia, fichas e legendas não devem ser duplicadas nela; a fonte editorial continua no HTML.
+
+## Leitura e navegação efetivas
+
+- O cabeçalho contém sete controles: S0LE (retorna a Início), Trabalho, Pesquisa, Sobre, Contato, idioma e Ambiente. Em larguras **até 480 px**, JavaScript move o mesmo seletor de idioma para o rodapé, sem duplicá-lo.
+- Cada trabalho usa `<details>` e `<summary>` nativos; as fichas usam `<dl>`, `<dt>` e `<dd>`. Abrir e fechar registros não exige JavaScript.
+- Links internos usam `#id`. Com JavaScript, o destino e seus `<details>` ancestrais são abertos, a página rola e o foco acompanha o acionamento. A rolagem identifica a seção ativa, atualiza o destaque do cabeçalho e pode substituir a âncora da seção no histórico. Links para registros internos permanecem utilizáveis.
+- Os **20 IDs editoriais preservados** são: `mestrado`, `pesquisa-arte-interativa`, `masp`, `v1su4rt`, `licenciatura`, `bogota`, `sucata`, `ouvidor63`, `embarcados`, `fita-ws2811`, `lab-integrado`, `cyber-synth`, `kx-101`, `apps-interativos`, `canal-youtube`, `fotografia-vivitar`, `bio`, `referencias`, `contato` e `apoiar`. As seções e demais elementos têm IDs adicionais; 20 não é a contagem total de IDs do documento.
+- **Sem JavaScript, todo o conteúdo editorial publicado continua no mesmo HTML**, com registros nativos, fichas, contatos e galerias. Não há resumo paralelo para manter. Abra os registros aninhados pelos summaries nativos; a revelação automática de uma âncora é um aprimoramento de `app.js`. Os links de imagem abrem o original; Ambiente, som, ampliação em diálogo e cópia assistida não funcionam. Sem JavaScript, links nativos para os quatro idiomas aparecem no rodapé e o seletor fica oculto. Com JavaScript, o seletor é movido do cabeçalho ao rodapé até 480 px.
+- A galeria VIVITAR fica aberta em Início, primeiro visualmente; mantém a âncora `#fotografia-vivitar`, as dez fotos, descrições e créditos. A foto 02 abre a sequência, com carregamento prioritário. As galerias rolam horizontalmente, sem avanço automático. Miniaturas começam em cinza e revelam cor por interação. Com JavaScript, o original abre em `<dialog>` com descrição e legenda; fechar devolve o foco à imagem de origem.
+- Na abertura, telas largas combinam a fotografia à esquerda com apresentação e demonstração à direita. Até 820 px, a ordem visual é fotografia → demonstração → apresentação; o `h1` mantém a precedência no HTML. Técnica e descrição da série ficam em um disclosure nativo, sem remover conteúdo. São 15 registros e dois disclosures auxiliares, totalizando 17 `<details>` por idioma.
+- O Pix usa a chave já publicada. A cópia tenta a área de transferência; se não estiver disponível, seleciona a chave e orienta a cópia manual. Sem JavaScript, a chave continua legível.
+
+## Identidade visual e idiomas
+
+- ChickenScratch AOE é carregada localmente por `@font-face`, com peso 400. Títulos manuscritos têm pelo menos 28 px: fotografia e demonstração usam 28 px, os demais `h3` usam 30 px; o `h1` da abertura varia de 36 a 50 px e os `h2` começam em 42 px.
+- O corpo usa fontes serifadas do sistema (`Iowan Old Style`, `Palatino Linotype`, Palatino, Georgia), de **18 a 20 px** e entrelinha 1,65. Rótulos, fichas e legendas podem ter 16 px; dicas e mensagens auxiliares da demonstração usam 14–16 px. Não há carregamento de Google Fonts.
+- Folhas e cabeçalho usam fundo de papel com **90% de opacidade**, sem reduzir a opacidade do texto. As folhas têm bordas arredondadas, desfoque do fundo de 14 px e névoa em duas camadas que não capturam cliques: atmosfera de 18–26 s e véus orgânicos com máscara SVG procedural, deslocamento e blur, em 32 s (38 s no rodapé). Movimento reduzido desativa a animação; transparência reduzida torna a folha opaca e remove a névoa. A textura é local, embutida no CSS.
+- Menus usam contornos, realce da seção ativa e respostas visuais ao foco/hover; chamadas principais têm botões de maior destaque. Registros e serviços têm fichas próprias. O logo S0LE original aparece no cabeçalho e na abertura; v1su4rt permanece no rodapé. Até 380 px, o cabeçalho distribui os controles em duas linhas, sem ocultar as seções.
+- O padrão é claro; `prefers-color-scheme: dark` aplica a paleta escura conforme o sistema. Preferência por transparência reduzida torna as folhas opacas.
+- **Opção A escolhida:** no tema claro, `#gl` usa `invert(1) hue-rotate(180deg)`, `mix-blend-mode: multiply` e opacidade `.55`. No escuro, não há filtro; a composição é normal e a opacidade `.7`. A revisão original das 30 capturas manteve as cinco linguagens nas margens, sem comprometer o texto protegido pelas folhas. Os resultados de contraste originais abaixo correspondem às folhas com 98% de opacidade; não são a medição das novas superfícies translúcidas.
+- **PT-BR, ES, EN e FR** têm conteúdo completo em HTML próprio, com `lang="pt-BR"`, `lang="es"`, `lang="en"` e `lang="fr"`. O seletor tem quatro opções ativas e usa destinos relativos explícitos: `index.html`, `es/index.html`, `en/index.html` e `fr/index.html`, conservando a âncora do registro em leitura. Recursos e links também são relativos, para funcionar por HTTP e ao abrir o HTML diretamente por `file://`. Os IDs permanecem iguais em todas as páginas.
+- CSS, JavaScript, fontes e imagens são compartilhados. As mensagens de retorno à leitura e cópia do Pix vêm de atributos localizados no HTML; não há tradução editorial feita por JS. Sem JS, o seletor fica oculto e links de idioma funcionam no rodapé.
+- Ao editar um fato, mantenha as quatro versões coerentes. `hreflang` e os demais endereços absolutos de SEO só serão definidos após confirmação do domínio. Domínio, `canonical`, `og:url` e `sitemap` permanecem pendentes.
+
+### Verificação dos idiomas — 2026-11-12
+
+**303/303 verificações aprovadas por HTTP e 303/303 por `file://`**, em Chrome/Playwright nas quatro páginas, com **78 capturas** em 320/390/820/1440 px e claro/noite, incluindo menu ativo, névoa, serviços e apoio. As 12 trocas entre idiomas foram testadas em cada protocolo e preservam a âncora, abrindo os ancestrais do registro. Foram conferidas unicidade e equivalência dos IDs, os 15 registros e dois disclosures auxiliares (17 `<details>`), as 20 fotos públicas, logos, CSS/fonte local, links, créditos, mensagens de Pix/Ambiente, ampliação, retorno do foco, navegação sem JS e alvos ≥ 44 px. Os rótulos do menu não quebram; até 380 px, os controles ficam em duas linhas. O som foi medido com Web Audio real: onda quadrada, ganho `.018`, duração de 105 ms no menu, sem autoplay/hover; teclado, mute e navegação sem AudioContext foram testados. Névoa não intercepta cliques, texto mantém opacidade integral, e preferências de movimento/transparência reduzidos são respeitadas. Nenhum erro de página, aviso de console, resposta local de erro ou falha de carregamento de arquivo/recurso.
+
+A abertura direta antes falhava com `ERR_FILE_NOT_FOUND` por usar caminhos iniciados em `/`, que apontavam para a raiz do disco. Os quatro HTMLs agora usam recursos relativos; opções de idioma e links sem JS apontam explicitamente para `index.html`.
+
+Evidências adicionais: `relatorio-idiomas.json`, `relatorio-idiomas-arquivo.json`, `idiomas-*.png` e `idiomas-arquivo-*.png` na pasta local de evidências. Larguras são emuladas no navegador; não houve publicação remota.
+
+## Ambiente generativo
+
+A seção em leitura fornece `data-mode` e `data-hue` ao shader. Sem movimento reduzido, a troca de linguagem dissolve uma na outra em cerca de 800 ms.
+
+| Modo interno | Linguagem | Seção automática | Tecla de escolha |
+| --- | --- | --- | --- |
+| `0` | Analógico/CRT | Contato | `4` |
+| `1` | Fumaça | Início | `1` |
+| `2` | Orgânico | Sobre | `2` |
+| `3` | Fluxo | Trabalho | `3` |
+| `4` | Malha digital | Pesquisa | `5` |
+
+A numeração das teclas não é a numeração interna dos modos. `0` no teclado restaura o modo automático da seção; `X` limpa manchas; `A` alterna Ambiente; `Esc` retorna à leitura quando Ambiente está ativo. Atalhos são ignorados em campos de edição, com modificadores e enquanto a imagem ampliada está aberta.
+
+- Na leitura, clique, toque ou arrasto pinta **fora das folhas e controles**, ou na área dedicada `#demo-stage` dentro da demonstração. No toque, o gesto vertical permanece reservado à rolagem; o arrasto horizontal intencional pode pintar. O efeito mantém até seis depósitos de pigmento por canvas.
+- Ambiente oculta e desativa cabeçalho, conteúdo e rodapé, levando **o mesmo botão** para fora do cabeçalho, com o texto “Voltar à leitura”. Permanecem esse botão e a dica “Toque ou arraste para pintar. Esc retorna à leitura.”
+- Em Ambiente, a primeira mancha-fantasma é agendada para **3,5 s** e as seguintes para **7 s**. Cessam na primeira mancha efetivamente feita pelo visitante e não retornam ao reentrar em Ambiente na mesma sessão de página. Não existem com movimento reduzido.
+- Com `prefers-reduced-motion: reduce`, há **zero quadros contínuos em repouso**. A inicialização e eventos ainda desenham quadros pontuais: o contador total não precisa ser zero. Cada depósito fica estático, conserva sua âncora e expira em **4 s**, sem expansão ou dissolução animada; a troca de modo é imediata.
+- WebGL indisponível ou perdido leva à alternativa Canvas2D, com versões simplificadas dos cinco modos. Sem nenhum backend gráfico, o canvas é ocultado e o conteúdo continua acessível. A página oculta não mantém a animação.
+- Qualidade tem níveis 0–2. Telas até 820 px, sinais de capacidade limitada ou economia de dados começam no nível 0, DPR máximo 1 e intervalo de agendamento de 34 ms. Nos demais, o limite inicial de DPR é 1,5; a mediana de 36 quadros acima de 24 ms pode reduzir a qualidade, com espera de 3 s entre reduções. Não há aumento automático de nível.
+- Sons 8-bit são sintetizados após acionamento dos logotipos, menus principais, chamadas de abertura, registros e Ambiente. O feedback de menu é discreto (ganho `.018`, sequências de 105–160 ms, intervalo mínimo de 140 ms); esses sons não usam o microfone nem gravações e não tocam no hover ou automaticamente. `SoleAudio.muted` também bloqueia os sons novos sem interromper a navegação.
+
+### Demonstração interativa
+
+`#demonstracao` contém uma prévia gráfica de 172 px de altura, seletor dos cinco efeitos e botão Limpar. Uma segunda instância do mesmo `createShader`, sempre em qualidade 0/DPR máximo 1, desenha somente quando visível e fora de Ambiente. A prévia compartilha som e orientação com o fundo; Limpar apaga ambos os canvases. Informações de privacidade ficam recolhíveis, mas estados e erros dos sensores permanecem visíveis.
+
+- **Mouse e toque:** mover o cursor deforma o campo sem tinta; clicar ou arrastar pinta na prévia e no fundo. No celular, um toque pinta, arrasto horizontal intencional pinta e gesto vertical rola a página. As fotos mantêm sua galeria horizontal nativa.
+- **Teclado na prévia:** setas deslocam o ponto; Enter ou Espaço pinta; Esc limpa a prévia e desliga os sensores.
+- **Permissões:** dois botões contextuais, fora do menu fixo, ligam/desligam cada entrada; durante a solicitação, outro clique cancela. Nada é solicitado ao carregar a página.
+- **Microfone:** `getUserMedia` pede somente áudio após o clique. Web Audio calcula RMS, graves (60–400 Hz), agudos (1.800–6.500 Hz) e ataques, com envelopes suaves. A análise usa FFT 2048 e atualiza os sinais a cada 32 ms, ou 400 ms com movimento reduzido. A fonte conecta apenas ao analisador, nunca ao alto-falante. Não há gravação, upload, eco ou `MediaRecorder` no código de produção. Tracks e AudioContext são encerrados ao desligar.
+- **Movimento:** dados de orientação do celular, usando `DeviceOrientationEvent` (não acesso bruto ao giroscópio). Quando disponível, `requestPermission()` ocorre no gesto explícito. A primeira amostra calibra a posição; inclinação relativa considera a rotação da tela, é limitada e suavizada. Ausência de dados por 6 s encerra a espera/entrada com mensagem, sem fingir suporte.
+- As entradas modulam suavemente luz, névoa e indicador; nunca deformam fotografias ou texto. WebGL e Canvas2D recebem os sinais. Com movimento reduzido, não há parallax nem movimento do indicador: apenas intensidade discreta, atualizada no máximo a cada 400 ms.
+- Sair de Início, entrar em Ambiente, ampliar uma foto, pressionar Esc, ocultar ou abandonar a página desliga as entradas. Voltar não as religa. Permissões concedidas depois de cancelar não reativam sensores; streams tardios são encerrados.
+- HTTPS ou localhost são necessários; abertura por arquivo depende das permissões do navegador. Recusa, contexto inseguro e ausência de API/dados têm mensagens nas quatro línguas. Sem JS, os botões ficam ocultos e uma explicação permanece; fotos e leitura funcionam.
+- Testes usam áudio de dispositivo falso do Chrome com processamento Web Audio real e eventos de orientação simulados. **Microfone e sensores em celular físico ainda não foram verificados.** Não é comprovação dos outros aplicativos nem alteração de seus repositórios.
+
+### Verificação da experiência — 2026-11-12
+
+**197/197 verificações por HTTP e 197/197 por `file://`** em testes finitos com contextos isolados. Incluem os quatro idiomas, 320/390/820/1440 px nos dois temas, mouse, toque nativo emulado, teclado, consentimento/recusa e encerramento dos sensores, pausa da prévia fora da tela, preservação das fotos e leitura sem JS. WebGL e Canvas2D foram exercitados com os cinco modos: comparação direta dos pixels do canvas confirma resposta visual e invariância dos sinais geométricos com movimento reduzido. A captura direta preserva o buffer apenas na instrumentação de teste, sem alterar a configuração de produção.
+
+A suíte adicional de encerramento e repouso dos sensores aprovou **15/15 verificações em cada protocolo**, nos dois backends. O teste focado de contraste aprovou **40/40 combinações**, mínimo **5,2484:1**, em 390×900 px, dois temas, cinco modos, quatro links de menu focados e intensidade máxima. Amostra texto visível do menu e painel, excluindo texto encoberto pelo cabeçalho; não certifica contraste de todo o portfólio.
+
+Evidências na pasta local: `interacao-20261112-http.json`, `interacao-20261112-arquivo.json`, `interacao-20261112-*.png`, `ciclo-sensores-*.json` e `contraste-foco-demo.json`. Não é teste em celular físico nem certificação integral de acessibilidade; não houve publicação.
+
+### API preservada e diagnóstico
+
+`window.createShader(canvas)` devolve a instância usada por `app.js`:
+
+- `setTarget(mode, hue)`: define modo interno 0–4 e paleta.
+- `addStain(x, y, vx, vy)`: deposita pigmento; coordenadas normalizadas de 0 a 1, origem superior esquerda; velocidades normalizadas têm limite interno.
+- `releasePointer()`: encerra o gesto e libera os depósitos ativos.
+- `clearStains()`: apaga depósitos e estado do ponteiro.
+- `pulse()`: solicita um pulso visual.
+- `setInput(level, x, y, bass, treble, attack)`: intensidade e bandas de 0 a 1, orientação relativa de −1 a 1; os três últimos argumentos são opcionais. Limites internos e ambos os backends; movimento reduzido mantém somente intensidade luminosa.
+- `setPointer(x, y, vx, vy)`: define influência do ponteiro sem criar tinta; coordenadas normalizadas de 0 a 1 e velocidades limitadas.
+- `setActive(active)`: suspende ou retoma o agendamento de desenhos da instância, usado na prévia fora da tela.
+- `params`: parâmetros `speed`, `warp`, `pigment` (padrões 1, 0,6 e 1; `speed` 0 com movimento reduzido).
+- `invalidate()`: solicita redesenho pontual após alterações diretas de parâmetros.
+- `stats()`: diagnóstico com `quality`, `dpr`, `frameDelay`, `backend` (`webgl`, `canvas2d`, `none`), `frames`, `stains`, `stainCoords`, `target`, `mode`, `previousMode`, `mix`, `active` e `input` (`level`, `x`, `y`, `bass`, `treble`, `attack`).
+
+A instância `shader` é local à função de `app.js`, não `window.shader`. Inspecione `shader.stats()` com o depurador pausado nesse escopo, sem criar outro shader para o mesmo canvas. `frames` conta desenhos acumulados; comparar leituras em repouso verifica ausência de atividade contínua. `stainCoords` usa a origem superior esquerda, antes da conversão interna para WebGL. Esses dados não certificam contraste nem aparência.
+
+## Imagens, autoria e decisões editoriais
+
+A autoria fotográfica e a autorização de uso das fotografias foram confirmadas pelo artista **Sol Emanuel Calderón Vargas em 2026-11-11**. Há **20 fotografias com legenda publicadas** e **32 sem legenda ocultas em comentários HTML**: 15 de Ouvidor 63, 15 de Sucata Quântica e dois retratos. O crédito sozinho não substitui a legenda. Os logotipos de marca no cabeçalho, na abertura e no rodapé não entram nessa contagem.
+
+As **quatro capturas de aplicativos** e **três ilustrações conceituais** continuam ocultas, com crédito/autorização e identificação editorial pendentes. Não são fotografias nem comprovação de protótipos. As variantes WebP da série VIVITAR usam `srcset` explícito; o JPEG é alternativa e original de ampliação. Outras imagens usam os arquivos declarados no HTML.
+
+Decisões de manutenção:
+
+- **D1:** chamada principal de Início: “Imagem, som e luz para ativar espaços, memórias e formas de criação coletiva.” Alternativas comentadas não são cópia publicada.
+- **D2:** preservar os canais existentes: e-mail principal, Instagram, WhatsApp, e-mail institucional e chave Pix. Não acrescentar contatos ou URLs não fornecidos.
+- **D3:** publicar somente os cinco serviços `OK`; os dois `CONFIRMAR` não são oferta pública.
+- **D4:** claro por padrão, escuro conforme o sistema; Opção A escolhida após revisão visual e contraste amostrado.
+- **D5:** grafia pública **Psycovisao**.
+- **D6:** licença da fonte local pendente de comprovação; crédito de fonte não comprova licença.
+- **D7:** Matterport identificado como **“Ouvidor 63: Habitar a Arte (tour virtual)”**, não como Memorial da Resistência.
+- **D8:** fotografia sem legenda permanece oculta até aprovação editorial.
+- **D9:** créditos adicionais de equipe não confirmados permanecem omitidos, sem inventar nomes ou funções.
+
+O título definitivo, a defesa, a referência ABNT e o vínculo do endereço do Repositório Unifesp com a dissertação ainda exigem confirmação. Descrições e especificações não confirmadas de aplicativos e protótipos não devem ser restauradas como fatos. O acompanhamento detalhado e a matriz das 59 imagens estão em `PENDENCIAS.md`.
+
+## Editar e conferir
+
+Use `CORRECOES-MANUAIS.txt` para editar parágrafos no HTML, acrescentar `<details>`, fichas, links e imagens. Preserve os IDs e não replique conteúdo em JavaScript. Não inferir datas, instituições, papéis, resultados, créditos ou permissões.
+
+### Resultados históricos da reconstrução — 2026-11-11
+
+A tabela registra a versão inicial, anterior às folhas a 90%, névoa refinada, VIVITAR no topo e sensores. Não certifica contraste ou carregamento desta revisão. Testes em Chrome/Playwright, com toque emulado pelo CDP e servidor ASP.NET em `http://localhost:5173`:
+
+| Verificação | Resultado |
+| --- | --- |
+| Suíte principal | **89/89** verificações aprovadas, incluindo a matriz visual |
+| Limites de interação e qualidade | **16/16** aprovadas |
+| Matriz visual | **30/30** combinações: 390, 820 e 1440 px × claro/noite × modos 0–4; 30 capturas revistas |
+| Contraste de texto visível | **2.885.200** amostras em sete posições de leitura por combinação; mínimo normal **4,8664:1**, grande **5,9352:1** |
+| Contraste no tema noite | Mínimo normal **8,4459:1**, grande **8,6964:1** |
+| Cinco manchas atrás da folha | **30/30** combinações aprovadas; mínimo normal **4,8177:1**, títulos **13,1192:1** |
+| Âncoras e preservação | **22/22** destinos com ancestrais abertos por JS, incluindo os 20 IDs antigos, `servicos` e `pesquisa`; 20 URLs antigas mantidas |
+| Imagens | Todos os **88 arquivos** preservados; 20 fotos publicadas com dimensões, lazy, alt, legenda e crédito; nenhuma foto carregada antes de abrir registros |
+| Interface inicial | 6 controles visíveis a 390 px; 7 a 820/1440 px; idioma no rodapé a 390 px, com e sem JS |
+| Toque e teclado | Todos os alvos ≥ 44 px após abrir registros; sem overflow lateral; rolagem vertical sem pintura, pintura fora das folhas e em Ambiente; skip link, Enter/Espaço, foco, Esc e retorno do foco aprovados |
+| Movimento reduzido | Delta de quadros **0** em repouso; pixels da mancha estáticos e expiração em 4 s, em WebGL e Canvas2D; sem fantasmas |
+| Ambiente e adaptação | Fantasmas em 3,5/7 s, parada permanente após pintura; dissolve de 800 ms; mediana de 36 quadros e intervalo de 3 s entre reduções conferidos |
+| Seção ativa | Observer conferido ao cruzar a linha de leitura em 1440×600 e 390×844 |
+| Alternativa gráfica | WebGL desligado e perda de contexto recuperam Canvas2D, mantendo a página |
+| Pix e ampliação | Cópia e recusa de permissão aprovadas; diálogo, Esc, retorno do foco e separação entre legenda e crédito conferidos |
+| Sintaxe e build | Quatro scripts com sintaxe válida; `dotnet build Portfolio.sln`: **0 avisos, 0 erros** |
+| Console | Nenhum aviso capturado e nenhum erro de página na suíte principal |
+
+A medição exclui registros fechados, texto encoberto pelo cabeçalho e conteúdo recortado pela rolagem das galerias. Captura o fundo com os glifos transparentes e calcula a razão WCAG a partir da cor do texto e dos pixels atrás dele. Os mínimos superam os limites AA de 4,5:1 para texto normal e 3:1 para grande. O teste com manchas é adicional e amostra a folha do hero, sem imagens.
+
+Evidências locais fora do código de produção: `C:/Users/sole8/Documents/Qoder/2026-11-11/14a7cc60/evidencias/`. O pacote reúne as 30 capturas da matriz, montagem, copy PT-BR extraída do HTML, SERVICES, três relatórios JSON e scripts de teste. Há 20 capturas adicionais de capítulos, leitura sem JS, movimento reduzido e Canvas2D na pasta de evidências.
+
+**Limites:** verificação local em navegador com toque emulado, não em celular físico; 320/480/600 px não integram a matriz executada. Não é certificação integral de acessibilidade nem teste de publicação remota. Licença da fonte, domínio e dados editoriais pendentes continuam a exigir confirmação.
+
+Antes de cada publicação ou após mudanças, repita leitura sem JS, âncoras, teclado, foco, toque, ampliação, Pix, Ambiente, movimento reduzido e alternativa Canvas2D. Alterações de paleta, transparência ou shader exigem nova matriz de contraste. Confira contatos, serviços, imagens, decisões D1–D9 e `PENDENCIAS.md` antes de publicar informações novas.
 
 ## Publicar no Vercel
 
-- O site é 100% estático, então a implantação não compila nada. O `vercel.json` na raiz do repositório diz isso ao Vercel: `framework: null` corresponde ao predefinido "Other" (desliga o reconhecimento automático de estrutura, que é o que fazia o projeto ser recusado), `installCommand: ""` pula o `npm install` (não existe `package.json`), `buildCommand` copia `Portfolio/wwwroot` para `dist` e `outputDirectory: "dist"` publica essa cópia como raiz do domínio.
-- Importe o repositório na equipe mantendo a Pasta raiz como raiz do repositório. Não aponte a pasta raiz para `Portfolio/wwwroot`: nesse caso o `vercel.json` deixa de ser lido e o Vercel volta a tentar reconhecer uma estrutura que não existe. Confirme, em Configurações → Implantação, que Estrutura predefinida está como "Outros", Comando de compilação como a cópia do `vercel.json` e Diretório de saída como `dist`.
-- Depois do primeiro deploy, cada push em `master` gera uma versão de produção, e cada push em outro ramo gera uma prévia. Conteúdo novo aparece sem nenhuma etapa manual.
-- `dist` existe apenas dentro da implantação e está no `.gitignore`. Não edite nem crie essa pasta na sua máquina: a única fonte continua sendo `Portfolio/wwwroot`, e uma cópia local seria exatamente a duplicação que o projeto eliminou.
-- O endereço `.vercel.app` é escolhido pelo Vercel no primeiro deploy; domínio próprio se configura em Configurações → Domínios. Só depois de fixado o endereço vale acrescentar `og:url`, `link rel="canonical"` e `sitemap.xml`, porque esses campos exigem a URL absoluta.
-- O servidor ASP.NET Core (`.\dev-serve.ps1`) continua sendo só a leitura local. Ele não participate do deploy e não precisa estar no Vercel.
+O **`vercel.json` existe** na raiz e define:
 
-## Experiência do portfólio
-
-- **Explorar:** filtra obras, pesquisa, coletivos, oficinas, interativos, apps, formação e perfil; cada tema mostra a quantidade de conteúdos, e a linha acima da cronologia diz quantos estão visíveis, qual tema e busca estão ativos e quantos registros só aparecem no celular. A busca inclui texto, atuação, colaboração, local, especificações e links, com atualização contida para não reagir a cada tecla. No celular, a Minibio é a leitura inicial e a navegação, busca, filtros e ajustes ficam agrupados no menu recolhível, cujo rótulo indica o tema em uso. A cronologia abre em lista vertical, com opção de faixa horizontal, e um aviso explica a ordem dos grupos.
-- **Sobre e Contato:** atalhos do cabeçalho levam diretamente à apresentação e aos canais de contato.
-- **Serviços e Pesquisa:** páginas editoriais próprias em `#servicos` e `#pesquisa`, disponíveis em qualquer largura de tela — celular, tablet e desktop. A página de Serviços monta sua grade a partir de `window.SERVICES`; a de Pesquisa reúne a pesquisa em andamento e o experimento ligado a ela. O item aberto no cabeçalho, no menu lateral e nos menus do desktop recebe `aria-current="page"`.
-- **Navegação por conteúdos:** abre cada registro por seleção, busca ou filtro; a URL usa `#id` e a navegação funciona por teclado, toque ou botões. “Mestrado” fica em destaque próprio. Os períodos e datas conhecidos aparecem em ordem inversa; atuação contínua, desenvolvimento, experimentos e conteúdo sem data ficam em grupos distintos. A cronologia não atribui datas.
-- **Leitura do menu:** cada item mostra primeiro o título e depois o período, com escada tipográfica fixa (título ~15 px, data ~12,5 px, cabeçalho de grupo ~12 px, este último em caixa natural, sem MAIÚSCULA nem espaçamento). No celular, o painel tem uma única janela de rolagem: o cabeçalho do grupo fica fixo no topo enquanto o grupo passa, os chips de temas formam uma linha única que rola no próprio eixo horizontal (altura 44 px, `overscroll-behavior-x: contain`) e o alternador lista/faixa fica no topo da lista, junto do caminho até a faixa. No menu Projetos do desktop, os registros aparecem agrupados pelo mesmo rótulo de período. Item selecionado se distingue de destaque: a seleção recebe fundo claro, barra de cor à esquerda e ponto cheio; o destaque apenas ganha peso 600. Os valores base ficam fora das media queries — os blocos de celular só cobrem o que muda de fato.
-- **Ambiente visual e som:** a fumaça procedural é a imagem de fundo principal (modo 1), com camadas em parallax e sombreado que dão volume; toque/clique no espaço visual desloca sua matéria e revela manchas cromáticas na paleta de cada registro. Os modos alternativos são analógico/CRT (0), orgânico psicodélico (2), fluxo (3) e malha digital (4): o analógico usa ruído de sinal, linhas tortas, barra de sincronismo e rasgos; a malha usa célula quadrada, ponto de fuga e nós que acendem — são duas gramáticas opostas, não a mesma grade. Ao trocar de registro, a linguagem anterior se dissolve na seguinte em vez de cortar. O seletor “Efeito visual” fica no painel de ajustes (sempre) e no cabeçalho em telas largas; escolha uma linguagem ou acompanhe o projeto aberto. Arrastar dentro de um mesmo gesto alarga a mancha existente em vez de apagar a tinta anterior. O slider “Distorção” agora muda o comportamento de cada linguagem (linhas tortas no analógico, dobra da fumaça, abertura das pétalas, estiramento do fluxo, profundidade da malha). O fallback Canvas2D oferece as mesmas cinco linguagens de forma simplificada e usa a mesma paleta cossenoidal do shader. Os logotipos S0LE e v1su4rt tocam sequências sintetizadas 8-bit ao clique ou ao foco por teclado. O site não solicita acesso ao microfone e não usa gravações de áudio.
-- **Interface dinâmica:** no Modo ambiente, os ajustes, o botão de sair e a dica de interação ficam flutuando sobre o fundo e se apagam depois de alguns segundos sem uso; voltam quando o movimento é intencional (≈24 px acumulados) ou quando o cursor chega à faixa superior da tela — o mouse parado sobre a tinta não acorda nada. Toque, roda do mouse e teclas continuam trazendo os ajustes de volta imediatamente. A própria tela desenha manchas-fantasma a cada ~7 s (a primeira aos ~3,5 s), um convite para pintar; elas cessam na primeira mancha feita pelo usuário e não existem com movimento reduzido. O painel de ajustes se fecha sozinho por inatividade, ao clicar fora e com Esc; dentro do Modo ambiente, o primeiro Esc fecha o painel e o segundo devolve o portfólio. Atalhos quando o foco não está em campo de texto: `A` alterna o Modo ambiente, `C` abre os ajustes, `1` a `5` escolhem a linguagem visual, `0` volta ao efeito por projeto e `X` limpa as manchas.
-- **Movimento reduzido:** não há animação contínua. As manchas ficam estáticas após o toque e desaparecem ao fim do intervalo definido; o efeito respeita a preferência do sistema.
-- **Sem JavaScript:** a página apresenta um resumo editorial, a ficha do mestrado, o Centro Cultural Ouvidor 63 e links principais. Filtros, navegação dinâmica e shader requerem JavaScript.
-- **Imagens:** cada imagem deve ter legenda e descrição alternativa; clicar abre a versão ampliada.
-
-## Atualizar conteúdo
-
-O catálogo está em `Portfolio/wwwroot/js/projects.js`. Cada item usa um objeto com estes campos:
-
-- `id`: identificador único, usado na URL e nos botões de ligação.
-- `category`: categoria de navegação: `works`, `research`, `collective`, `workshop`, `interactive`, `apps`, `education`, `profile` ou `info`.
-- `kind`, `when`, `title`, `subtitle`, `text`: tipo, data/período, título e conteúdo editorial.
-- `role`, `collaborators`, `location`: atuação individual, colaboração e local; preencha apenas quando confirmados.
-- `status`: estado editorial opcional, como operacional ou em desenvolvimento, somente se confirmado; não use a data como estado.
-- `timelineGroup`: `featured`, `research`, `dated`, `ongoing`, `development`, `experiments`, `undated` ou `profile`; define o rótulo e o agrupamento da navegação, não a autoria nem uma data. Um valor fora dessa lista é exibido como “Séries e conteúdos sem data”.
-- `tags`: temas e linguagens para busca e apresentação.
-- `featured: true`: destaca o item com o rótulo “Em destaque” na ficha e na cronologia.
-- `mobileOnly: true`: apresenta o registro apenas na visualização de celular.
-- `specs`: objetos `{ label, value }`.
-- `images`: objetos `{ src, caption, alt, credit }`. `src` é o nome do arquivo dentro de `img/`; `credit` só deve ser preenchido quando confirmado e aparece ao fim da legenda. Imagens com variantes WebP podem incluir `width`, `height` e `responsiveWidths` para a galeria escolher a resolução adequada; o original continua a ser usado na ampliação e como alternativa a WebP.
-- `links`: objetos `{ label, text, url, copy, copyValue }`. `url` precisa começar com `https:`, `mailto:` ou `tel:`, ou o link não aparece. `copy` é opcional e mostra o botão “Copiar”.
-- `jump`: objetos `{ label, target }`; o destino precisa existir.
-- `mode`, `hue`: família visual do shader (0 analógico/CRT, 1 fumaça, 2 orgânico psicodélico, 3 fluido, 4 malha digital) e paleta de pigmento associada ao item.
-- `sub: true`: apresenta um experimento como subitem no menu lateral.
-- `menu: true`: inclui o registro no menu “Projetos” do desktop. Os menus de tema (chips do celular, painel “Explorar por temas”, seletor de prévia) são gerados a partir da lista `topics` em `js/app.js`, com contagem de conteúdos calculada; nenhum deles precisa ser editado no HTML. A lista `window.SERVICES`, no fim de `projects.js`, alimenta ao mesmo tempo o menu “Serviços” e a página de serviços.
-
-A redação dos campos `subtitle` e `text` está em primeira pessoa, na voz do artista. Ao adicionar um registro, escreva na mesma pessoa e não complete datas, papéis, instituições ou créditos por inferência.
-
-Ao incluir um projeto, confirme datas, autoria individual/coletiva, função, local, créditos e direitos de uso das imagens. Não publique datas ou papéis ainda incertos como fatos. Escreva o resumo para leitura rápida e use `specs` para dados objetivos.
-
-## Estrutura
-
-Todo o site existe uma única vez, em `Portfolio/wwwroot`. Não há cópia na raiz do repositório nem pasta de sincronização manual.
-
-- `Portfolio/wwwroot/index.html`: marcação, navegação e controles.
-- `Portfolio/wwwroot/js/projects.js`: dados editoriais do portfólio.
-- `Portfolio/wwwroot/js/app.js`: filtros, busca, navegação, cartões, imagens, links e controles.
-- `Portfolio/wwwroot/js/shader.js`: ambiente visual generativo e fallback Canvas2D.
-- `Portfolio/wwwroot/js/audio.js`: sequências 8-bit dos logotipos.
-- `Portfolio/wwwroot/css/style.css`: identidade visual, tipografia e layouts responsivos.
-- `Portfolio/wwwroot/fonts`: fonte dos títulos, hospedada localmente.
-- `Portfolio/wwwroot/img`: retratos e documentação visual, com variantes em `img/responsive`.
-- `Portfolio/Program.cs` e `Portfolio/Portfolio.csproj`: servidor local ASP.NET Core.
-- `dev-serve.ps1`: atalho para subir o servidor de desenvolvimento.
-- `vercel.json`: configuração de implantação — copia `Portfolio/wwwroot` para `dist` e publica essa cópia como raiz do domínio.
-- `CORRECOES-MANUAIS.txt`: guia de manutenção do artista — onde mora cada texto, como alterá-lo, como adicionar conteúdo, imagens, temas e sem quebrar a arquitetura.
-
-## Publicação
-
-Os arquivos do site ficam em `Portfolio/wwwroot`. Para hospedagem estática, publique o conteúdo dessa pasta na raiz servida pelo provedor. Para executar como aplicação ASP.NET Core, publique o projeto `Portfolio` com o SDK compatível com o `TargetFramework` definido em `Portfolio.csproj`.
-
-Este repositório não contém atualmente uma configuração `vercel.json`; configure o diretório de publicação no provedor conforme a estrutura acima ou adicione uma configuração específica antes de seguir instruções próprias da plataforma.
-
-
-## Acesso, desempenho e privacidade
-
-- Layout automático prioriza leitura em coluna em telas estreitas; no celular, a Minibio aparece primeiro e o Mestrado continua no topo destacado da cronologia. O seletor de visualização serve para prévia, não mede o dispositivo real.
-- O menu móvel usa `<details>` quando disponível e alternância por teclado como fallback; o conteúdo editorial básico continua visível sem JavaScript.
-- Tablets e desktops mantêm a organização atual; os elementos de navegação retornam às posições originais quando a janela sai da largura de celular.
-- A preferência do sistema por movimento reduzido pausa a animação contínua. Toques deixam manchas estáticas, que desaparecem sem animação após o intervalo definido.
-- Ao deixar a página, o efeito interrompe os quadros; ao retornar, ele é retomado. Se WebGL e Canvas2D não estiverem disponíveis, os efeitos são escondidos e o conteúdo segue navegável. Se o contexto WebGL se perder durante a visita, o canvas é recriado em Canvas2D e o status explica a simplificação.
-- O efeito tem três níveis de detalhe. Aparelhos com até 4 núcleos/memória, telas estreitas, economia de dados ou sinal fraco começam no nível mais simples; nos demais, o shader mede o tempo real dos últimos 36 quadros e, se a mediana passar de 24 ms, desce um nível (reduz octavas, detalhes e resolução) e segura por três segundos antes de tentar de novo. O nível nunca sobe sozinho, para o fundo não ficar oscilando.
-- Imagens são carregadas sob demanda no cartão atual. A série VIVITAR usa miniaturas WebP responsivas de 480 px e 960 px (ou 720 px nas imagens verticais), com JPEG original como alternativa e para ampliação; outros registros ainda usam os arquivos originais.
-- Fontes: os títulos usam ChickenScratch AOE, hospedada em `Portfolio/wwwroot/fonts/chickscratch-aoe.ttf` e declarada no `@font-face` do `css/style.css` (um único peso; a família fica na variável `--display`). O corpo do texto continua com DM Sans, do Google Fonts, com fontes de sistema como alternativa (`--body`). Sem a rede, o corpo cai na fonte do sistema e os títulos seguem locais.
-- A publicação está preparada, mas ainda não executada: o `vercel.json` na raiz do repositório define o deploy estático de `Portfolio/wwwroot`, e HTTPS vem do provedor. A hospedagem ASP.NET Core continua disponível para uso local ou outro provedor, publicando o projeto com o SDK compatível com `net10.0`.
-- Confirme os direitos de uso e os créditos das imagens antes de publicar. O canal principal de contato é o e-mail pessoal confirmado pelo artista; o e-mail institucional e o WhatsApp permanecem publicados por decisão dele e precisam de aprovação explícita a cada revisão.
-
-## Modelo editorial para novos registros
-
-Todos os registros e a interface usam objetos com campos nomeados. As antigas listas posicionais foram eliminadas na migração de `projects.js`, e o código não as reconhece mais: um campo nesse formato não aparece na página, e salto, link ou imagem nesse formato gera aviso no console.
-
-```js
+```json
 {
-  id: "identificador-unico",
-  category: "works", // works, research, collective, workshop, interactive, apps, education, profile, info
-  kind: "tipo confirmado",
-  status: "estado confirmado",
-  when: "data ou período confirmado",
-  title: "título confirmado",
-  subtitle: "resumo curto",
-  text: "descrição factual, sem completar lacunas por inferência",
-  role: "atuação individual confirmada",
-  collaborators: "créditos coletivos confirmados",
-  location: "local confirmado",
-  tags: ["tema"],
-  specs: [{ label: "Instituição", value: "Nome confirmado" }],
-  images: [{ src: "arquivo.jpg", caption: "Legenda", alt: "Descrição visual", credit: "Crédito confirmado" }],
-  links: [{ label: "Documentação", text: "Abrir documentação", url: "https://exemplo.org" }],
-  jump: [{ label: "Ver pesquisa relacionada", target: "id-existente" }],
-  mode: 0, hue: 0
+  "framework": null,
+  "installCommand": "",
+  "buildCommand": "mkdir -p dist && cp -R Portfolio/wwwroot/. dist/",
+  "outputDirectory": "dist"
 }
 ```
 
-Cada aplicativo deve ter um registro próprio, com o nome público confirmado em `title` (por exemplo, Psycovisao, Urut e v1su4rt), URL específica e estado confirmado. Evite o rótulo genérico “aplicativo” como único identificador.
+A implantação copia os arquivos estáticos para `dist`; não compila ASP.NET e não precisa de SDK .NET, npm ou dependências de aplicação. A fonte permanece `Portfolio/wwwroot`; `dist` é saída de implantação, não outro local de edição.
 
-### Checklist antes de adicionar ou publicar
+Ao importar o repositório, mantenha a pasta raiz na raiz do repositório para ler essa configuração. Confira no painel os comandos herdados, a pasta de saída, a integração e **qual branch é de produção**. A branch de produção não foi confirmada: não há promessa de publicação automática por push em `master`.
 
-- [ ] O `id` é único, curto, sem espaços e estável para links diretos.
-- [ ] Categoria, tipo, estado e período correspondem ao registro; cronologia não substitui estado.
-- [ ] Autoria individual, ação coletiva, colaboração e papel estão diferenciados e confirmados.
-- [ ] Título, texto, instituição, local, créditos e resultados não foram inferidos.
-- [ ] Cada imagem existe em `wwwroot/img` (e suas variantes, quando declaradas, em `wwwroot/img/responsive`), tem legenda, descrição alternativa e crédito/permissão confirmados.
-- [ ] Cada URL usa `https:`, `mailto:` ou `tel:` e leva ao conteúdo esperado.
-- [ ] Cada salto aponta para um `id` existente.
-- [ ] Contatos pessoais foram explicitamente aprovados para divulgação.
-- [ ] A leitura continua compreensível sem shader ou link externo.
-
-A inicialização verifica IDs, categorias, destinos de salto, protocolos de link e nomes de arquivo de imagem e registra avisos no console. Imagens ausentes são ocultadas; confirme esses avisos antes de publicar.
-
-## Pendências editoriais conhecidas
-
-- O artista confirmou que a exposição do Memorial da Resistência foi uma extensão da pesquisa apoiada pela FAPESP, com video mapping da escada e direção e criação do vídeo projetado no teto, em 6 de dezembro de 2025. Restam créditos adicionais da equipe, quando aplicáveis.
-- Confirmar o título formal e a referência final da pesquisa de mestrado de 2023–2025.
-- Confirmar créditos e direitos de uso das imagens em cada registro.
-- Confirmar a publicação do e-mail institucional (`sol.emanuel@unifesp.br`) e do WhatsApp pessoal. O artista confirmou `v1su4rt87@gmail.com` como canal principal em 2026-10-15; o institucional ficou como referência secundária e pode ser retirado sem tocar nos demais canais.
-- Confirmar estado atual dos protótipos e se há demonstrações autorizadas.
-- Revisar a legenda/contexto fotográfico de `retrato-capa.jpg` e a identificação contextual das fotos VIVITAR.
-
-## Validação antes da publicação
-
-- Compile a solução com o SDK .NET 10 instalado: `dotnet build Portfolio.sln`. Um `obj/` antigo gera avisos falsos de arquivo ausente; reconstrua antes de confiar em um 404 do `dotnet run --no-build`.
-- Abra `http://localhost:5173` com `.\dev-serve.ps1` e confira o console do navegador: a inicialização deve terminar sem avisos.
-- Valide a sintaxe dos quatro scripts ativos em `Portfolio/wwwroot/js` (`app.js`, `audio.js`, `projects.js`, `shader.js`) com `node --check`. O Node não precisa estar no `PATH` do sistema; use o executável distribuído com o editor.
-- Confira a renderização em celulares, tablets e desktops, incluindo WebGL indisponível, JavaScript desativado, toque, teclado e preferência por movimento reduzido.
-- Veja as cinco linguagens do fundo em um aparelho real, com o dedo: o arrasto deve deixar tinta contínua (sem sumir no meio do gesto) e a troca de registro deve dissolver a linguagem anterior. Em Modo ambiente a tela desenha manchas-fantasma a cada ~7 s (a primeira aos ~3,5 s) e elas cessam na primeira mancha feita pelo usuário; os ajustes voltam a aparecer só com movimento intencional (≥24 px acumulados) ou perto da borda superior. As medidas automáticas confirmam estrutura e movimento, não a aparência; os tempos de 2,8 s (Modo ambiente) e 9 s para apagar os ajustes, e o intervalo das manchas, são escolha editorial e ficam em `bumpChrome` e `scheduleGhost`.
-- Teste os menus de desktop, a busca, os filtros por tema e cada `jump`, link de serviço e link de projeto.
-- Confirme a leitura e os controles em redes lentas e com economia de dados. Verifique no inspetor do navegador se as miniaturas VIVITAR selecionam variantes WebP adequadas à largura e se JPEG atende navegadores sem suporte.
-- Não foi configurado domínio ou publicação neste repositório.
+Para outro provedor estático, publique o conteúdo de `Portfolio/wwwroot` como raiz servida. Só após confirmar domínio e publicação devem ser definidos os endereços absolutos de SEO e as referências das quatro versões de idioma. Esta revisão não executa deploy nem configura domínio.

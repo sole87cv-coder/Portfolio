@@ -1,570 +1,555 @@
 GUIA DE MANUTENÇÃO DO PORTFÓLIO · P0rtaS0le
-Arquivo de trabalho do artista. Este documento não é publicado no site.
-Versão: outubro de 2026.
-
-
-====================================================================
-0. COMO LER ESTE GUIA
-====================================================================
-
-O site foi feito para que quase toda mudança de conteúdo aconteça em
-UM arquivo só: Portfolio/wwwroot/js/projects.js. As outras partes
-(aparência, comportamento, fundo generativo) são código e devem ser
-tocadas apenas quando você quiser mudar a forma, não o texto.
-
-Regra de ouro, na ordem:
-  1. Mudou TEXTO, ficha, link, imagem ou serviço?  -> js/projects.js
-  2. Mudou COR, TIPO DE LETRA, TAMANHO, ESPAÇO?    -> css/style.css
-  3. Mudou MENU, TEMA, AGRUPAMENTO, ORDEM?         -> js/app.js
-  4. Mudou o FUNDO GENERATIVO?                     -> js/shader.js
-  5. Nunca escreva o mesmo texto em dois lugares.
-
+Arquivo de trabalho do artista; não é uma página do site.
+Revisão: 12 de novembro de 2026.
 
 ====================================================================
-1. ONDE MORA CADA COISA
+1. REGRA PRINCIPAL: O CONTEÚDO AGORA MORA NO HTML
 ====================================================================
 
-Portfolio/wwwroot/ ............ única cópia do site. Não existe segunda
-                                versão na raiz do repositório; não há
-                                nada para "sincronizar à mão".
+Há uma página estática por idioma, todas na mesma ordem de leitura:
+  inicio -> trabalho -> pesquisa -> sobre -> contato
+  PT-BR: Portfolio/wwwroot/index.html
+  ES:    Portfolio/wwwroot/es/index.html
+  EN:    Portfolio/wwwroot/en/index.html
+  FR:    Portfolio/wwwroot/fr/index.html
 
-  index.html .................. estrutura da página, botões do cabeçalho,
-                                rótulos fixos e o bloco de texto que aparece
-                                para quem está SEM JavaScript (veja §8).
+Textos, datas, fichas, contatos, apoio, serviços publicados, links e galerias
+são escritos diretamente nesses HTMLs. Não copie esses textos para JavaScript.
+Ao corrigir um fato, atualize as quatro versões sem alterar IDs ou URLs.
+O mesmo conteúdo publicado fica disponível com JavaScript desativado.
+Os registros usam details/summary nativos e as fichas usam dl/dt/dd.
 
-  css/style.css ............... cores, espaçamentos, responsivo e
-                                TIPOGRAFIA (§10).
+Para editar conteúdo: index.html.
+Para reconhecer aparência: css/style.css.
+Para reconhecer interação: js/app.js, js/shader.js e js/audio.js.
+Não é necessário alterar esses códigos para corrigir uma frase ou legenda.
 
-  js/projects.js .............. TODO o conteúdo editorial: os 19 registros,
-                                as legendas, as fichas, os links, as
-                                imagens e a lista de serviços
-                                (window.SERVICES, no fim do arquivo).
+projects.js contém somente window.SERVICES: sete objetos com id, label, line
+e status, usados como referência de serviços, não como cópia do portfólio.
+Os cinco OK são publicados manualmente no HTML; os dois CONFIRMAR ficam fora.
+app.js não usa essa lista para montar o conteúdo. Não escreva descrições de
+trabalhos, biografia ou legendas nesse script; essas correções vão no HTML.
 
-  js/app.js ................... comportamento: busca, temas, menus,
-                                cronologia, cartões, luz ampliada. Também
-                                guarda os RÓTULDOS dos menus (§6).
-
-  js/shader.js ................ fundo generativo (fumaça, analógico,
-                                orgânico, fluxo, malha) e o fallback Canvas2D.
-
-  js/audio.js ................. sons 8-bit dos logotipos S0LE e v1su4rt.
-
-  img/ ........................ originais (JPG de foto, PNG de logotipo).
-  img/responsive/ ............. variantes WebP menores (§9).
-  fonts/ ...................... fonte dos títulos, hospedada localmente (§10).
-
-Fora do wwwroot:
-  Portfolio/Program.cs, Portfolio/Portfolio.csproj ... servidor local ASP.NET.
-  dev-serve.ps1 ....................................... atalho para subir o servidor.
-  vercel.json ......................................... receita da implantação no Vercel (§14).
-
+Consulte o README para o comportamento atual e os resultados de validação.
+Nenhuma etapa de manutenção publica o site automaticamente.
 
 ====================================================================
-2. ANTES DE MEXER EM QUALQUER COISA
+2. ABRIR E ENCONTRAR O TEXTO CERTO
 ====================================================================
 
-1) Cópia de segurança. Se o projeto está no GitHub, crie um ramo
-   (branch) novo ou, no mínimo, confirme que não há mudanças pendentes:
-   faça commit do estado atual antes de editar.
+1) Abra Portfolio/wwwroot/index.html no editor e também no navegador.
+2) Use Ctrl+F no editor para procurar uma frase EXATA que aparece na página.
+3) Faça uma alteração pequena, salve em UTF-8 e recarregue o navegador.
+4) Confira a seção, o registro e os links afetados. Não altere arquivos
+   desconhecidos nem substitua trabalho de outra pessoa.
 
-2) Suba o servidor local e deixe essa janela aberta:
-   .\dev-serve.ps1      e abra   http://localhost:5173
-   Alternativa sem .NET: dentro de Portfolio/wwwroot, execute
-   python -m http.server 8123   e abra   http://127.0.0.1:8123/index.html
+Para conferir por HTTP, se Python já estiver disponível, execute na raiz:
+  python -m http.server 8123 --directory Portfolio/wwwroot
+Abra http://127.0.0.1:8123/index.html.
 
-3) Abra o console do navegador (F12 > Console) e deixe visível. O site
-   AVISA sozinho quando algo fica inconsistente:
-     "ID de projeto repetido: ..."
-     "Categoria de projeto sem tema correspondente: ..."
-     "Destino de navegação inválido: ..."
-     "Link inválido: ..."
-     "Arquivo de imagem inválido: ..."
-     "Menu aponta para conteúdo inexistente: ..."
-   Console limpo = estrutura ok. Console com aviso vermelho = pare e corrija
-   antes de continuar.
+Alternativa: .\dev-serve.ps1 e http://localhost:5173, com SDK .NET 10.
+Portfolio.csproj usa net10.0. ASP.NET Core é servidor local opcional e não
+participa do deploy estático. Não instale dependências para editar textos.
 
-
-====================================================================
-3. MUDAR UM TEXTO · PASSO A PASSO
-====================================================================
-
-Exemplo real: trocar o parágrafo da apresentação (bio).
-
-1) Abra js/projects.js no Bloco de Notas, no VS Code ou no editor que usar.
-2) Procure (Ctrl+L ou Ctrl+F) pela linha:   "id": "bio",
-3) Alguns passos abaixo está o campo:       "text": "Artista audiovisual e ..."
-4) Troque somente o que fica ENTRE as aspas. Mantenha a vírgula no fim da linha.
-5) Salve o arquivo, volte ao navegador e recarregue (F5).
-6) Confirme no console que não apareceu aviso.
-
-É isso. O menu, a busca, a cronologia, o tema do fundo e a URL (#bio) se
-ajustam sozinhos a partir desse registro. Você não precisa editar o HTML
-nem o app.js para mudar texto.
-
-Como encontrar o texto certo quando não sabe o registro:
-  - pesquise no projects.js um pedaço EXATO da frase que está na tela;
-  - se a frase não estiver no projects.js, ela é fixa: procure no index.html
-    (cabeçalho, rodapé, bloco sem JavaScript) ou no app.js (rótulos de menu
-    e títulos de grupo, §6).
-
-Atenção ao peso das palavras: datas, autores, instituições, papéis e
-créditos são fatos. Se você não tem a informação confirmada, deixe o campo
-vazio ou omita a linha — o site continua funcionando. Não complete lacuna
-por inferência; o portfólio é o registro da sua obra.
-
+Locais úteis no index.html:
+  id="inicio" ................ fotos VIVITAR, nome e apresentação curta.
+  id="fotografia-vivitar" ..... galeria aberta no topo, dez fotos sem duplicação.
+  id="demonstracao" ........... botões Microfone/Movimento e mensagens locais.
+  id="trabalho" .............. trabalhos e aplicativos.
+  id="pesquisa" .............. mestrado, arte interativa e eletrônica.
+  id="sobre", id="bio" ....... apresentação e formação.
+  id="contato" ............... canais públicos já existentes.
+  id="servicos" .............. cinco serviços publicados, dentro de Contato.
+  id="apoiar" ................ texto de apoio, chave Pix e botão de cópia.
+  id="referencias" ........... rodapé, links existentes e crédito da fonte.
 
 ====================================================================
-4. TABELA DE CAMPOS DE projects.js
+3. CORRIGIR UMA FRASE OU CRIAR UM PARÁGRAFO
 ====================================================================
 
-Cada registro é um bloco entre chaves { ... }, separado do próximo por
-vírgula. Campos possíveis:
+Exemplo: procure id="bio" e altere apenas o texto entre <p> e </p> dentro
+desse elemento. Preserve id="bio" e as tags que delimitam o trecho.
+Não há outro resumo sem JavaScript para atualizar: é o MESMO parágrafo.
 
-  id .............. endereço do conteúdo (#bio, #ouvidor63). Único, curto,
-                    sem espaço, sem acento, sem maiúscula. NÃO mude depois de
-                    publicar: links e botões de salto apontam para ele.
-  category ........ em qual tema o item aparece. Valores atuais: works,
-                    research, collective, workshop, interactive, apps,
-                    education, profile, info. Ver §6.
-  kind ............ tipo (ex.: "Instalação", "Video mapping", "Perfil").
-  when ............ período exibido na linha do tempo (ex.: "2024", "2019-").
-                    Não invente data; use "-" para o que segue em curso.
-  title ........... título do cartão e do item no menu lateral.
-  subtitle ........ linha logo abaixo do título.
-  text ............ parágrafo principal. Escreva em texto corrido (§5).
-  role ............ sua atuação no projeto ("Direção e video mapping").
-  collaborators ... equipe e colaborações, como você confirma.
-  location ........ local.
-  status .......... estado editorial ("Em desenvolvimento", "Operacional"),
-                    quando confirmado. Estado não é data.
-  tags ............ lista de temas/linguagens; entram na busca.
-                    Formato: ["Video mapping", "Luz"],
-  specs ........... ficha técnica em pares:
-                    [{ "label": "Instituição", "value": "Unifesp" }]
-  images .......... galeria, ver §9.
-  links ........... saídas: [{ "label", "text", "url" }]; url precisa começar
-                    com https:, mailto: ou tel:. Add "copy": true para ganhar
-                    o botão "Copiar" (útil para e-mail e WhatsApp).
-  jump ............ atalhos para outros registros:
-                    [{ "label": "Sucata Quântica", "target": "sucata" }]
-                    o "target" tem que existir, senão o console avisa.
-  timelineGroup ... agrupamento da cronologia (§6).
-  menu ............ true coloca o registro no menu "Projetos" do desktop.
-                    Sem a linha, o item não aparece naquele menu.
-  sub ............. true mostra o item como linha menor (subitem) na cronologia.
-  featured ........ true acrescenta a etiqueta "Em destaque".
-  mobileOnly ...... true o item só aparece na prévia de celular.
-  mode ............ linguagem do fundo para este registro (§7).
-  hue ............. paleta do pigmento, de 0 a 1 (§7).
+Para a chamada principal, procure class="hero-line" em #inicio:
+  <p class="hero-line">Imagem, som e luz para ativar espaços, memórias e formas de criação coletiva.</p>
+As alternativas no comentário seguinte não são texto publicado (D1).
 
-Ordem dos campos dentro do bloco é livre. Ordem dos BLOCOS no arquivo é a
-ordem do menu lateral quando dois registros pertencem ao mesmo grupo.
+Para separar parágrafos, use dois elementos <p>, não um campo de JavaScript:
+  <p>Primeiro parágrafo aprovado pelo artista.</p>
+  <p>Segundo parágrafo aprovado pelo artista.</p>
+Esse exemplo é apenas um modelo; não o publique como redação definitiva.
 
+Cuidados de HTML:
+  - Não apague </p>, </div>, </details> ou aspas de atributos ao editar texto.
+  - Use &amp; para um & em texto ou URL, &lt; para < literal e &gt; para >.
+  - Dentro de atributo entre aspas duplas, use &quot; para uma aspa literal.
+  - Caminhos usam /, nunca barra invertida.
+  - Salve em UTF-8 para manter acentos e o nome Calderón Vargas.
+  - Comentários <!-- ... --> são rascunhos ocultos. Não use -- dentro deles
+    e não crie comentários aninhados.
+
+Escreva na voz do artista. Data, autoria, função, instituição, equipe, local,
+resultado, estado operacional e permissão são fatos: publique só o confirmado.
+Se falta informação, omita o dado ou mantenha um comentário de pendência.
+Não transforme nome de arquivo, aparência de imagem ou texto antigo em prova.
 
 ====================================================================
-5. O QUE QUEBRA O ARQUIVO (erros comuns)
+4. ACRESCENTAR UM TRABALHO COM DETAILS E FICHA DL
 ====================================================================
 
-São erros de digitação que derrubam o site inteiro, porque o navegador
-desiste de ler o arquivo. Todos se manifestam como "o site parou de
-mostrar conteúdo" + uma linha vermelha no console.
+Escolha Trabalho ou Pesquisa e insira o registro dentro da seção correta,
+antes do parágrafo final class="continuity". Não crie outra seção principal
+só para um registro e não escreva uma cópia em projects.js.
 
-  - Esquecer a vírgula no fim de um bloco ou de um campo.
-  - Usar aspas duplas dentro do texto:  "exposição "Constelações""  -> errado.
-    Use aspas tipográficas:  "exposição “Constelações”"  -> certo.
-  - Quebrar a linha no meio do texto. Cada campo texto fica em uma linha só.
-    Se quiser parágrafo novo, use " · " ou divida entre subtitle e text.
-  - Barra invertida ( \ ) no caminho de imagem. Sempre / e, ainda assim,
-    o campo src aceita só o nome do arquivo (§9).
-  - Acento, espaço ou maiúscula no id.
-  - id repetido: dois registros com o mesmo id -> o console avisa e o
-    navegador só consegue abrir o primeiro.
-  - Colar HTML (<b>, <br>, <a href>) dentro dos campos. Nada no site aceita
-    markup; o texto apareceria como um trecho de código na tela.
-  - URL que começa com http: -> o link é descartado silenciosamente.
-  - Salvar o arquivo em codificação que não seja UTF-8 (o acento vira "?").
-    No Bloco de Notas: Salvar como > Codificação: UTF-8.
+Modelo estrutural (os textos e o ID abaixo são marcadores a substituir):
 
+  <details id="novo-trabalho" class="record">
+    <summary>
+      <h3>Título aprovado</h3>
+      <span class="summary-line">Resumo aprovado.</span>
+    </summary>
+    <div class="record-body">
+      <p>Descrição aprovada em primeira pessoa.</p>
+      <dl>
+        <dt>Atuação</dt>
+        <dd>Função confirmada pelo artista</dd>
+      </dl>
+    </div>
+  </details>
 
-====================================================================
-6. MENUS, TEMAS E AGRUPAMENTOS (mexer aqui exige app.js)
-====================================================================
+Inclua período apenas se confirmado, por exemplo em span class="period".
+Cada dt (nome do dado) deve ter seu dd (valor). Não preencha linhas vazias
+com suposições. Um estado "Em desenvolvimento" não é uma data.
+Não coloque links ou botões dentro do summary; deixe-os no record-body.
+Para um subregistro, use details class="record nested" dentro do record-body
+correspondente, como ocorre em Sucata Quântica e Eletrônica embarcada.
 
-Existem três controles equivalentes para o mesmo filtro, e todos são
-GERADOS automaticamente a partir de uma única lista:
-
-  - chips na barra de temas (celular)
-  - painel "Explorar por temas" (desktop)
-  - seletor "Explorar por tema" (tablet) e dentro do menu do celular
-
-No topo do js/app.js está a lista:
-
-      var topics = [
-        { key: "all", label: "Tudo", cats: null },
-        { key: "works", label: "Trabalhos", cats: ["works"] },
-        ...
-        { key: "profile", label: "Perfil", cats: ["profile", "info"] }
-      ];
-
-Para adicionar um tema novo:
-  1) Acrescente uma linha na lista, com chave curta, rótulo e as categorias
-     que ele reúne, por exemplo
-     { key: "exposicoes", label: "Exposições", cats: ["works"] },
-  2) dê a category correspondente aos registros em projects.js;
-  3) recarregue. Os três controles, as contagens entre parênteses e o
-     seletor de prévia se atualizam sozinhos. Nunca duplique botão de tema
-     no index.html.
-
-Para renomear um tema: mude só o campo label. O key fica no endereço e no
-filtro interno; trocá-lo não é necessário e muda URLs.
-
-Agrupamento da cronologia, logo abaixo, em:
-
-      var timelineGroups = { featured: ..., research: ..., dated: ...,
-      ongoing: ..., development: ..., experiments: ..., undated: ...,
-      profile: ... };
-
-  - o campo timelineGroup de cada registro escolhe o grupo;
-  - renomear um valor de timelineGroups muda o título na tela;
-  - um valor fora da lista faz o item cair em "Séries e conteúdos sem data";
-  - a ORDEM mostrada é a ordem dos registros no projects.js: destaques e
-    pesquisa abrem, depois a cronologia invertida, depois os grupos contínuos.
-    O texto que explica isso ao lado da lista está no index.html
-    (classe rail-order) e precisa continuar verdadeiro se você mudar a ordem.
-
-Menu "Projetos" do desktop: não é mais escrito à mão. Ele lista o botão
-"Ver cronologia completa" seguido de todo registro que tenha "menu": true.
-Para entrar ou sair desse menu, acrescente ou apague essa linha no registro.
-
-Menu "Serviços" e a página de serviços: ambos leem a lista no fim do
-projects.js:
-
-      window.SERVICES = [ { "id": "artista-visual", "label": "Artista visual" }, ... ];
-
-  - label = o que aparece no menu e como título na página;
-  - id = âncora interna (service-<id>), sem espaço nem acento;
-  - incluir um item aqui já o coloca nos dois lugares. Se a lista for
-    apagada, o menu e a página ficam vazios.
-
-Páginas editoriais (Serviços e Pesquisa): endereço fixo #servicos e
-#pesquisa, funcionam em qualquer largura. Elas montam o cartão a partir dos
-registros reais (mestrado, v1su4rt, pesquisa-arte-interativa) e da lista de
-serviços; por isso não há texto duplicado para manter.
-
-Aparência do menu (css/style.css, outubro de 2026): a leitura segue uma
-escada fixa de três degraus, sempre na mesma ordem dentro do item:
-
-    título (.node .name) ....... .94rem  ~15px  é o degrau mais alto
-    data (.node .when) ......... .78rem  ~12,5px
-    cabeçalho do grupo (h2) .... .75rem  ~12px, em caixa alta natural
-
-Mais três regras sustentam a escada e valem conferir se continuam verdadeiras
-quando você mexer no CSS:
-
-  - os títulos de grupo não usam MAISÚSCULA nem espaço entre letras; a
-    hierarquia vem do tamanho e da cor, não do formato.
-  - no menu do celular existe UMA rolagem só: o painel rola e o cabeçalho do
-    grupo fica fixo no topo enquanto o grupo passa (.rail.list-view
-    .rail-section, position: sticky). Não devolva max-height/overflow ao ol
-    interno: isso recria a segunda janela de rolagem.
-  - os chips de temas quebram em linhas (.mobile-topic-tabs, flex-wrap: wrap)
-    em vez de rolar para o lado. Todos aparecem de uma vez.
-  - item selecionado tem as três marcas ao mesmo tempo: fundo claro, barra
-    de cor na esquerda e ponto cheio. Item em destaque (featured) só fica
-    mais firme, com peso 600 - ele não concorre com a seleção.
-  - os tamanhos base vivem fora das media queries. Os blocos de celular só
-    ajustam o que realmente precisa mudar; se você precisa aumentar o título
-    do menu, mude o valor base, não o do celular.
-
+Um link interno, já existente e válido, pode ser escrito assim:
+  <a href="#mestrado">Pesquisa de mestrado</a>
+Com JavaScript, a navegação abre o destino e seus details ancestrais. Sem
+JavaScript, os registros continuam abrindo pelo summary; confira o link no
+navegador escolhido. O código não gera o novo registro automaticamente.
 
 ====================================================================
-7. FUNDO GENERATIVO POR REGISTRO (só dois números)
+5. IDs: PRESERVAR ENDEREÇOS E NÃO DUPLICAR
 ====================================================================
 
-  mode ... 0 analógico/CRT · 1 fumaça · 2 orgânico psicodélico ·
-           3 fluxo · 4 malha digital
-  hue .... 0 a 1, a cor do pigmento revelado ao toque
+Nunca renomeie um ID já publicado para corrigir o título. O ID é endereço;
+o título é o texto do h3. Novo ID: único, curto, minúsculo, sem espaços ou
+acentos, com traços quando necessário. Verifique todo o HTML com Ctrl+F.
 
-Mudar esses dois valores não afeta nada além do fundo. O seletor
-"Efeito visual" dos ajustes permite sobrepor a escolha do visitante;
-"Por projeto" devolve o comando ao mode/hue do registro. Para alterar a
-aparência de uma das cinco linguagens, aí sim é preciso editar shader.js.
+Os 20 IDs editoriais preservados são:
+  mestrado                  pesquisa-arte-interativa
+  masp                      v1su4rt
+  licenciatura              bogota
+  sucata                    ouvidor63
+  embarcados                fita-ws2811
+  lab-integrado             cyber-synth
+  kx-101                    apps-interativos
+  canal-youtube             fotografia-vivitar
+  bio                       referencias
+  contato                   apoiar
 
+Há IDs adicionais de seções, controles, serviços e Memorial. Não são só
+20 IDs no documento inteiro. Preserve também os destinos de href="#...",
+aria-labelledby e aria-controls. Duplicar um bloco exige um novo ID para
+cada elemento identificado nele, não apenas para o details externo.
 
-====================================================================
-8. TEXTO QUE EXISTE EM DOIS LUGARES (as duas exceções)
-====================================================================
-
-a) Bloco sem JavaScript. Dentro do index.html há um cartão
-   <article class="card static-content"> com nome, minibio, mestrado,
-   Ouvidor 63 e alguns links. Ele é o que a pessoa vê com JavaScript
-   desativado (e o que aparece por meio segundo antes do primeiro cartão).
-   Se você reescrever a bio, revise este bloco para não contradizer
-   projects.js. Quem tem JavaScript nunca vê esse texto.
-
-b) Cabeçalho e rótulos de interface. brand-name, brand-sub, o resumo de
-   identidade do cartão de perfil, o texto "Ordem: ..." (rail-order), a
-   dica da cronologia (rail-hint) e os rótulos dos ajustes vivem no
-   index.html. Estão lá porque são estrutura, não conteúdo. Para mudá-los,
-   edite o index.html e nada mais.
-
-c) Contato. os canais aparecem no registro "contato" de projects.js, nesta
-   ordem: e-mail pessoal (principal), Instagram, WhatsApp e e-mail
-   institucional (secundário). São dados pessoais e só ficam públicos com
-   sua aprovação. Para acrescentar um canal, copie um bloco {label, text,
-   url, copy} inteiro e ajuste as quatro linhas; "copy": true cria o botão
-   Copiar e, sem "copyValue", ele copia o que vier depois de mailto:.
-   O domínio unifesp.br é vinculado à instituição e pode deixar de existir
-   quando o vínculo terminar: por isso o e-mail pessoal é o principal e o
-   institucional aparece por último, como referência de pesquisa.
-
+Não mude data-mode/data-hue das cinco seções para editar um trabalho. Esses
+atributos comandam o fundo pela seção em leitura, não por ficha individual.
 
 ====================================================================
-9. IMAGENS · COMO ENTRAR UMA FOTO OU ILUSTRAÇÃO NO SITE
+6. LINKS, CONTATOS E PIX
 ====================================================================
 
-1) Nomeie o arquivo com letras minúsculas, traços e sem acento:
-   mapping-escadas.jpg, ilustracao-fita-ws2811.jpg.
-2) Coloque o original em Portfolio/wwwroot/img/ (JPG para fotografia e
-   ilustração, PNG para logotipo com transparência).
-3) Gere variantes menores em Portfolio/wwwroot/img/responsive/ com o MESMO
-   nome-base, seguidas da largura:
-       img/responsive/mapping-escadas-480.webp
-       img/responsive/mapping-escadas-960.webp
-   O nome é o que o site procura; trocar o nome da variante quebra a escolha
-   automática de resolução.
-4) No registro, declare:
+Edite links no index.html, dentro de <a href="...">rótulo</a>. Use apenas
+endereços fornecidos e aprovados. Não publique URLs novas por suposição.
+Links externos aprovados usam https:, e-mails mailto:, telefones tel:;
+âncoras internas usam # e imagens locais usam img/. Não use javascript:.
+O verificador de app.js AVISA sobre protocolos fora dos autorizados, mas
+não remove o link do HTML. Console limpo não comprova destino ou segurança.
 
-   "images": [
-     {
-       "src": "mapping-escadas.jpg",
-       "caption": "Escada da Ouvidor 63",
-       "alt": "Projeção colorida sobe a escada de concreto de um prédio antigo",
-       "credit": "Foto: ...",
-       "width": 1600,
-       "height": 1067,
-       "responsiveWidths": [480, 960]
-     }
-   ],
+Preservar os canais atuais (D2), sem retirar ou substituir nesta revisão:
+  E-mail principal ........ v1su4rt87@gmail.com
+  Instagram ............... @v1su4rt
+  WhatsApp ................ +55 11 95793-6951
+  E-mail institucional .... sol.emanuel@unifesp.br
+  Pix (telefone) .......... (11) 95793-6951
+  Valor de cópia do Pix ... 11957936951
 
-   - src: só o nome do arquivo, sem "img/" e sem barras;
-   - alt: DESCREVE a imagem para quem não a vê, não repete o título;
-   - caption: legenda curta; credit: só quando o crédito for confirmado;
-     para imagem gerada por IA, deixe isso explicito na legenda ou no crédito,
-     como já foi feito nos registros de eletrônica;
-   - width/height: dimensões do original, para o navegador reservar espaço;
-   - responsiveWidths: as larguras que existem em img/responsive. Sem essa
-     linha, o site usa o arquivo original (funciona, mas pesa mais).
+No Pix, #pix-chave é o valor visível; data-copy de #pix-copiar é o valor
+copiado. Não altere um sem conferir o outro. A cópia tenta a área de
+transferência; se falhar, seleciona a chave e orienta a cópia manual.
+Sem JavaScript, a chave permanece disponível para copiar manualmente.
 
-5) Recarregue e confira: imagem faltando some da galeria e o console avisa
-   "Arquivo de imagem inválido".
-6) Peso: mantenha o original abaixo de ~1600 px de largura e de ~400 KB.
-   Em rede lenta, o que conta é o tamanho do arquivo, não a resolução.
-7) Direitos: foto de terceiros, rosto de outras pessoas e material
-   institucional pedem permissão. Confirme antes de publicar.
-
+O tour Matterport já publicado é "Ouvidor 63: Habitar a Arte (tour virtual)"
+(D7), não o site do Memorial da Resistência. Não o rebatize como Memorial.
+O endereço do Repositório Unifesp está comentado, fora da página pública,
+até confirmação do vínculo com a dissertação. Não o reative por inferência.
 
 ====================================================================
-10. TIPOGRAFIA (o que fazer para trocar a letra)
+7. SERVIÇOS: CINCO OK, DOIS CONFIRMAR
 ====================================================================
 
-Hoje o site usa duas famílias:
+Contrato de projects.js:
+  window.SERVICES com sete objetos, somente estes campos:
+    id ..... chave estável do serviço.
+    label .. nome aprovado.
+    line ... descrição curta aprovada ou referência editorial pendente.
+    status . "OK" ou "CONFIRMAR".
 
-  TÍTULOS ... ChickenScratch AOE, arquivo local
-              Portfolio/wwwroot/fonts/chickscratch-aoe.ttf
-              Aplicada em h1 e h2 dos cartões e no nome do cabeçalho.
-  CORPO ..... DM Sans (carregada do Google Fonts), com fontes do sistema
-              como alternativa. Textos longos, botões, fichas e menus.
+Exemplo de formato de um serviço já publicado:
+  { id: "video-mapping", label: "Video mapping e projeção",
+    line: "Projeção mapeada em arquitetura e espaços expositivos.",
+    status: "OK" }
 
-Tudo é decidido por duas variáveis no começo do css/style.css:
+Lista de referência:
+  1. Video mapping e projeção ........ OK
+  2. Imagem ao vivo (VJ) .............. CONFIRMAR, fora da página
+  3. Videomaker ...................... OK
+  4. Fotografia (book, ensaio, eventos) CONFIRMAR, fora da página
+  5. Cenografia e iluminação ......... OK
+  6. Oficinas ........................ OK
+  7. Aplicativos interativos ......... OK
 
-      --display: "ChickenScratch AOE", "Space Grotesk", system-ui, sans-serif;
-      --body:    "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+A publicação NÃO é automática: app.js não monta serviços a partir da lista.
+Os cinco OK vivem em #servicos, no dl class="services" do index.html, com
+IDs service-video-mapping, service-videomaker, service-cenografia-iluminacao,
+service-oficinas e service-apps-interativos. Cada dt tem um dd e o link
+"Conversar" usa o e-mail principal existente.
 
-  - quer a mesma cara em tudo? troque a lista de --body colocando
-    "ChickenScratch AOE" na frente. Não apague as fontes seguintes: elas são
-    o que aparece enquanto o arquivo baixa ou se ele falhar.
-  - quer só os títulos com outra letra? mexa apenas em --display.
-  - a fonte do título tem UM peso só. Os títulos pedem font-weight: 700, mas
-    como o @font-face declara 100-900 o navegador usa o mesmo desenho em vez
-    de inventar um negrito. A hierarquia vem do tamanho, não do peso.
-  - letras manuscritas precisam de mais espaço: os títulos usam
-    letter-spacing levemente positivo e line-height maior. Se trocar a fonte,
-    revê esses dois valores, senão o texto fecha em si mesmo.
-  - para TROCAR a fonte hospedada: copie o .ttf (ou .woff2) para fonts/,
-    edite o bloco @font-face no topo do css/style.css (nome da família e o
-    caminho em src: url(...)) e escreva esse mesmo nome na frente de
-    --display. São três mudanças e nenhuma linha de JavaScript.
-  - teste sempre com acentos (á à â ã é ê í ó ô õ ú ü ç, e as versões
-    maiúsculas): a ChickenScratch cobre todos eles; nem toda fonte cobre, e
-    caractere ausente volta a aparecer na fonte de cima, o que produz
-    misturas estranhas no meio de uma palavra.
-  - o <link> do Google Fonts no topo do index.html serve apenas para a DM
-    Sans e o Space Grotesk de reserva. Remover essa linha não derruba o
-    site: o texto passa a usar a fonte do sistema.
-  - provérbio de teste rápido: digite na barra de endereço
-      javascript:document.fonts.check('700 40px "ChickenScratch AOE"')
-    e espere true.
-
+D3: não acrescente os dois CONFIRMAR à página. A afirmação geral "fotógrafo"
+em "Atuo como" não confirma oferta de book, ensaio ou eventos. Não crie
+portfólio editorial em JS para evitar a manutenção manual dessa lista curta.
 
 ====================================================================
-11. CONFERIR ANTES DE PUBLICAR
+8. FOTOGRAFIAS, LEGENDAS E GALERIAS
 ====================================================================
 
-Estrutura
-  [ ] F12 sem linha vermelha, nos três modos (celular, tablet, desktop).
-  [ ] dotnet build Portfolio.sln conclui (o build só valida o projeto que
-      serve os arquivos estáticos; um obj/ antigo gera aviso falso de
-      arquivo ausente - reconstrua antes de confiar em 404).
-  [ ] Cada link do menu abre o conteúdo esperado e a URL mostra #id correto.
-  [ ] Botões Anterior/Próximo e as setas do teclado andam pela lista filtrada.
-  [ ] Busca por uma palavra inexistente mostra o cartão "Não encontrei
-      resultados" e o botão de limpar funciona.
+A autoria fotográfica e o uso das fotografias foram confirmados pelo artista
+Sol Emanuel Calderón Vargas em 2026-11-11. Não atribua essas fotos a terceiros.
 
-Visual
-  [ ] 413 px: nada de barra horizontal, alvos de toque de 44 px, menu
-      "Menu" fecha ao escolher um conteúdo.
-  [ ] ~800 px: o seletor de tema substitui os chips; Serviços e Pesquisa
-      abrem normalmente.
-  [ ] 1280 px: menus Projetos/Pesquisa/Serviços abrem por hover e por
-      teclado (Tab + Enter, Esc fecha e devolve o foco ao botão).
-  [ ] O item aberto aparece com destaque no menu lateral, no menu Projetos
-      e no cabeçalho (aria-current).
-  [ ] Imagens: abrir e fechar a luz ampliada; WebP responsivo de fato
-      escolhido (Inspetor > Network, filtro Img).
-  [ ] Fundo: trocar de registro dissolve uma linguagem na outra; arrastar
-      dentro do mesmo gesto não apaga a tinta anterior; os ajustes se
-      apagam sozinhos e voltam com qualquer movimento.
-  [ ] Sem JavaScript (ou com o arquivo app.js bloqueado): o bloco estático
-      do index.html continua legível e honesto em relação aos textos novos.
+Estado do HTML lido:
+  - 20 fotografias com legenda publicadas:
+    Ouvidor 63 (3), Sucata Quântica (1), MASP (3), VIVITAR (10), mestrado (3).
+  - 32 fotografias sem legenda ocultas em comentários:
+    Ouvidor 63 (15), Sucata Quântica (15), Sobre/retratos (2).
+  - 4 capturas de aplicativos ocultas: crédito e autorização pendentes.
+  - 3 ilustrações conceituais ocultas: identificação, crédito e autorização
+    pendentes. Não são fotografias nem comprovação de protótipos.
+Os logotipos de marca no cabeçalho, abertura e rodapé não fazem parte da
+contagem de fotografias.
 
-Conteúdo (o que o console não vê)
-  [ ] Datas, papéis, instituições e créditos confirmados.
-  [ ] Legendas e textos alternativos de todas as imagens.
-  [ ] Créditos e permissões de imagem resolvidos.
-  [ ] E-mail, Instagram e WhatsApp autorizados a ficar públicos.
+D8: crédito e alt não substituem legenda. Imagem sem legenda fica oculta.
+Não descomente de uma vez um grupo de 15 fotos para publicar apenas uma:
+isole o figure aprovado fora do comentário, mantendo as demais ocultas.
+Nunca invente local, data, evento, pessoas ou técnica a partir da imagem.
 
+Para corrigir legenda, procure o nome do arquivo, por exemplo
+vivitar-analogica-05.jpg, dentro de #fotografia-vivitar. O figcaption atual é
+"Sombra". Altere a frase e preserve span class="credit". Confira também o
+aria-label do link de ampliação quando ele reproduz a legenda.
+alt descreve o que se vê; figcaption apresenta a legenda aprovada; credit
+identifica autoria confirmada. Cada informação tem função diferente.
 
-====================================================================
-12. LISTA DE CORREÇÕES MANUAIS DE TEXTO
-====================================================================
+Para incluir uma fotografia nova após aprovação:
+  1) Coloque o arquivo aprovado em Portfolio/wwwroot/img/ com nome estável.
+  2) Dentro da gallery do registro, escreva um figure completo: link do
+     original, picture, img, figcaption e crédito.
+  3) Preencha width/height com as dimensões REAIS, alt descritivo,
+     loading="lazy" e decoding="async".
+  4) No HTML, src e href levam img/ antes do nome. Não é mais um objeto JS.
 
-Como usar: preencha "Texto corrigido" com a redação desejada e faça a troca
-no arquivo e no local indicados (§3). Este documento é uma lista de
-trabalho: ele não altera o site sozinho. Anote aqui toda mudança pedida,
-inclusive as que ainda dependem de confirmação - assim nada se perde entre
-uma conversa e outra.
+Exemplo baseado em foto e metadados que já estão publicados; use como
+referência de estrutura, sem duplicar a imagem no site:
 
-1. Identificação no cabeçalho
-Arquivo: Portfolio/wwwroot/index.html
-Local: elemento <p class="brand-sub"> no cabeçalho
-Texto atual: Artista audiovisual · pesquisa · imagem e som
-Texto corrigido:
+  <figure>
+    <a href="img/lab-novas-midias.jpg" aria-label="Ampliar: Sinalização do Laboratório Novas Mídias">
+      <picture>
+        <img src="img/lab-novas-midias.jpg"
+          alt="Placa vertical com textos e símbolos acima de duas imagens menores."
+          width="366" height="422" loading="lazy" decoding="async">
+      </picture>
+    </a>
+    <figcaption>Sinalização do Laboratório Novas Mídias
+      <span class="credit">Foto: Sol Emanuel Calderón Vargas</span>
+    </figcaption>
+  </figure>
 
-
-2. Legenda de fotografia
-Arquivo: Portfolio/wwwroot/js/projects.js
-Local: registro "fotografia-vivitar", campo images, legenda da imagem 5
-Texto atual: Luz da lua sobre árvores e paisagem
-Texto corrigido:
-
-
-3. Registro da bio
-Arquivo: Portfolio/wwwroot/js/projects.js
-Local: registro "bio", campo text
-Texto atual: (parágrafo da apresentação)
-Texto corrigido:
-Obs.: se mudar este texto, revise também o bloco sem JavaScript do
-index.html (§8a) para que os dois não se contradigam.
-
-
-4.
-Arquivo:
-Local: (id do registro + campo)
-Texto atual:
-Texto corrigido:
-
-
-5.
-Arquivo:
-Local:
-Texto atual:
-Texto corrigido:
-
-
-6.
-Arquivo:
-Local:
-Texto atual:
-Texto corrigido:
-
+As galerias rolam horizontalmente. Com JS, o link abre o original em dialog,
+usa alt/figcaption e devolve o foco ao fechar. Sem JS, abre o próprio arquivo.
+Miniaturas em cinza revelam cor por interação; o original não é substituído.
 
 ====================================================================
-13. PENDÊNCIAS EDITORIAIS CONHECIDAS
+9. IMAGENS RESPONSIVAS: SRCSET EXPLÍCITO
 ====================================================================
 
-- Data da exposição do Memorial da Resistência confirmada pelo artista em
-  2026-10-15: 6 de dezembro de 2025 (já está nos specs do registro).
-- Créditos adicionais de equipe nessa exposição.
-- Título formal e referência final da pesquisa de mestrado (2023-2025).
-- Créditos e direitos de uso das imagens de cada registro.
-- Autorização explícita para manter o WhatsApp e o e-mail institucional
-  públicos. O e-mail pessoal v1su4rt87@gmail.com foi confirmado pelo artista
-  em 2026-10-15 como canal principal.
-- Estado atual dos protótipos de eletrônica. Em 2026-10-15 o artista reescreveu
-  as legendas e passou a assinar as três imagens como F, F1 e F2. Os arquivos
-  ainda são os ilustrações geradas (ilustracao-*.jpg): se existirem fotos reais
-  dos protótipos, entre com elas em img/ e troque o campo src (§9).
-- Revisão da legenda de retrato-capa.jpg. As legendas e os textos alternativos
-  das fotos VIVITAR foram revisados pelo artista na mesma data.
+Variantes não são descobertas automaticamente pelo nome. Declare apenas
+arquivos que EXISTEM em img/responsive/. Cada descritor 480w, 720w ou 960w
+deve corresponder à largura real daquela variante.
 
+Exemplo real de source da primeira imagem VIVITAR, antes do img:
+  <source type="image/webp"
+    srcset="img/responsive/vivitar-analogica-01-480.webp 480w, img/responsive/vivitar-analogica-01-720.webp 720w"
+    sizes="(max-width: 600px) 80vw, 420px">
+
+Mantenha img src="img/vivitar-analogica-01.jpg" como alternativa e href do
+link apontando ao original. Outras fotos VIVITAR têm variantes 480/960;
+não copie 960 para a primeira foto, cuja variante maior é 720.
+Se não há variantes, use só picture/img: não declare arquivos fictícios.
+Ao alterar um arquivo, confira original, srcset, dimensões, alt e legenda.
+Verifique no painel Rede do navegador qual resolução foi realmente usada.
+Imagens ausentes não têm garantia de ocultação automática no app atual;
+confira a visualização e os erros de carregamento, não só o console.
 
 ====================================================================
-14. PUBLICAR · VERCEL
+10. IDENTIDADE, IDIOMA E FUNDO: O QUE PRESERVAR
 ====================================================================
 
-O que o Vercel recebe
-- O site é estático: a implantação não compila nada, só copia arquivos.
-- vercel.json, na raiz do repositório, tem quatro chaves, e nenhuma dessas
-  decisões precisa ser tomada no painel:
-    framework .............. null, que equivale a "Outros". Sem isto o Vercel
-                             tenta reconhecer uma estrutura (Next, Vite,
-                             Astro) que não existe e o projeto falha.
-    installCommand ......... string vazia, que pula a instalação. Não há
-                             package.json no repositório.
-    buildCommand ........... copia Portfolio/wwwroot para dentro de dist.
-    outputDirectory ........ "dist", publicado como raiz do domínio.
+D4: claro por padrão, escuro conforme prefers-color-scheme do sistema.
+Folhas: fundo de papel #F1E8D6 com 90% de opacidade, blur de fundo 14 px,
+bordas arredondadas e duas camadas de névoa sem interceptar cliques.
+O texto mantém opacidade 100%. Atmosfera respira em 18–26 s; véus com
+máscara SVG procedural derivam em 32 s (38 s no rodapé);
+movimento reduzido desativa a animação, transparência reduzida torna a folha
+opaca e remove a névoa. O logo S0LE original aparece no cabeçalho e hero.
+Títulos: ChickenScratch AOE local, peso 400, sempre pelo menos 28 px.
+Fotografia/demonstração: 28 px; outros h3: 30 px; h1 da abertura: 36–50 px;
+h2: a partir de 42 px. Corpo serifado: 18–20 px, entrelinha 1,65.
+Dicas e mensagens auxiliares da demonstração: 14–16 px. Sem Google Fonts.
+D6: o arquivo local da fonte e o crédito Astigmatic/AOETI NÃO comprovam
+licença de redistribuição. A validação da licença continua pendente.
 
-Por que copiar em vez de apontar direto
-- O Vercel serve apenas o conteúdo do Diretório de saída. Se ele usasse
-  Portfolio/wwwroot sem cópia, o site nasceria em /Portfolio/wwwroot/index.html
-  e a URL raiz daria 404. A cópia é o que faz o wwwroot virar a raiz.
-- "Root Directory" do painel NÃO deve apontar para Portfolio/wwwroot: o
-  vercel.json mora um nível acima e deixaria de ser lido. Root Directory fica
-  vazio, na raiz do repositório.
+Opção A escolhida após revisão das 30 capturas em 2026-11-11:
+  Claro: invert(1) hue-rotate(180deg), multiply, opacidade .55 no canvas.
+  Escuro: sem filtro, composição normal, opacidade .7.
+O shader permanece nas margens; as folhas protegem a leitura nos cinco modos.
+Medições da versão anterior, com folhas a 98% de opacidade:
+Contraste mínimo amostrado: 4,8664:1 (texto normal), 5,9352:1 (grande).
+Com cinco manchas atrás da folha: 4,8177:1 (normal), 13,1192:1 (títulos).
+Resultados locais, não certificação integral de acessibilidade. Mudanças
+na paleta, no alfa do papel ou na composição exigem nova medição.
 
-Como publicar (uma vez)
-1) Suba o ramo master. O push já faz isto.
-2) Em vercel.com, dentro da sua equipe: New Project → Import Git Repository →
-   escolha o repositório.
-3) Confira a tela de configuração: Framework Preset "Other", Build Command e
-   Output Directory herdados do vercel.json, Root Directory vazio.
-4) Deploy. Anote a URL .vercel.app criada: ela é o endereço real do portfólio.
-5) Depois disso, cada push em master refaz o deploy sozinho. Conteúdo novo no
-   projects.js aparece no site sem nenhuma etapa manual.
+Idiomas ativos: PT-BR, ES, EN e FR, com conteúdo editorial completo nos
+respectivos HTMLs e html lang correto. data-i18n continua sendo marcação;
+a tradução está no HTML, não em uma troca parcial de rótulos por JS.
+O cabeçalho tem sete controles: S0LE, quatro links de seção, idioma e
+Ambiente. Até 480 px, JS move o MESMO seletor de idioma para o rodapé.
+Trocar idioma usa caminhos relativos com index.html explícito e mantém
+a âncora do registro, tanto por HTTP quanto na abertura direta por file://.
+Sem JS, o seletor fica oculto; os quatro links de idioma no rodapé funcionam.
+CSS, JS, fontes e imagens são compartilhados. Nos HTMLs traduzidos,
+use ../css/, ../js/ e ../img/. Para trocar idioma, use ../index.html,
+../es/index.html, ../en/index.html e ../fr/index.html nos data-href das
+opções e nos links sem JS. Na versão PT, esses caminhos não usam ../.
+Para as mensagens dinâmicas, traduza data-reading-label em #ambiente e
+data-copied/data-copy-fallback em #pix-copiar; preserve data-copy da chave.
+Ao corrigir fatos ou legendas, atualize as quatro versões e preserve IDs.
+Verificação visual e dos idiomas: 303/303 testes por HTTP e 303/303 por
+file://, 78 capturas em 320/390/820/1440 px e claro/noite, incluindo menu
+ativo, névoa refinada, serviços e apoio. As 12 trocas por protocolo preservam âncoras;
+links sem JS e Pix/Ambiente continuam localizados. Até 380 px, o cabeçalho
+usa duas linhas, com cada rótulo inteiro e todos os controles mantidos.
+Fotos, logos, estilos e fonte local carregam nos quatro idiomas. Áudio real
+medido por waveform: onda quadrada, ganho .018 e 105 ms no menu; sem som
+automático ou hover. Teclado, mute, ausência de Web Audio, movimento e
+transparência reduzidos testados. Console e arquivos/recursos sem erros.
+Não houve publicação remota; teste em Chrome com larguras emuladas.
+hreflang só após domínio confirmado. Domínio, canonical, og:url e sitemap
+seguem pendentes; não publique endereço presumido.
 
-O que NÃO fazer
-- Não crie dist na sua máquina. Ele está no .gitignore e só existe durante a
-  implantação; uma cópia local seria a duplicação que o projeto eliminou.
-- Não mova wwwroot para a raiz do repositório. O guia inteiro, o dev-serve.ps1
-  e o servidor ASP.NET apontam para Portfolio/wwwroot.
-- Não acrescente package.json para "ajudar" o Vercel: sem ele a implantação já
-  funciona, e com ele o Vercel passa a esperar dependências que não existem.
-- O servidor local em http://localhost:5173 continua sendo ASP.NET Core e não
-  participa do deploy. Ele serve a mesma pasta, então o que você vê localmente
-  é o que vai ao ar.
+Mapeamento automático do shader por seção:
+  inicio  -> modo 1, fumaça
+  trabalho -> modo 3, fluxo
+  pesquisa -> modo 4, malha digital
+  sobre   -> modo 2, orgânico
+  contato -> modo 0, analógico/CRT
 
-Depois do primeiro deploy
-- Só então vale fixar um endereço absoluto: og:url, link rel="canonical" e
-  sitemap.xml exigem a URL completa. Enquanto o endereço não existir, qualquer
-  valor escrito ali seria chute.
+Teclas (não confundir com os números internos dos modos):
+  A: alterna Ambiente.    1: fumaça.    2: orgânico.    3: fluxo.
+  4: analógico/CRT.       5: malha.     0: automático.  X: limpa manchas.
+  Esc: sai de Ambiente; no dialog de imagem, fecha a ampliação.
+Atalhos não atuam em campos de edição, com modificadores ou dialog aberto.
+
+Na leitura, pintar ocorre fora das folhas e controles, com uma exceção:
+a área #demo-stage dentro da demonstração. No celular, gesto vertical
+reserva a rolagem; arrasto horizontal intencional pode pintar.
+Ambiente usa um único botão, movido para fora do cabeçalho, mais a dica
+"Toque ou arraste para pintar. Esc retorna à leitura." O botão passa a
+"Voltar à leitura"; conteúdo e navegação ficam ocultos e desativados.
+Manchas-fantasma: primeira em 3,5 s, próximas em 7 s, até a primeira mancha
+real do visitante. Não retomam ao reentrar em Ambiente na mesma página.
+
+Movimento reduzido: zero quadros CONTÍNUOS em repouso; eventos desenham
+quadros pontuais. Depósitos estáticos duram 4 s, conservando âncora/tamanho,
+e expiram sem animação. Não há manchas-fantasma; troca de modo é imediata.
+Sem WebGL, há alternativa Canvas2D; sem backend gráfico, o conteúdo continua.
+Sons 8-bit só após cliques/ativação de teclado: logos, navegação principal,
+chamadas de abertura, abrir/fechar registros e Ambiente. Feedback de menu
+usa ganho .018 e sequências de 105–160 ms, com limite entre acionamentos.
+Não há som no hover ou autoplay; os sons 8-bit não usam o microfone.
+
+A abertura usa fotos à esquerda e apresentação/demonstração à direita.
+Até 820 px, a ordem visual é foto -> demonstração -> apresentação;
+o h1 continua antes das fotos no HTML. Descrição e técnica da série ficam
+em details.photography-notes, inicialmente fechado, sem apagar informações.
+Há 15 registros e dois disclosures auxiliares: 17 details por idioma.
+
+A área #demo-stage permite experimentar os cinco efeitos. #demo-mode troca
+a linguagem e #demo-clear limpa prévia e fundo. Mouse sem pressionar deforma;
+clique/arrasto pinta. Toque curto pinta, arrasto horizontal pinta e vertical
+rola a página. Na área focada, setas movem o ponto, Enter/Espaço pinta e Esc
+limpa a prévia e desliga sensores. A galeria mantém a rolagem horizontal.
+A prévia usa o mesmo createShader, qualidade 0/DPR máximo 1, e pausa fora
+da tela, com página oculta ou em Ambiente. Não crie instâncias duplicadas.
+
+A demonstração em #demonstracao pede microfone e orientação só ao clicar
+nos botões respectivos. Outro clique ou Esc desliga; clique durante a espera
+cancela. Áudio é analisado localmente: não grava, envia nem reproduz a voz.
+RMS, graves 60–400 Hz, agudos 1.800–6.500 Hz e ataques alimentam os cinco
+shaders com suavização; FFT 2048, atualização 32 ms (400 ms em movimento
+reduzido). Privacidade fica em details.demo-permissions; os estados e erros
+permanecem visíveis fora dele.
+Sair de Início, abrir uma foto, entrar em Ambiente, ocultar ou abandonar a
+página desliga as entradas; voltar não as religa. Orientação calibra na
+primeira amostra e informa quando o aparelho não fornece dados por 6 s.
+HTTPS/localhost e permissões do navegador são necessários; arquivo local
+pode ter restrições. Fotos nunca são deformadas. Movimento reduzido mantém
+só intensidade discreta, sem parallax. Sem JS, fotos/textos permanecem.
+Mensagens ficam nos data-* de #mic-status/#motion-status e data-off/data-on
+dos botões, traduzidas nos quatro HTMLs. Preserve esses atributos ao editar.
+Microfone real em celular e sensores físicos ainda precisam ser conferidos.
+
+API preservada de createShader(canvas): setTarget, addStain, releasePointer,
+clearStains, pulse e params (speed, warp, pigment), mais invalidate e stats.
+setInput(level,x,y,bass,treble,attack): intensidade e bandas 0–1; orientação
+−1 a 1. Os três últimos argumentos são opcionais. Movimento reduzido mantém
+apenas intensidade luminosa, sem deformação, deslocamento ou ataques.
+setPointer(x,y,vx,vy) influencia o campo sem tinta; setActive(false/true)
+suspende/retoma o agendamento da instância.
+stats() informa quality, dpr, frameDelay, backend, frames, stains, stainCoords,
+target, mode, previousMode, mix, active e input (level,x,y,bass,treble,attack).
+Coordenadas: 0–1, origem superior esquerda.
+A instância shader é local em app.js: use o depurador nesse escopo, não
+window.shader e não crie outra instância no mesmo canvas para conferir.
+frames é acumulado; em movimento reduzido, confira que não avança
+continuamente em repouso. Diagnóstico não comprova contraste ou aparência.
+
+====================================================================
+11. DECISÕES E PENDÊNCIAS EDITORIAIS
+====================================================================
+
+D1: manter a chamada principal de Início; alternativas continuam comentadas.
+D2: manter contatos e Pix existentes, sem canais ou URLs novos não fornecidos.
+D3: somente cinco serviços OK; dois CONFIRMAR fora da página.
+D4: claro padrão e escuro por sistema; Opção A escolhida e testada localmente.
+D5: grafia pública Psycovisao, incluindo rótulos e futuras legendas.
+D6: comprovação da licença de redistribuição da fonte local pendente.
+D7: tour Matterport rotulado como Ouvidor 63, não Memorial da Resistência.
+D8: imagens sem legenda ocultas, mesmo com fotografia autorizada.
+D9: créditos adicionais de equipe não confirmados omitidos, não inventados.
+
+A exposição do Memorial da Resistência tem data publicada de 6 de dezembro
+de 2025; a atuação descrita é video mapping da escada e direção/criação do
+vídeo do teto, como extensão da pesquisa apoiada pela FAPESP. Isso não
+confirma créditos adicionais da equipe nem uma URL oficial do Memorial.
+Título definitivo do mestrado, defesa, referência ABNT e vínculo do
+Repositório Unifesp ainda dependem de confirmação. Não reative descrições
+operacionais ou especificações antigas de protótipos como fatos sem aprovação.
+Capturas e ilustrações conceituais exigem suas próprias confirmações.
+PENDENCIAS.md acompanha as confirmações e a matriz completa das 59 imagens.
+Anotar uma confirmação no guia não modifica a página automaticamente.
+
+Modelo para registrar um pedido de texto:
+  Arquivo: Portfolio/wwwroot/index.html
+  Local: ID do registro + elemento ou nome da imagem
+  Texto atual:
+  Texto corrigido, aprovado pelo artista:
+  Informação factual confirmada por:
+  Pendência que deve continuar oculta:
+
+====================================================================
+12. CONFERIR E PUBLICAR SEM MUDAR A ARQUITETURA
+====================================================================
+
+Revisão interativa de 2026-11-12, Chrome/Playwright:
+  197/197 verificações por HTTP e 197/197 por file://, quatro idiomas.
+  320/390/820/1440 px, claro/noite, mouse, toque emulado e teclado.
+  WebGL e Canvas2D: cinco modos com resposta visual medida diretamente
+  nos pixels do canvas; movimento reduzido conserva a geometria.
+  Áudio de dispositivo falso com Web Audio real e orientação simulada;
+  permissões, recusa, desligamento, fotos intactas e prévia fora da tela.
+  Leitura sem JS preservada. Microfone/orientação em celular físico pendentes.
+  Encerramento/repouso: 15/15 adicionais em cada protocolo, dois backends.
+  Contraste focado: 40/40, mínimo 5,2484:1; 390x900 px, dois temas,
+  cinco modos, quatro links do menu focados e intensidade máxima. Amostra
+  menu e painel visíveis, não o contraste integral do portfólio.
+  Relatórios adicionais: ciclo-sensores-*.json e contraste-foco-demo.json.
+  Evidências: interacao-20261112-http.json, interacao-20261112-arquivo.json
+  e interacao-20261112-*.png, na pasta local de evidências.
+
+Resultados históricos da reconstrução inicial em 2026-11-11:
+A matriz abaixo é anterior às folhas a 90%, névoa refinada e demonstração;
+não certifica aparência ou contraste integral da revisão atual.
+  89/89 verificações principais; 16/16 verificações de limites.
+  30/30 combinações: 390, 820 e 1440 px, claro/noite, modos 0–4.
+  2.885.200 amostras atrás de texto visível, em sete posições de leitura.
+  Contraste mínimo: normal 4,8664:1; grande 5,9352:1.
+  Tema noite: normal 8,4459:1; grande 8,6964:1.
+  30/30 testes adicionais com cinco manchas: normal 4,8177:1;
+  títulos 13,1192:1. Opção A mantida após revisão das 30 capturas.
+  22 âncoras conferidas, incluindo os 20 IDs antigos, servicos e pesquisa.
+  20 URLs antigas e todos os 88 arquivos de imagem preservados.
+  20 fotos publicadas, lazy e com dimensões, legenda e crédito; nenhuma
+  foto carregada antes de abrir os registros. Sete serviços, cinco públicos.
+  Sem JS: leitura integral, summaries nativos e idioma no rodapé a 390 px.
+  Teclado: skip link, Enter/Espaço, foco visível, lightbox e retorno do foco.
+  Toque CDP: rolagem vertical sem pintura; pintura fora das folhas e Ambiente.
+  Movimento reduzido: zero avanço contínuo de frames, manchas estáticas
+  com expiração em 4 s, tanto WebGL como Canvas2D; sem fantasmas.
+  Fantasmas 3,5/7 s e parada permanente após primeira pintura conferidos.
+  Perda de contexto e WebGL desligado recuperam Canvas2D.
+  Queda de qualidade: mediana de 36 frames e intervalo de 3 s conferidos.
+  Alvos de toque >= 44 px após abrir todos os registros; sem overflow lateral.
+  Observer conferido em 1440x600 e 390x844.
+  Quatro scripts com sintaxe válida; dotnet build: zero avisos e erros.
+  Console e erros de página vazios. Não houve commit, push ou deploy.
+
+Limites: teste em navegador local com toque emulado, não em aparelho físico;
+320/480/600 px não fazem parte da matriz executada. Não é certificação
+integral de acessibilidade. Licença da fonte, domínio e fatos pendentes
+continuam a exigir confirmação.
+
+Antes de cada publicação ou após alterações, repetir:
+  [ ] Leitura sem JS, summaries e todas as âncoras preservadas.
+  [ ] Teclado, foco, galerias, ampliação e cópia do Pix com/sem permissão.
+  [ ] Matriz 390/820/1440, dois temas e cinco modos; recalcular contraste.
+  [ ] Toque, Ambiente, fantasmas, reduced motion e fallback Canvas2D.
+  [ ] Imagens, legendas, créditos, contatos, serviços e decisões D1–D9.
+  [ ] Conferir D6 e demais pendências antes de publicar novas informações.
+
+O console atual pode avisar "Âncora quebrada:", "Link sem protocolo
+autorizado:" e "Imagem sem alt ou legenda:". A validação é limitada: não
+comprova autoria, licença, contraste, duplicação de IDs ou URL correta.
+Confira também Rede e a página. Se Node já existir, node --check em app.js,
+audio.js, projects.js e shader.js verifica sintaxe, não conteúdo ou aparência.
+
+Vercel: vercel.json EXISTE na raiz do repositório, com:
+  framework: null
+  installCommand: ""
+  buildCommand: "mkdir -p dist && cp -R Portfolio/wwwroot/. dist/"
+  outputDirectory: "dist"
+
+O deploy é estático: copia wwwroot para dist, sem SDK .NET, npm ou compilação
+de aplicação. ASP.NET net10.0 só serve localmente e não participa do deploy.
+Mantenha a pasta raiz do projeto Vercel na raiz do repositório, para ler o
+vercel.json. Confira os comandos herdados e qual branch está configurada
+como produção. Essa branch não foi confirmada; não se promete deploy de
+produção automático por push em master. Este trabalho não publica o site.
+
+Edite a fonte em Portfolio/wwwroot, não dist. Não crie segunda cópia do site,
+package.json, dependências ou configurações para corrigir conteúdo.
+Só após confirmação do domínio devem ser definidos canonical, og:url,
+sitemap e hreflang das quatro versões. Para hospedagem estática fora
+do Vercel, o conteúdo de Portfolio/wwwroot deve ser servido como raiz.

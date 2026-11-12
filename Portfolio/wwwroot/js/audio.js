@@ -1,4 +1,4 @@
-/* Sons breves 8-bit dos logotipos, sintetizados somente após interação do usuário. */
+/* Nenhum som é iniciado antes de uma ação explícita. */
 (function () {
   "use strict";
   var context = null;
@@ -18,7 +18,15 @@
     }
   }
 
-  function play(notes) {
+  var menuSequences = {
+    navigate: [659.25, 987.77],
+    open: [523.25, 659.25],
+    close: [659.25, 523.25],
+    ambient: [329.63, 493.88, 659.25]
+  };
+  var lastMenu = -Infinity;
+
+  function play(notes, volume = 0.055, step = 0.085) {
     var audio = getContext();
     if (!audio) return;
 
@@ -28,16 +36,16 @@
         try {
           var oscillator = audio.createOscillator();
           var gain = audio.createGain();
-          var onset = start + index * 0.085;
+          var onset = start + index * step;
           oscillator.type = "square";
           oscillator.frequency.setValueAtTime(frequency, onset);
           gain.gain.setValueAtTime(0.0001, onset);
-          gain.gain.exponentialRampToValueAtTime(0.055, onset + 0.008);
-          gain.gain.exponentialRampToValueAtTime(0.0001, onset + 0.075);
+          gain.gain.exponentialRampToValueAtTime(volume, onset + 0.008);
+          gain.gain.exponentialRampToValueAtTime(0.0001, onset + step - 0.01);
           oscillator.connect(gain);
           gain.connect(audio.destination);
           oscillator.start(onset);
-          oscillator.stop(onset + 0.08);
+          oscillator.stop(onset + step - 0.005);
         } catch (_) {
           /* A falha de áudio nunca deve impedir a navegação do portfólio. */
         }
@@ -60,6 +68,12 @@
     playLogo: function (name) {
       if (this.muted || !sequences[name]) return;
       play(sequences[name]);
+    },
+    playMenu: function (name) {
+      var now = performance.now();
+      if (this.muted || !menuSequences[name] || now - lastMenu < 140) return;
+      lastMenu = now;
+      play(menuSequences[name], 0.018, 0.055);
     }
   };
 })();

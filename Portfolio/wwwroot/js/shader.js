@@ -9,8 +9,8 @@
     "precision mediump float;",
     "#endif",
     "uniform vec2 u_res; uniform float u_time;",
-    "uniform float u_warp; uniform float u_pulse; uniform float u_mode; uniform float u_palette; uniform float u_pigment; uniform float u_quality;",
-    "uniform vec4 u_stains[6]; uniform float u_stainGrow[6]; uniform vec3 u_pointer; uniform vec2 u_ptrVel;",
+    "uniform float u_warp; uniform float u_pulse; uniform float u_mode; uniform float u_previousMode; uniform float u_mix; uniform float u_palette; uniform float u_pigment; uniform float u_quality;",
+    "uniform vec4 u_stains[6]; uniform float u_stainGrow[6]; uniform vec3 u_pointer; uniform vec2 u_ptrVel; uniform vec3 u_input; uniform vec3 u_audio; uniform float u_motion;",
     "const float TAU=6.28318;",
     "float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }",
     "float hashFast(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }",
@@ -106,14 +106,21 @@
     "}",
     "void main(){",
     "  vec2 uv=(gl_FragCoord.xy-0.5*u_res)/u_res.y;",
-    "  float t=u_time; float mode=clamp(u_mode,0.0,4.0); float warp=clamp(u_warp,0.0,2.0);",
-    "  float lo=floor(mode); float step_=mode-lo; float hi=min(lo+1.0,4.0);",
-    "  vec2 field=motifField(lo,uv,t,warp);",
-    "  if(step_>0.5){ vec2 other=motifField(hi,uv,t,warp); field=mix(field,other,smoothstep(0.5,1.0,step_)); }",
+    "  float t=u_time; float mode=clamp(u_mode,0.0,4.0); float warp=clamp(u_warp+(u_input.x*0.55+u_audio.x*0.3)*u_motion,0.0,2.0);",
+    "  float previousMode=clamp(u_previousMode,0.0,4.0); float blend=clamp(u_mix,0.0,1.0);",
+    "  vec2 space=uv*(1.0-u_audio.x*0.045)+u_input.yz*0.09;",
+    "  vec2 touch=vec2((u_pointer.x-0.5)*(u_res.x/u_res.y),u_pointer.y-0.5);",
+    "  vec2 delta=uv-touch; float influence=u_pointer.x>=0.0 ? exp(-dot(delta,delta)*7.0)*(1.0-smoothstep(0.0,2.5,u_pointer.z)) : 0.0;",
+    "  space+=influence*(vec2(-delta.y,delta.x)*0.28-u_ptrVel*0.7);",
+    "  vec2 field=motifField(mode,space,t,warp);",
+    "  if(blend<1.0){ vec2 previous=motifField(previousMode,space,t,warp); field=mix(previous,field,blend); }",
+    "  float breath=exp(-dot(space,space)*3.0);",
+    "  field.x+=breath*(u_input.x*0.1+u_audio.y*0.025)+influence*0.028;",
+    "  field.x+=exp(-abs(length(space)-(0.22+u_audio.z*0.16))*20.0)*u_audio.z*0.03;",
     "  float horizon=exp(-abs(uv.y-0.08)*18.0);",
     "  float radius=length(vec2(uv.x*0.78,uv.y-0.06));",
-    "  float analog=1.0-clamp(abs(mode-0.0),0.0,1.0);",
-    "  float grid=1.0-clamp(abs(mode-4.0),0.0,1.0);",
+    "  float analog=mix(1.0-clamp(abs(previousMode),0.0,1.0),1.0-clamp(abs(mode),0.0,1.0),blend);",
+    "  float grid=mix(1.0-clamp(abs(previousMode-4.0),0.0,1.0),1.0-clamp(abs(mode-4.0),0.0,1.0),blend);",
     "  float dither=fract(sin(dot(mod(gl_FragCoord.xy,2048.0),vec2(12.9898,78.233))+t*0.17)*43758.5453);",
     "  float pulse=exp(-abs(radius-(0.14+u_pulse*0.23))*24.0)*u_pulse;",
     "  float grey=(0.018+horizon*0.105+field.x+pulse*0.18+(dither-0.5)*0.012*(1.0+analog*2.0))*(1.0-(0.24+analog*0.10)*dot(uv,uv));",
@@ -142,7 +149,7 @@
     "          float halo=1.0-smoothstep(spread,spread+0.075,dist);",
     "          float released=s.w>=1.0 ? 1.0-smoothstep(0.0,1.6,s.w-1.0) : 1.0;",
     "          float alpha=clamp((body*0.58+rim*0.50+halo*0.16)*fade*released*u_pigment*grain,0.0,0.94);",
-    "          vec3 ink=pigment(mod(s.w,1.0)+u_palette+mode*0.035);",
+    "          vec3 ink=mix(pigment(mod(s.w,1.0)+u_palette+previousMode*0.035),pigment(mod(s.w,1.0)+u_palette+mode*0.035),blend);",
     "          float absorb=0.45+0.55*field.y;",
     "          col=mix(col,ink*absorb,alpha);",
     "          col*=mix(1.0,0.74,alpha*field.y);",
@@ -184,17 +191,22 @@
     var requestFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || function (callback) {
       return window.setTimeout(function () { callback(nowTime()); }, 33);
     };
+    var cancelFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.clearTimeout;
+    var motionReduced = reducedMotion.matches, speedBeforeReduced = 1;
     var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     var hasHardwareSignal = !!(navigator.hardwareConcurrency || navigator.deviceMemory);
-    var lowCapacity = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+    var lowCapacity = initialCanvas.id === "demo-canvas" || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
       (navigator.deviceMemory && navigator.deviceMemory <= 4) || window.innerWidth <= 820 || (connection && connection.saveData) || !hasHardwareSignal;
     var maxDpr = lowCapacity ? 1 : 1.5;
     var frameDelay = lowCapacity ? 34 : 0;
     var quality = lowCapacity ? 0 : 2;
-    var gl = null, ctx2d = null, program = null, loc = {};
-    var framePending = false, frameTimer = 0, stainTimer = 0, time = 0, last = nowTime();
-    var lastResizeAt = 0, frameTimes = [], nextDowngrade = 0;
-    var pulseValue = 0, modeValue = 1, paletteValue = 0.7, stainCursor = 0;
+    var gl = null, ctx2d = null, program = null, loc = {}, fallbackCanvas = null, fallbackContext = null;
+    var framePending = false, frameTimer = 0, frameRequest = 0, stainTimer = 0, time = 0, last = nowTime();
+    var lastResizeAt = 0, frameTimes = [], nextDowngrade = 0, frames = 0;
+    var pulseValue = 0, modeValue = 1, previousMode = 1, modeMix = 1, transitionStart = null, paletteValue = 0.7, stainCursor = 0;
+    var inputLevel = 0, inputX = 0, inputY = 0, inputBass = 0, inputTreble = 0, inputAttack = 0;
+    var enabled = true;
+    var MODE_DURATION = 800, REDUCED_STAIN_AGE = 0.8;
     var pointer = { x: -1, y: -1, born: 0, vx: 0, vy: 0 };
     var stains = [null, null, null, null, null, null];
     var stainValues = new Float32Array(24);
@@ -205,24 +217,62 @@
       return Math.max(-0.15, Math.min(0.15, value));
     }
     var api = {
-      params: { speed: reducedMotion.matches ? 0 : 1, warp: 0.6, pigment: 1 },
-      defaults: { speed: reducedMotion.matches ? 0 : 1, warp: 0.6, pigment: 1 },
+      params: { speed: motionReduced ? 0 : 1, warp: 0.6, pigment: 1 },
+      defaults: { speed: motionReduced ? 0 : 1, warp: 0.6, pigment: 1 },
       target: { mode: 1, hue: 0.7 },
-      stats: function () { return { quality: quality, dpr: Math.min(window.devicePixelRatio || 1, maxDpr), frameDelay: frameDelay }; },
+      stats: function () {
+        var now = nowTime();
+        var coords = stains.filter(function (stain) { return stain && now - stain.born < 4000; })
+          .map(function (stain) { return { x: stain.x, y: stain.y }; });
+        return {
+          quality: quality, dpr: Math.min(window.devicePixelRatio || 1, maxDpr), frameDelay: frameDelay,
+          backend: gl ? "webgl" : ctx2d ? "canvas2d" : "none", frames: frames,
+          stains: coords.length, stainCoords: coords, target: { mode: api.target.mode, hue: api.target.hue },
+          mode: modeValue, previousMode: previousMode, mix: modeMix,
+          active: enabled,
+          input: { level: inputLevel, x: motionReduced ? 0 : inputX, y: motionReduced ? 0 : inputY,
+            bass: inputBass, treble: inputTreble, attack: inputAttack }
+        };
+      },
       pulse: function () { pulseValue = 1; scheduleFrame(); },
       setTarget: function (mode, hue) { api.target.mode = isFinite(mode) ? mode : 1; api.target.hue = hue || 0; scheduleFrame(); },
       invalidate: function () { scheduleFrame(); },
+      setActive: function (active) {
+        enabled = active;
+        if (active) { last = nowTime(); scheduleFrame(); }
+        else {
+          if (frameTimer) window.clearTimeout(frameTimer);
+          if (frameRequest) cancelFrame.call(window, frameRequest);
+          frameTimer = 0; frameRequest = 0; framePending = false;
+        }
+      },
+      setInput: function (level, x, y, bass, treble, attack) {
+        inputLevel = isFinite(level) ? Math.max(0, Math.min(1, level)) : 0;
+        inputX = isFinite(x) ? Math.max(-1, Math.min(1, x)) : 0;
+        inputY = isFinite(y) ? Math.max(-1, Math.min(1, y)) : 0;
+        inputBass = isFinite(bass) ? Math.max(0, Math.min(1, bass)) : 0;
+        inputTreble = isFinite(treble) ? Math.max(0, Math.min(1, treble)) : 0;
+        inputAttack = isFinite(attack) ? Math.max(0, Math.min(1, attack)) : 0;
+        scheduleFrame();
+      },
+      setPointer: function (x, y, vx, vy) {
+        pointer = { x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)),
+          born: nowTime(), vx: velocityPart(vx), vy: velocityPart(vy) };
+        scheduleFrame();
+      },
       addStain: function (x, y, vx, vy) {
         var anchorX = Math.max(0, Math.min(1, x)), anchorY = Math.max(0, Math.min(1, y));
         pointer = { x: anchorX, y: anchorY, born: nowTime(), vx: velocityPart(vx), vy: velocityPart(vy) };
         var current = stains[stainCursor];
-        if (current && !current.releasedAt) {
+        if (current && !current.releasedAt && pointer.born - current.born < 4000) {
           var dx = anchorX - current.x, dy = anchorY - current.y;
           var distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < STAIN_SPACING) {
-            // Um traçado continuo alimenta o mesmo deposito: a ancora segue o dedo e o pigmento acumula onde ele anda devagar.
-            current.x += dx * 0.22; current.y += dy * 0.22;
-            current.grow = Math.min(STAIN_GROW_MAX, current.grow + 0.012 + Math.max(0, 0.04 - distance * 0.35));
+            // Em movimento reduzido, cada deposito conserva a ancora e o tamanho do nascimento.
+            if (!motionReduced) {
+              current.x += dx * 0.22; current.y += dy * 0.22;
+              current.grow = Math.min(STAIN_GROW_MAX, current.grow + 0.012 + Math.max(0, 0.04 - distance * 0.35));
+            }
             scheduleFrame();
             return;
           }
@@ -246,6 +296,33 @@
         stainTimer = 0; scheduleFrame();
       }
     };
+
+    function normalizeMode(mode) {
+      return isFinite(mode) ? Math.max(0, Math.min(4, Math.round(mode))) : 1;
+    }
+
+    function updateMode(now) {
+      var targetMode = normalizeMode(api.target.mode);
+      if (motionReduced) {
+        previousMode = modeValue = targetMode; modeMix = 1; transitionStart = null;
+        return;
+      }
+      if (transitionStart !== null) {
+        var progress = Math.max(0, Math.min(1, (now - transitionStart) / MODE_DURATION));
+        modeMix = progress * progress * (3 - 2 * progress);
+        if (progress === 1) {
+          previousMode = modeValue; transitionStart = null;
+        } else if (targetMode === previousMode) {
+          // Reverter conserva a mistura visivel; um terceiro alvo aguarda a dissolucao atual.
+          var outgoing = previousMode; previousMode = modeValue; modeValue = outgoing;
+          transitionStart = now - (1 - progress) * MODE_DURATION;
+          modeMix = 1 - modeMix;
+        }
+      }
+      if (transitionStart === null && targetMode !== modeValue) {
+        previousMode = modeValue; modeValue = targetMode; modeMix = 0; transitionStart = now;
+      }
+    }
 
     function replaceWith2DCanvas() {
       var replacement = document.createElement("canvas");
@@ -275,13 +352,12 @@
         var position = gl.getAttribLocation(program, "p");
         gl.enableVertexAttribArray(position);
         gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-        ["u_res", "u_time", "u_warp", "u_pulse", "u_mode", "u_palette", "u_pigment", "u_quality", "u_pointer", "u_ptrVel"]
+        ["u_res", "u_time", "u_warp", "u_pulse", "u_mode", "u_previousMode", "u_mix", "u_palette", "u_pigment", "u_quality", "u_pointer", "u_ptrVel", "u_input", "u_audio", "u_motion"]
           .forEach(function (name) { loc[name] = gl.getUniformLocation(program, name); });
         loc.u_stains = gl.getUniformLocation(program, "u_stains[0]");
         loc.u_stainGrow = gl.getUniformLocation(program, "u_stainGrow[0]");
       }
     } catch (error) {
-      console.warn("Shader indisponível; ativando o fallback 2D:", error);
       replaceWith2DCanvas();
     }
     if (!gl && !ctx2d) ctx2d = canvas.getContext("2d");
@@ -293,9 +369,9 @@
     }
 
     function scheduleFrame() {
-      if (framePending || document.hidden || (!gl && !ctx2d)) return;
+      if (!enabled || framePending || document.hidden || (!gl && !ctx2d)) return;
       framePending = true;
-      var draw = function () { frameTimer = 0; requestFrame.call(window, frame); };
+      var draw = function () { frameTimer = 0; frameRequest = requestFrame.call(window, frame); };
       if (frameDelay) frameTimer = window.setTimeout(draw, frameDelay);
       else draw();
     }
@@ -310,13 +386,28 @@
     }
     window.addEventListener("resize", function () { resize(); scheduleFrame(); }, { passive: true });
     document.addEventListener("visibilitychange", function () { if (!document.hidden) { last = nowTime(); scheduleFrame(); } });
-    if (reducedMotion.addEventListener) reducedMotion.addEventListener("change", function (event) { if (event.matches) api.params.speed = 0; scheduleFrame(); });
-    else if (reducedMotion.addListener) reducedMotion.addListener(function (event) { if (event.matches) api.params.speed = 0; scheduleFrame(); });
+    function onMotionChange(event) {
+      if (event.matches !== motionReduced) {
+        if (event.matches) {
+          speedBeforeReduced = api.params.speed; api.params.speed = 0;
+        } else {
+          api.params.speed = speedBeforeReduced;
+        }
+        motionReduced = event.matches;
+        api.defaults.speed = motionReduced ? 0 : 1;
+        last = nowTime();
+        frameTimes.length = 0;
+      }
+      scheduleFrame();
+    }
+    if (reducedMotion.addEventListener) reducedMotion.addEventListener("change", onMotionChange);
+    else if (reducedMotion.addListener) reducedMotion.addListener(onMotionChange);
 
     if (gl) canvas.addEventListener("webglcontextlost", function (event) {
       event.preventDefault();
       if (frameTimer) window.clearTimeout(frameTimer);
-      frameTimer = 0;
+      if (frameRequest) cancelFrame.call(window, frameRequest);
+      frameTimer = 0; frameRequest = 0; framePending = false;
       if (!replaceWith2DCanvas()) {
         canvas.style.display = "none";
         var status = document.getElementById("app-status");
@@ -329,19 +420,26 @@
       }
     });
 
-    function drawFallback(now) {
-      var width = canvas.width, height = canvas.height;
+    function drawFallbackMotif(mode, now, context) {
+      var ctx2d = context, width = canvas.width, height = canvas.height;
       var shortSide = Math.min(width, height), centerX = width * 0.5, centerY = height * 0.5;
-      var mode = Math.round(modeValue), tick = (reducedMotion.matches ? 0 : now * 0.00012) * api.params.speed;
+      var tick = time * 0.12;
+      var warp = api.params.warp + (motionReduced ? 0 : inputLevel * 0.55 + inputBass * 0.3);
       ctx2d.fillStyle = "#0b0b0c"; ctx2d.fillRect(0, 0, width, height);
       ctx2d.save();
-      ctx2d.strokeStyle = "rgba(235,235,235,0.14)";
+      if (!motionReduced) {
+        ctx2d.translate(centerX - inputX * shortSide * 0.09, centerY + inputY * shortSide * 0.09);
+        var scale = 1 / (1 - inputBass * 0.045);
+        ctx2d.scale(scale, scale);
+        ctx2d.translate(-centerX, -centerY);
+      }
+      ctx2d.strokeStyle = "rgba(235,235,235," + (0.14 + inputLevel * (motionReduced ? 0.035 : 0.1) + inputTreble * 0.025) + ")";
       ctx2d.lineWidth = Math.max(1, width / Math.max(1, canvas.clientWidth));
       ctx2d.lineJoin = "round"; ctx2d.lineCap = "round";
       if (mode === 0) {
         for (var scan = 1; scan < 54; scan++) {
           var scanY = height * scan / 54;
-          var jitter = Math.sin(scan * 13.17 + tick * 6.0) * api.params.warp * shortSide * 0.004;
+          var jitter = Math.sin(scan * 13.17 + tick * 6.0) * warp * shortSide * 0.004;
           ctx2d.beginPath(); ctx2d.moveTo(0, scanY); ctx2d.lineTo(width * 0.48 + jitter, scanY); ctx2d.lineTo(width, scanY + jitter); ctx2d.stroke();
         }
         var barY = ((tick * 0.9) % 1) * height;
@@ -364,7 +462,7 @@
           var drift = (tick * 0.035 + puff * 0.13) % 1;
           var puffX = centerX + Math.sin(puff * 1.73 + tick * 0.28) * width * 0.24;
           var puffY = height * (0.92 - drift * 0.78);
-          var puffRadius = shortSide * (0.09 + (puff % 3) * 0.035);
+          var puffRadius = shortSide * (0.09 + (puff % 3) * 0.035) * (1 + (motionReduced ? 0 : inputBass * 0.25));
           var cloud = ctx2d.createRadialGradient(puffX, puffY, puffRadius * 0.04, puffX, puffY, puffRadius);
           cloud.addColorStop(0, "rgba(225,225,225,0.075)");
           cloud.addColorStop(0.55, "rgba(205,205,205,0.045)");
@@ -372,7 +470,7 @@
           ctx2d.fillStyle = cloud;
           ctx2d.fillRect(puffX - puffRadius, puffY - puffRadius, puffRadius * 2, puffRadius * 2);
         }
-        if (pointer.x >= 0 && now - pointer.born < 4000) {
+        if (!motionReduced && pointer.x >= 0 && now - pointer.born < 4000) {
           var touchX = pointer.x * width, touchY = pointer.y * height, touchRadius = shortSide * 0.22;
           var touchCloud = ctx2d.createRadialGradient(touchX, touchY, 0, touchX, touchY, touchRadius);
           touchCloud.addColorStop(0, "rgba(235,235,235,0.12)");
@@ -425,6 +523,41 @@
         ctx2d.restore();
       }
       ctx2d.restore();
+    }
+
+    function drawFallback(now) {
+      var width = canvas.width, height = canvas.height;
+      var shortSide = Math.min(width, height), centerX = width * 0.5, centerY = height * 0.5;
+      if (modeMix < 1) {
+        drawFallbackMotif(previousMode, now, ctx2d);
+        if (modeMix > 0) {
+          if (!fallbackCanvas) {
+            fallbackCanvas = document.createElement("canvas"); fallbackContext = fallbackCanvas.getContext("2d");
+          }
+          if (fallbackContext) {
+            if (fallbackCanvas.width !== width || fallbackCanvas.height !== height) {
+              fallbackCanvas.width = width; fallbackCanvas.height = height;
+            }
+            drawFallbackMotif(modeValue, now, fallbackContext);
+            ctx2d.save(); ctx2d.globalAlpha = modeMix; ctx2d.drawImage(fallbackCanvas, 0, 0); ctx2d.restore();
+          } else drawFallbackMotif(modeValue, now, ctx2d);
+        }
+      } else drawFallbackMotif(modeValue, now, ctx2d);
+      if (inputLevel > 0) {
+        var glowX = centerX - (motionReduced ? 0 : inputX * shortSide * 0.09);
+        var glowY = centerY + (motionReduced ? 0 : inputY * shortSide * 0.09);
+        var glow = ctx2d.createRadialGradient(glowX, glowY, 0, glowX, glowY, shortSide * 0.6);
+        glow.addColorStop(0, "rgba(235,235,235," + (inputLevel * (motionReduced ? 0.035 : 0.1) + inputTreble * 0.025) + ")");
+        glow.addColorStop(1, "rgba(235,235,235,0)");
+        ctx2d.fillStyle = glow; ctx2d.fillRect(0, 0, width, height);
+      }
+      if (!motionReduced && pointer.x >= 0 && now - pointer.born < 2500) {
+        var pointerRadius = shortSide * 0.3;
+        var pointerGlow = ctx2d.createRadialGradient(pointer.x * width, pointer.y * height, 0, pointer.x * width, pointer.y * height, pointerRadius);
+        pointerGlow.addColorStop(0, "rgba(235,235,235," + (0.06 * (1 - (now - pointer.born) / 2500)) + ")");
+        pointerGlow.addColorStop(1, "rgba(235,235,235,0)");
+        ctx2d.fillStyle = pointerGlow; ctx2d.fillRect(0, 0, width, height);
+      }
       if (pulseValue > 0.008) {
         ctx2d.save(); ctx2d.strokeStyle = "rgba(235,235,235," + (0.5*pulseValue) + ")";
         ctx2d.lineWidth = Math.max(1, width / Math.max(1, canvas.clientWidth));
@@ -432,11 +565,12 @@
       }
       for (var j = 0; j < stains.length; j++) {
         var stain = stains[j]; if (!stain) continue;
-        var age = (now-stain.born)/1000; if (age >= 4) { stains[j] = null; continue; }
+        if (now - stain.born >= 4000) { stains[j] = null; continue; }
+        var age = motionReduced ? REDUCED_STAIN_AGE : (now-stain.born)/1000;
         var fade = 1-age/4, radius = Math.min(width,height)*(0.025+0.38*(1-Math.exp(-age*1.35)))*(1+(stain.grow||0));
         var cx = stain.x*width, cy = stain.y*height;
         var gradient = ctx2d.createRadialGradient(cx,cy,0,cx,cy,radius);
-        var releaseFade = stain.releasedAt ? Math.max(0, 1 - (now - stain.releasedAt) / 1600) : 1;
+        var releaseFade = !motionReduced && stain.releasedAt ? Math.max(0, 1 - (now - stain.releasedAt) / 1600) : 1;
         gradient.addColorStop(0,hueColor(api.target.hue+stain.hue,0.58*fade*releaseFade*api.params.pigment));
         gradient.addColorStop(0.72,hueColor(api.target.hue+stain.hue+0.08,0.36*fade*releaseFade*api.params.pigment));
         gradient.addColorStop(1,hueColor(api.target.hue+stain.hue+0.16,0));
@@ -444,22 +578,22 @@
       }
     }
     function frame(now) {
-      framePending = false;
-      if (document.hidden) return;
+      frameRequest = 0; framePending = false;
+      if (!enabled || document.hidden || (!gl && !ctx2d)) return;
       var dt = Math.min(Math.max(0,(now-last)/1000),0.1); last = now;
       if (now - lastResizeAt > 250) { lastResizeAt = now; resize(); }
-      var moving = !reducedMotion.matches;
-      if (moving) time += dt * api.params.speed;
+      var moving = !motionReduced;
+      if (moving) time += dt * api.params.speed * (1 + inputLevel * 0.45 + inputBass * 0.55);
       var smoothing = moving ? Math.min(1,dt*3) : 1;
-      modeValue += (api.target.mode-modeValue)*smoothing;
+      updateMode(now);
       paletteValue += (api.target.hue-paletteValue)*smoothing;
       if (moving) pulseValue *= Math.pow(0.035,dt);
       var active = false;
       for (var i=0;i<stains.length;i++) {
         var stain=stains[i];
         if (stain && now-stain.born<4000) {
-          var age=(now-stain.born)/1000;
-          stainValues[i*4]=stain.x; stainValues[i*4+1]=1-stain.y; stainValues[i*4+2]=age; stainValues[i*4+3]=stain.hue+(stain.releasedAt ? 1+(now-stain.releasedAt)/1000 : 0);
+          var age=motionReduced ? REDUCED_STAIN_AGE : (now-stain.born)/1000;
+          stainValues[i*4]=stain.x; stainValues[i*4+1]=1-stain.y; stainValues[i*4+2]=age; stainValues[i*4+3]=stain.hue+(!motionReduced && stain.releasedAt ? 1+(now-stain.releasedAt)/1000 : 0);
           stainGrow[i]=stain.grow;
           active=true;
         } else {
@@ -472,16 +606,22 @@
         gl.uniform1f(loc.u_warp,api.params.warp);
         gl.uniform1f(loc.u_pulse,pulseValue);
         gl.uniform1f(loc.u_mode,modeValue);
+        gl.uniform1f(loc.u_previousMode,previousMode);
+        gl.uniform1f(loc.u_mix,modeMix);
         gl.uniform1f(loc.u_palette,paletteValue);
         gl.uniform1f(loc.u_pigment,api.params.pigment);
         gl.uniform1f(loc.u_quality,quality);
+        gl.uniform1f(loc.u_motion,motionReduced ? 0 : 1);
+        gl.uniform3f(loc.u_input, motionReduced ? inputLevel * 0.35 : inputLevel, motionReduced ? 0 : inputX, motionReduced ? 0 : inputY);
+        gl.uniform3f(loc.u_audio, motionReduced ? 0 : inputBass, motionReduced ? inputTreble * 0.35 : inputTreble, motionReduced ? 0 : inputAttack);
         gl.uniform4fv(loc.u_stains,stainValues);
         gl.uniform1fv(loc.u_stainGrow,stainGrow);
-        var pointerAge = pointer.x >= 0 ? (now - pointer.born) / 1000 : 4;
+        var pointerAge = !motionReduced && pointer.x >= 0 ? (now - pointer.born) / 1000 : 4;
         gl.uniform3f(loc.u_pointer, pointerAge < 4 ? pointer.x : -1, pointerAge < 4 ? 1 - pointer.y : -1, pointerAge);
-        gl.uniform2f(loc.u_ptrVel, pointer.vx, -pointer.vy);
+        gl.uniform2f(loc.u_ptrVel, motionReduced ? 0 : pointer.vx, motionReduced ? 0 : -pointer.vy);
         gl.drawArrays(gl.TRIANGLES,0,3);
       } else if (ctx2d) drawFallback(now);
+      frames += 1;
       if (!moving) pulseValue = 0;
       if (!moving && active) {
         var untilExpiry = 4000;
@@ -505,7 +645,7 @@
           }
         }
       }
-      if (moving && (api.params.speed>0 || active || pulseValue>0.008)) scheduleFrame();
+      if (moving && (api.params.speed>0 || active || pulseValue>0.008 || transitionStart!==null)) scheduleFrame();
     }
 
     resize(); scheduleFrame();
