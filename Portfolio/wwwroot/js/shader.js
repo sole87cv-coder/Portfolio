@@ -106,9 +106,9 @@
     "}",
     "void main(){",
     "  vec2 uv=(gl_FragCoord.xy-0.5*u_res)/u_res.y;",
-    "  float t=u_time; float mode=clamp(u_mode,0.0,4.0); float warp=clamp(u_warp+(u_input.x*0.55+u_audio.x*0.3)*u_motion,0.0,2.0);",
+    "  float t=u_time; float mode=clamp(u_mode,0.0,4.0); float warp=clamp(u_warp+(u_input.x*0.55+u_audio.x*0.68+u_audio.z*0.16)*u_motion,0.0,2.0);",
     "  float previousMode=clamp(u_previousMode,0.0,4.0); float blend=clamp(u_mix,0.0,1.0);",
-    "  vec2 space=uv*(1.0-u_audio.x*0.045)+u_input.yz*0.09;",
+    "  vec2 space=uv*(1.0-u_audio.x*0.085)+u_input.yz*0.09;",
     "  vec2 touch=vec2((u_pointer.x-0.5)*(u_res.x/u_res.y),u_pointer.y-0.5);",
     "  vec2 delta=uv-touch; float influence=u_pointer.x>=0.0 ? exp(-dot(delta,delta)*7.0)*(1.0-smoothstep(0.0,2.5,u_pointer.z)) : 0.0;",
     "  space+=influence*(vec2(-delta.y,delta.x)*0.28-u_ptrVel*0.7);",
@@ -125,6 +125,14 @@
     "  float pulse=exp(-abs(radius-(0.14+u_pulse*0.23))*24.0)*u_pulse;",
     "  float grey=(0.018+horizon*0.105+field.x+pulse*0.18+(dither-0.5)*0.012*(1.0+analog*2.0))*(1.0-(0.24+analog*0.10)*dot(uv,uv));",
     "  vec3 col=vec3(clamp(grey,0.0,0.82));",
+    "  vec3 audioInk=pigment(u_palette+0.08+mode*0.035+u_audio.y*0.2+u_audio.z*0.08);",
+    "  float radial=length(vec2(space.x*0.84,space.y));",
+    "  float bassContour=exp(-abs(radial-(0.16+u_audio.x*0.19+u_audio.z*0.06))*34.0);",
+    "  float trebleTrace=pow(max(0.0,sin(atan(space.y,space.x)*5.0-t*0.35+u_audio.y*3.0)),12.0);",
+    "  float audioBloom=clamp(u_audio.x*0.12+u_audio.y*0.1+u_audio.z*0.18,0.0,0.34);",
+    "  float audioContour=clamp(bassContour*(u_audio.x*0.3+u_audio.z*0.22)+trebleTrace*u_audio.y*0.16,0.0,0.42);",
+    "  col=mix(col,audioInk*clamp(0.42+field.y*0.66,0.0,1.0),audioBloom+audioContour);",
+    "  col+=audioInk*(u_audio.y*0.13+u_audio.z*0.2)*breath;",
     "  float cell=cellScaleQ();",
     "  for(int i=0;i<6;i++){",
     "    vec4 s=u_stains[i];",
@@ -433,7 +441,8 @@
         ctx2d.scale(scale, scale);
         ctx2d.translate(-centerX, -centerY);
       }
-      ctx2d.strokeStyle = "rgba(235,235,235," + (0.14 + inputLevel * (motionReduced ? 0.035 : 0.1) + inputTreble * 0.025) + ")";
+      ctx2d.strokeStyle = hueColor(api.target.hue + inputTreble * 0.16 + inputAttack * 0.08,
+        0.14 + inputLevel * (motionReduced ? 0.035 : 0.1) + inputTreble * 0.025 + inputAttack * 0.08);
       ctx2d.lineWidth = Math.max(1, width / Math.max(1, canvas.clientWidth));
       ctx2d.lineJoin = "round"; ctx2d.lineCap = "round";
       if (mode === 0) {
@@ -464,9 +473,9 @@
           var puffY = height * (0.92 - drift * 0.78);
           var puffRadius = shortSide * (0.09 + (puff % 3) * 0.035) * (1 + (motionReduced ? 0 : inputBass * 0.25));
           var cloud = ctx2d.createRadialGradient(puffX, puffY, puffRadius * 0.04, puffX, puffY, puffRadius);
-          cloud.addColorStop(0, "rgba(225,225,225,0.075)");
-          cloud.addColorStop(0.55, "rgba(205,205,205,0.045)");
-          cloud.addColorStop(1, "rgba(190,190,190,0)");
+          cloud.addColorStop(0, hueColor(api.target.hue + inputBass * 0.12, 0.075 + inputLevel * 0.12));
+          cloud.addColorStop(0.55, hueColor(api.target.hue + inputTreble * 0.18, 0.045 + inputAttack * 0.08));
+          cloud.addColorStop(1, hueColor(api.target.hue + inputTreble * 0.18, 0));
           ctx2d.fillStyle = cloud;
           ctx2d.fillRect(puffX - puffRadius, puffY - puffRadius, puffRadius * 2, puffRadius * 2);
         }
@@ -547,8 +556,9 @@
         var glowX = centerX - (motionReduced ? 0 : inputX * shortSide * 0.09);
         var glowY = centerY + (motionReduced ? 0 : inputY * shortSide * 0.09);
         var glow = ctx2d.createRadialGradient(glowX, glowY, 0, glowX, glowY, shortSide * 0.6);
-        glow.addColorStop(0, "rgba(235,235,235," + (inputLevel * (motionReduced ? 0.035 : 0.1) + inputTreble * 0.025) + ")");
-        glow.addColorStop(1, "rgba(235,235,235,0)");
+        glow.addColorStop(0, hueColor(api.target.hue + inputTreble * 0.18 + inputAttack * 0.1,
+          inputLevel * (motionReduced ? 0.035 : 0.1) + inputTreble * 0.025 + inputAttack * 0.06));
+        glow.addColorStop(1, hueColor(api.target.hue + inputTreble * 0.18, 0));
         ctx2d.fillStyle = glow; ctx2d.fillRect(0, 0, width, height);
       }
       if (!motionReduced && pointer.x >= 0 && now - pointer.born < 2500) {

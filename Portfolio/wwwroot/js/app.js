@@ -96,15 +96,15 @@
         let sum = 0;
         for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
         targetLevel = 1 - Math.exp(-Math.max(0, Math.sqrt(sum / samples.length) - .006) * 9);
-        targetBass = Math.min(1, bandEnergy(60, 400) * targetLevel * 1.4);
-        targetTreble = Math.min(1, bandEnergy(1800, 6500) * targetLevel * 1.4);
+        targetBass = Math.min(1, bandEnergy(45, 260) * targetLevel * 3.2);
+        targetTreble = Math.min(1, bandEnergy(1600, 9000) * targetLevel * 3.6);
       }
       const rise = Math.max(0, targetLevel - level);
       const smoothing = 1 - Math.exp(-dt * (targetLevel > level ? 18 : 5));
       level += (targetLevel - level) * (reduced.matches ? 1 : smoothing);
       bass += (targetBass - bass) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 8));
       treble += (targetTreble - treble) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 10));
-      attack += (Math.min(1, rise * 2) - attack) * (1 - Math.exp(-dt * 9));
+      attack += (Math.min(1, rise * 3.2) - attack) * (1 - Math.exp(-dt * (rise > 0.015 ? 24 : 7)));
       if (level < .001) level = 0;
       const tiltSmoothing = reduced.matches ? 1 : 1 - Math.exp(-dt * 10);
       tiltX += (targetX - tiltX) * tiltSmoothing;
@@ -157,7 +157,7 @@
       if (!await resumed) throw new Error("AudioContext unavailable");
       if (generation !== micGeneration) return;
       analyser = context.createAnalyser(); analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = .65;
+      analyser.smoothingTimeConstant = .42;
       samples = new Float32Array(analyser.fftSize);
       frequencies = new Uint8Array(analyser.frequencyBinCount);
       micSource = context.createMediaStreamSource(stream);
