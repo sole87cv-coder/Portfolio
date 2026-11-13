@@ -111,7 +111,7 @@
     "  vec2 space=uv*(1.0-u_audio.x*0.085)+u_input.yz*0.09;",
     "  vec2 touch=vec2((u_pointer.x-0.5)*(u_res.x/u_res.y),u_pointer.y-0.5);",
     "  vec2 delta=uv-touch; float influence=u_pointer.x>=0.0 ? exp(-dot(delta,delta)*7.0)*(1.0-smoothstep(0.0,2.5,u_pointer.z)) : 0.0;",
-    "  space+=influence*(vec2(-delta.y,delta.x)*0.28-u_ptrVel*0.7);",
+    "  space+=influence*(vec2(-delta.y,delta.x)*0.38-u_ptrVel*0.95);",
     "  vec2 field=motifField(mode,space,t,warp);",
     "  if(blend<1.0){ vec2 previous=motifField(previousMode,space,t,warp); field=mix(previous,field,blend); }",
     "  float breath=exp(-dot(space,space)*3.0);",
@@ -130,7 +130,7 @@
     "  float bassContour=exp(-abs(radial-(0.16+u_audio.x*0.19+u_audio.z*0.06))*34.0);",
     "  float trebleTrace=pow(max(0.0,sin(atan(space.y,space.x)*5.0-t*0.35+u_audio.y*3.0)),12.0);",
     "  float audioBloom=clamp(u_audio.x*0.12+u_audio.y*0.1+u_audio.z*0.18,0.0,0.34);",
-    "  float audioContour=clamp(bassContour*(u_audio.x*0.3+u_audio.z*0.22)+trebleTrace*u_audio.y*0.16,0.0,0.42);",
+    "  float audioContour=clamp(bassContour*(u_audio.x*0.38+u_audio.z*0.28)+trebleTrace*u_audio.y*0.2,0.0,0.48);",
     "  col=mix(col,audioInk*clamp(0.42+field.y*0.66,0.0,1.0),audioBloom+audioContour);",
     "  col+=audioInk*(u_audio.y*0.13+u_audio.z*0.2)*breath;",
     "  float cell=cellScaleQ();",
@@ -219,7 +219,7 @@
     var stains = [null, null, null, null, null, null];
     var stainValues = new Float32Array(24);
     var stainGrow = new Float32Array(6);
-    var STAIN_SPACING = 0.13, STAIN_GROW_MAX = 0.55;
+    var STAIN_SPACING = 0.13, STAIN_GROW_MAX = 0.72;
     function velocityPart(value) {
       if (!isFinite(value)) return 0;
       return Math.max(-0.15, Math.min(0.15, value));
@@ -279,14 +279,14 @@
             // Em movimento reduzido, cada deposito conserva a ancora e o tamanho do nascimento.
             if (!motionReduced) {
               current.x += dx * 0.22; current.y += dy * 0.22;
-              current.grow = Math.min(STAIN_GROW_MAX, current.grow + 0.012 + Math.max(0, 0.04 - distance * 0.35));
+              current.grow = Math.min(STAIN_GROW_MAX, current.grow + 0.02 + Math.max(0, 0.055 - distance * 0.4));
             }
             scheduleFrame();
             return;
           }
         }
         stainCursor = (stainCursor + 1) % stains.length;
-        stains[stainCursor] = { x: anchorX, y: anchorY, born: pointer.born, releasedAt: 0, hue: Math.random() * 0.19, grow: 0.18 };
+        stains[stainCursor] = { x: anchorX, y: anchorY, born: pointer.born, releasedAt: 0, hue: Math.random() * 0.19, grow: 0.28 };
         scheduleFrame();
       },
       releasePointer: function () {

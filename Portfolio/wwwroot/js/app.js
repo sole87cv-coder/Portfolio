@@ -38,6 +38,7 @@
   let micStream = null, micContext = null, micSource = null, analyser = null, samples = null, frequencies = null;
   let orientationBase = null, motionTimer = 0, lastOrientation = 0;
   let level = 0, bass = 0, treble = 0, attack = 0, tiltX = 0, tiltY = 0, targetX = 0, targetY = 0;
+  let previousBassTarget = 0, previousTrebleTarget = 0;
   let inputFrame = 0, lastInputUpdate = 0;
 
   function updatePreviewVisibility() {
@@ -100,11 +101,15 @@
         targetTreble = Math.min(1, bandEnergy(1600, 9000) * targetLevel * 3.6);
       }
       const rise = Math.max(0, targetLevel - level);
+      const spectralRise = Math.max(0, targetBass - previousBassTarget, targetTreble - previousTrebleTarget);
+      previousBassTarget = targetBass;
+      previousTrebleTarget = targetTreble;
       const smoothing = 1 - Math.exp(-dt * (targetLevel > level ? 18 : 5));
       level += (targetLevel - level) * (reduced.matches ? 1 : smoothing);
       bass += (targetBass - bass) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 8));
       treble += (targetTreble - treble) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 10));
-      attack += (Math.min(1, rise * 3.2) - attack) * (1 - Math.exp(-dt * (rise > 0.015 ? 24 : 7)));
+      const transient = Math.min(1, Math.max(rise * 3.2, spectralRise * 1.8));
+      attack += (transient - attack) * (1 - Math.exp(-dt * (transient > attack ? 24 : 7)));
       if (level < .001) level = 0;
       const tiltSmoothing = reduced.matches ? 1 : 1 - Math.exp(-dt * 10);
       tiltX += (targetX - tiltX) * tiltSmoothing;
@@ -123,6 +128,7 @@
     if (micContext) micContext.close().catch(function () {});
     micStream = null; micContext = null; micSource = null; analyser = null; samples = null; frequencies = null;
     level = 0; bass = 0; treble = 0; attack = 0;
+    previousBassTarget = 0; previousTrebleTarget = 0;
     sensorStatus(micButton, micStatus, "off", message);
     renderInput();
     if (motionState !== "active") { cancelAnimationFrame(inputFrame); inputFrame = 0; }
@@ -151,7 +157,7 @@
       const context = new Context();
       micContext = context;
       const resumed = context.resume().then(function () { return true; }, function () { return false; });
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: false }, video: false });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: false });
       if (generation !== micGeneration || document.hidden) { stream.getTracks().forEach(function (track) { track.stop(); }); return; }
       micStream = stream;
       if (!await resumed) throw new Error("AudioContext unavailable");
