@@ -82,6 +82,21 @@
     drawTreeBranch(next, depth - 1, intensity, hue + 9, time, pulse, spinSpeed, rightDirection, branchRatio); context.restore();
   }
   function treeBranchRatio(intensity) { return .58 - intensity * .012; }
+  function treeExtent(intensity, time, spinSpeed) {
+    var extent = 0, ratio = treeBranchRatio(intensity), spread = .34 + intensity * .012;
+    function measure(x, y, length, depth, direction) {
+      var endX = x + Math.sin(direction) * length, endY = y - Math.cos(direction) * length;
+      extent = Math.max(extent, Math.hypot(x, y), Math.hypot(endX, endY) + (depth <= 0 ? length * .25 : 0));
+      if (depth <= 0) return;
+      var sway = Math.sin(time * spinSpeed + depth) * .025;
+      var leftDirection = Math.max(-.85, direction - spread + sway);
+      var rightDirection = Math.min(.85, direction + spread + sway);
+      measure(endX, endY, length * ratio, depth - 1, leftDirection);
+      measure(endX, endY, length * ratio, depth - 1, rightDirection);
+    }
+    measure(0, .25, .62, intensity, 0);
+    return extent + .02;
+  }
   function drawTree(cx, cy, radius, intensity, hue, time, pulse, spinSpeed) {
     var branchRatio = treeBranchRatio(intensity);
     context.save(); context.translate(cx, cy + radius * .25); context.rotate(Math.sin(time * spinSpeed) * .025);
@@ -141,13 +156,11 @@
     var centerX = width * .5 + pointer.x * pointerShift, centerY = height * .5 + pointer.y * pointerShift;
     var hue = (Number(colorControl.value) * 3.25 + 24 + treble * 42 + 360) % 360;
     var shape = shapeControl.value, intensity = Number(depthControl.value);
-    var fit = shape === "flower" ? .68 : shape === "tree" ? .3 : .43;
+    var fit = shape === "flower" ? .68 : shape === "tree" ? .62 : .43;
     var fitLimit = shape === "flower" ? .78 : shape === "tree" ? .46 : .45;
     var radius = Math.min(shortSide * fitLimit, shortSide * fit * Number(scaleControl.value) / 78 * (1 + bass * .015));
     if (shape === "tree") {
-      var ratio = treeBranchRatio(intensity);
-      var treeEnvelope = .25 + .62 * (1 - Math.pow(ratio, intensity + 1)) / (1 - ratio) + .025;
-      radius = Math.min(radius, shortSide * (.465 - .018) / treeEnvelope);
+      radius = Math.min(radius, shortSide * (.465 - .018) / treeExtent(intensity, t, spinSpeed));
     }
     var depth = intensity - 1;
     var ringCount = 2 + Math.ceil(intensity / 2);
