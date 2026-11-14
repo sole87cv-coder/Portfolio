@@ -77,9 +77,32 @@
     var leftDirection = Math.max(-.85, direction - spread + sway);
     var rightDirection = Math.min(.85, direction + spread + sway);
     context.save(); context.rotate(leftDirection - direction);
-    drawTreeBranch(next, depth - 1, intensity, hue - 9, time, pulse, spinSpeed, leftDirection, branchRatio); context.restore();
+    drawTreeBranch(next, depth - 1, intensity, hue - 12, time, pulse, spinSpeed, leftDirection, branchRatio); context.restore();
+    context.save(); context.rotate(sway * .35);
+    drawTreeBranch(next * .94, depth - 1, intensity, hue + 2, time, pulse, spinSpeed, direction + sway * .35, branchRatio); context.restore();
     context.save(); context.rotate(rightDirection - direction);
-    drawTreeBranch(next, depth - 1, intensity, hue + 9, time, pulse, spinSpeed, rightDirection, branchRatio); context.restore();
+    drawTreeBranch(next, depth - 1, intensity, hue + 12, time, pulse, spinSpeed, rightDirection, branchRatio); context.restore();
+  }
+  function drawTreeRoots(radius, intensity, hue, time, pulse, spinSpeed) {
+    var rootCount = 5 + intensity, baseWidth = Math.max(1, width / 570);
+    context.save(); context.lineCap = "round"; context.lineJoin = "round";
+    for (var i = 0; i < rootCount; i++) {
+      var angle = -1.08 + i * 2.16 / (rootCount - 1);
+      var length = radius * (.29 + .07 * (1 - Math.abs(angle) / 1.08));
+      var sway = Math.sin(time * spinSpeed + i * 1.7) * radius * .009;
+      var endX = Math.sin(angle) * length + sway, endY = Math.cos(angle) * length;
+      context.strokeStyle = "hsla(" + ((hue - 12 + i * 3) % 360) + ", 48%, " + (48 + pulse * 8) + "%, .88)";
+      context.lineWidth = baseWidth * (1.15 + (1 - Math.abs(angle) / 1.08) * .75);
+      context.beginPath(); context.moveTo(0, 0);
+      context.bezierCurveTo(endX * .2, endY * .24, endX * .7, endY * .7, endX, endY); context.stroke();
+      var forkX = endX * .54, forkY = endY * .55, forkSide = i % 2 ? 1 : -1;
+      context.strokeStyle = "hsla(" + ((hue - 4 + i * 3) % 360) + ", 45%, " + (53 + pulse * 7) + "%, .7)";
+      context.lineWidth = baseWidth * .72;
+      context.beginPath(); context.moveTo(forkX, forkY);
+      context.quadraticCurveTo(forkX + forkSide * radius * .035, forkY + radius * .045,
+        forkX + forkSide * radius * .09, forkY + radius * .1); context.stroke();
+    }
+    context.restore();
   }
   function treeBranchRatio(intensity) { return .58 - intensity * .012; }
   function treeExtent(intensity, time, spinSpeed) {
@@ -95,11 +118,18 @@
       measure(endX, endY, length * ratio, depth - 1, rightDirection);
     }
     measure(0, .25, .62, intensity, 0);
+    var rootCount = 5 + intensity;
+    for (var i = 0; i < rootCount; i++) {
+      var angle = -1.08 + i * 2.16 / (rootCount - 1);
+      var length = .29 + .07 * (1 - Math.abs(angle) / 1.08);
+      extent = Math.max(extent, Math.hypot(Math.sin(angle) * length, .25 + Math.cos(angle) * length));
+    }
     return extent + .02;
   }
   function drawTree(cx, cy, radius, intensity, hue, time, pulse, spinSpeed) {
     var branchRatio = treeBranchRatio(intensity);
     context.save(); context.translate(cx, cy + radius * .25); context.rotate(Math.sin(time * spinSpeed) * .025);
+    drawTreeRoots(radius, intensity, hue, time, pulse, spinSpeed);
     drawTreeBranch(radius * .62, intensity, intensity, hue, time, pulse, spinSpeed, 0, branchRatio); context.restore();
   }
   function drawFrogMotif(radius, hue, pulse) {
@@ -158,13 +188,13 @@
     var shape = shapeControl.value, intensity = Number(depthControl.value);
     var fit = shape === "flower" ? .68 : shape === "tree" ? .62 : .43;
     var fitLimit = shape === "flower" ? .78 : shape === "tree" ? .46 : .45;
+    var depth = intensity - 1;
+    var ringCount = 2 + Math.ceil(intensity / 2);
+    var spinSpeed = .05 + (intensity - 1) * .046 + treble * .14;
     var radius = Math.min(shortSide * fitLimit, shortSide * fit * Number(scaleControl.value) / 78 * (1 + bass * .015));
     if (shape === "tree") {
       radius = Math.min(radius, shortSide * (.465 - .018) / treeExtent(intensity, t, spinSpeed));
     }
-    var depth = intensity - 1;
-    var ringCount = 2 + Math.ceil(intensity / 2);
-    var spinSpeed = .05 + (intensity - 1) * .046 + treble * .14;
     context.fillStyle = "#100d0c"; context.fillRect(0, 0, width, height);
     var glow = context.createRadialGradient(centerX, centerY, radius * .03, centerX, centerY, radius * 1.25);
     glow.addColorStop(0, "hsla(" + hue + ", 65%, 48%, " + (.09 + pulse * .12) + ")");
@@ -203,7 +233,7 @@
       label = "Pétalas + giro"; unit = " pétalas"; amount = (6 + intensity * 2) * (1 + Math.floor(intensity / 3));
       visualLabel.textContent = "BOTÂNICA / FLOR";
     } else if (shape === "tree") {
-      label = "Ramos + giro"; unit = " ramos"; amount = Math.pow(2, intensity + 1) - 1;
+      label = "Ramos + giro"; unit = " ramos"; amount = (Math.pow(3, intensity + 1) - 1) / 2 + (5 + intensity) * 2;
       visualLabel.textContent = "BOTÂNICA / ÁRVORE";
     } else {
       label = "Ornamentos + giro"; unit = " motivos"; amount = 4 + intensity * 2;
