@@ -11,7 +11,7 @@
   <meta property="og:locale" content="pt_BR">
   <title>Sol Emanuel Calderón Vargas · Artista audiovisual</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F1E8D6'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-family='Georgia,serif' font-size='20' fill='%231C1A17'%3ES0LE%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261113-smoke">
+  <link rel="stylesheet" href="css/style.css?v=20261113-fractal-studio2">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Sol Emanuel Calderón Vargas","jobTitle":"Artista audiovisual e pesquisador","sameAs":["https://instagram.com/v1su4rt","https://www.youtube.com/@v1su4rt-Vj"]}</script>
   <!-- [PENDENTE: domínio definitivo para canonical, og:url, hreflang e sitemap.] -->
 </head>
@@ -44,7 +44,19 @@
             <figure><a href="img/vivitar-analogica-10.jpg" aria-label="Ampliar: Ouvidor 63"><picture><source type="image/webp" srcset="img/responsive/vivitar-analogica-10-480.webp 480w, img/responsive/vivitar-analogica-10-960.webp 960w" sizes="(max-width: 600px) 80vw, 420px"><img src="img/vivitar-analogica-10.jpg" alt="Prédio coberto de grafites ao lado de edifícios altos em fotografia monocromática." width="1512" height="1003" loading="lazy" decoding="async"></picture></a><figcaption>Ouvidor 63<span class="credit">Foto: Sol Emanuel Calderón Vargas</span></figcaption></figure>
           </div>
           <p class="gallery-hint">Deslize para ver outras imagens. Clique para ampliar.</p>
-          <!-- Galeria fotografia-vivitar: fim --><details class="photography-notes"><summary>Sobre a série e a técnica</summary><p class="period">Série fotográfica</p><p>Fotografias feitas em filme: grão, luz e um tempo que não se corrige depois.</p><p>Fotografo em filme com uma câmera VIVITAR. A série passa pelo grão, pela luz e pelo preto e branco.</p><dl><dt>Técnica</dt><dd>Fotografia analógica em filme</dd><dt>Câmera</dt><dd>VIVITAR</dd></dl></details></div></details>
+          <!-- Galeria fotografia-vivitar: fim --><details class="photography-notes"><summary>Sobre a série e a técnica</summary><p class="period">Série fotográfica</p><p>Fotografias feitas em filme: grão, luz e um tempo que não se corrige depois.</p><p>Fotografo em filme com uma câmera VIVITAR. A série passa pelo grão, pela luz e pelo preto e branco.</p><dl><dt>Técnica</dt><dd>Fotografia analógica em filme</dd><dt>Câmera</dt><dd>VIVITAR</dd></dl></details>
+          <section class="fractal-studio" aria-labelledby="fractal-title">
+            <div class="fractal-heading"><div><p class="eyebrow">S0LE · VISUAL AO VIVO</p><h3 id="fractal-title">Geometria em expansão</h3></div><span class="fractal-live" aria-hidden="true">◉ LIVE</span></div>
+            <label class="fractal-shape-picker" for="fractal-shape"><span>Forma</span><select id="fractal-shape"><option value="triangle">Geometria triangular</option><option value="flower">Flor fractal</option><option value="tree">Árvore fractal</option><option value="frog">Sapo</option></select></label>
+            <div class="fractal-stage"><canvas id="fractal-canvas" aria-hidden="true"></canvas><span class="fractal-stage-label" aria-hidden="true">FRACTAL / 01</span></div>
+            <div class="fractal-controls" role="group" aria-label="Controles do fractal">
+              <label for="fractal-size"><span>Escala</span><output id="fractal-size-value" for="fractal-size">78%</output><input id="fractal-size" type="range" min="48" max="100" value="78"></label>
+              <label for="fractal-color"><span>Cor</span><output id="fractal-color-value" for="fractal-color">Âmbar</output><input id="fractal-color" type="range" min="0" max="100" value="12"></label>
+              <label for="fractal-depth"><span id="fractal-depth-label">Triângulos + giro</span><output id="fractal-depth-value" for="fractal-depth">4 · 160 △</output><input id="fractal-depth" type="range" min="1" max="6" value="4"></label>
+            </div>
+            <p class="fractal-caption">Mova os controles; o som transforma a geometria quando o microfone está ativo.</p>
+          </section>
+          </div></details>
       <div id="demonstracao" class="sheet interaction-demo" role="group" aria-labelledby="demo-title">
         <h3 id="demo-title">Luz que responde a você.</h3>
         <p class="demo-intro">Toque ou mova o cursor. Som e inclinação também transformam este pequeno ambiente.</p>
@@ -213,6 +225,7 @@
   <script src="js/projects.js"></script>
   <script src="js/shader.js?v=20261113-vj3"></script>
   <script src="js/audio.js"></script>
-  <script src="js/app.js?v=20261113-vj3"></script>
+  <script src="js/fractal.js?v=20261113-studio3"></script>
+  <script src="js/app.js?v=20261113-studio1"></script>
 </body>
 </html>

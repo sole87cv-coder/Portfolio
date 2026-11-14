@@ -67,6 +67,7 @@
     const x = reduced.matches ? 0 : tiltX, y = reduced.matches ? 0 : tiltY;
     shader.setInput(level, x, y, bass, treble, attack);
     preview.setInput(level, x, y, bass, treble, attack);
+    if (window.fractalStudio) window.fractalStudio.setInput(level, x, y, bass, treble, attack);
     reactiveSurfaces.forEach(function (surface) {
       surface.style.setProperty("--input-level", level.toFixed(3));
       surface.style.setProperty("--input-x", (x * 8).toFixed(2) + "px");
