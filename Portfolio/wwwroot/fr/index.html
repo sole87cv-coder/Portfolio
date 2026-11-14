@@ -11,7 +11,7 @@
   <meta property="og:locale" content="fr_FR">
   <title>Sol Emanuel Calderón Vargas · Artiste audiovisuel</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F1E8D6'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-family='Georgia,serif' font-size='20' fill='%231C1A17'%3ES0LE%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="../css/style.css?v=20261113-smoke-blocks">
+  <link rel="stylesheet" href="../css/style.css?v=20261113-fractal-studio2">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Sol Emanuel Calderón Vargas","jobTitle":"Artiste audiovisuel et chercheur","sameAs":["https://instagram.com/v1su4rt","https://www.youtube.com/@v1su4rt-Vj"]}</script>
   <!-- [PENDENTE: domínio definitivo para canonical, og:url, hreflang e sitemap.] -->
 </head>
@@ -44,7 +44,13 @@
             <figure><a href="../img/vivitar-analogica-10.jpg" aria-label="Agrandir : Ouvidor 63"><picture><source type="image/webp" srcset="../img/responsive/vivitar-analogica-10-480.webp 480w, ../img/responsive/vivitar-analogica-10-960.webp 960w" sizes="(max-width: 600px) 80vw, 420px"><img src="../img/vivitar-analogica-10.jpg" alt="Bâtiment couvert de graffitis à côté de hauts immeubles sur une photographie monochrome." width="1512" height="1003" loading="lazy" decoding="async"></picture></a><figcaption>Ouvidor 63<span class="credit">Photo : Sol Emanuel Calderón Vargas</span></figcaption></figure>
           </div>
           <p class="gallery-hint">Faites glisser pour voir d’autres images. Cliquez pour agrandir.</p>
-          <!-- Galeria fotografia-vivitar: fim --><details class="photography-notes"><summary>La série et la technique</summary><p class="period">Série photographique</p><p>Photographies sur pellicule : le grain, la lumière et un temps que l’on ne corrige pas après coup.</p><p>Je photographie sur pellicule avec un appareil VIVITAR. Cette série explore le grain, la lumière et le noir et blanc.</p><dl><dt>Technique</dt><dd>Photographie argentique sur pellicule</dd><dt>Appareil photo</dt><dd>VIVITAR</dd></dl></details></div></details>
+          <!-- Galeria fotografia-vivitar: fim --><details class="photography-notes"><summary>La série et la technique</summary><p class="period">Série photographique</p><p>Photographies sur pellicule : le grain, la lumière et un temps que l’on ne corrige pas après coup.</p><p>Je photographie sur pellicule avec un appareil VIVITAR. Cette série explore le grain, la lumière et le noir et blanc.</p><dl><dt>Technique</dt><dd>Photographie argentique sur pellicule</dd><dt>Appareil photo</dt><dd>VIVITAR</dd></dl></details>
+          <section class="fractal-studio" aria-labelledby="fractal-title"><div class="fractal-heading"><div><p class="eyebrow">S0LE · VISUEL EN DIRECT</p><h3 id="fractal-title">Géométrie en expansion</h3></div><span class="fractal-live" aria-hidden="true">◉ LIVE</span></div>
+            <label class="fractal-shape-picker" for="fractal-shape"><span>Forme</span><select id="fractal-shape"><option value="triangle">Géométrie triangulaire</option><option value="flower">Fleur fractale</option><option value="tree">Arbre fractal</option><option value="frog">Grenouille</option></select></label>
+            <div class="fractal-stage"><canvas id="fractal-canvas" aria-hidden="true"></canvas><span class="fractal-stage-label" aria-hidden="true">FRACTAL / 01</span></div>
+            <div class="fractal-controls" role="group" aria-label="Commandes du fractal"><label for="fractal-size"><span>Échelle</span><output id="fractal-size-value" for="fractal-size">78%</output><input id="fractal-size" type="range" min="48" max="100" value="78"></label><label for="fractal-color"><span>Couleur</span><output id="fractal-color-value" for="fractal-color">Ambre</output><input id="fractal-color" type="range" min="0" max="100" value="12"></label><label for="fractal-depth"><span id="fractal-depth-label">Triangles + rotation</span><output id="fractal-depth-value" for="fractal-depth">4 · 160 △</output><input id="fractal-depth" type="range" min="1" max="6" value="4"></label></div>
+            <p class="fractal-caption">Réglez les contrôles ; le son transforme l’image lorsque le microphone est actif.</p></section>
+          </div></details>
       <div id="demonstracao" class="sheet interaction-demo" role="group" aria-labelledby="demo-title">
         <h3 id="demo-title">La lumière vous répond.</h3>
         <p class="demo-intro">Touchez ou déplacez le curseur. Le son et l’inclinaison transforment aussi ce petit environnement.</p>
@@ -213,6 +219,7 @@
   <script src="../js/projects.js"></script>
   <script src="../js/shader.js?v=20261113-vj3"></script>
   <script src="../js/audio.js"></script>
-  <script src="../js/app.js?v=20261113-vj3"></script>
+  <script src="../js/fractal.js?v=20261113-studio4"></script>
+  <script src="../js/app.js?v=20261113-studio1"></script>
 </body>
 </html>
