@@ -63,13 +63,23 @@
     context.fillStyle = center; context.beginPath(); context.arc(0, 0, radius * (.14 + pulse * .025), 0, Math.PI * 2); context.fill();
     context.restore();
   }
-  function drawTreeBranch(length, depth, intensity, hue, time, pulse, spinSpeed, direction, branchRatio) {
+  function drawTreeBranch(length, depth, intensity, hue, time, pulse, spinSpeed, direction, branchRatio, canopyRadius) {
     context.strokeStyle = "hsla(" + ((hue + depth * 7) % 360) + ", 54%, " + (57 + pulse * 9) + "%, .9)";
     context.lineWidth = Math.max(1, width / 570) * Math.max(.45, (depth + 1) / (intensity + 1));
-    context.beginPath(); context.moveTo(0, 0); context.lineTo(0, -length); context.stroke(); context.translate(0, -length);
+    var bend = Math.sin(time * spinSpeed + depth * 1.9 + direction) * length * .055;
+    context.beginPath(); context.moveTo(0, 0); context.quadraticCurveTo(bend, -length * .54, 0, -length); context.stroke(); context.translate(0, -length);
     if (depth <= 0) {
-      context.fillStyle = "hsla(" + ((hue + 36) % 360) + ", 62%, 68%, .9)";
-      context.beginPath(); context.ellipse(0, 0, length * (.19 + pulse * .04), length * .1, time * spinSpeed, 0, Math.PI * 2); context.fill();
+      var leafSize = canopyRadius * (.027 + intensity * .0018);
+      context.save(); context.rotate(Math.sin(time * spinSpeed + direction) * .12);
+      context.fillStyle = "hsla(" + ((hue + 100) % 360) + ", 48%, " + (59 + pulse * 8) + "%, .82)";
+      context.beginPath();
+      context.ellipse(0, 0, leafSize * .72, leafSize * .39, 0, 0, Math.PI * 2);
+      context.ellipse(-leafSize * .48, -leafSize * .22, leafSize * .58, leafSize * .3, -.48, 0, Math.PI * 2);
+      context.ellipse(leafSize * .48, -leafSize * .22, leafSize * .58, leafSize * .3, .48, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = "hsla(" + ((hue + 124) % 360) + ", 42%, 78%, .56)";
+      context.lineWidth = Math.max(.6, width / 1000); context.beginPath(); context.moveTo(0, leafSize * .24); context.lineTo(0, -leafSize * .16); context.stroke();
+      context.restore();
       return;
     }
     var sway = Math.sin(time * spinSpeed + depth) * .025;
@@ -77,11 +87,11 @@
     var leftDirection = Math.max(-.85, direction - spread + sway);
     var rightDirection = Math.min(.85, direction + spread + sway);
     context.save(); context.rotate(leftDirection - direction);
-    drawTreeBranch(next, depth - 1, intensity, hue - 12, time, pulse, spinSpeed, leftDirection, branchRatio); context.restore();
+    drawTreeBranch(next, depth - 1, intensity, hue - 12, time, pulse, spinSpeed, leftDirection, branchRatio, canopyRadius); context.restore();
     context.save(); context.rotate(sway * .35);
-    drawTreeBranch(next * .94, depth - 1, intensity, hue + 2, time, pulse, spinSpeed, direction + sway * .35, branchRatio); context.restore();
+    drawTreeBranch(next * .94, depth - 1, intensity, hue + 2, time, pulse, spinSpeed, direction + sway * .35, branchRatio, canopyRadius); context.restore();
     context.save(); context.rotate(rightDirection - direction);
-    drawTreeBranch(next, depth - 1, intensity, hue + 12, time, pulse, spinSpeed, rightDirection, branchRatio); context.restore();
+    drawTreeBranch(next, depth - 1, intensity, hue + 12, time, pulse, spinSpeed, rightDirection, branchRatio, canopyRadius); context.restore();
   }
   function drawTreeRoots(radius, intensity, hue, time, pulse, spinSpeed) {
     var rootCount = 5 + intensity, baseWidth = Math.max(1, width / 570);
@@ -130,7 +140,7 @@
     var branchRatio = treeBranchRatio(intensity);
     context.save(); context.translate(cx, cy + radius * .25); context.rotate(Math.sin(time * spinSpeed) * .025);
     drawTreeRoots(radius, intensity, hue, time, pulse, spinSpeed);
-    drawTreeBranch(radius * .62, intensity, intensity, hue, time, pulse, spinSpeed, 0, branchRatio); context.restore();
+    drawTreeBranch(radius * .62, intensity, intensity, hue, time, pulse, spinSpeed, 0, branchRatio, radius); context.restore();
   }
   function drawFrogMotif(radius, hue, pulse) {
     var edge = "hsla(" + hue + ", 67%, 48%, .96)";
@@ -141,6 +151,20 @@
     gold.addColorStop(.48, "hsla(" + ((hue + 8) % 360) + ", 70%, 58%, .98)");
     gold.addColorStop(1, "hsla(" + ((hue + 22) % 360) + ", 72%, 37%, .98)");
     context.fillStyle = gold;
+    context.save(); context.lineCap = "round"; context.lineJoin = "round"; context.strokeStyle = edge;
+    context.lineWidth = Math.max(1, width / 700) * .9;
+    [-1, 1].forEach(function (side) {
+      context.beginPath(); context.moveTo(side * radius * .28, radius * .12);
+      context.quadraticCurveTo(side * radius * .52, radius * .13, side * radius * .66, radius * .3);
+      context.lineTo(side * radius * .52, radius * .34);
+      context.moveTo(side * radius * .38, radius * .24);
+      context.quadraticCurveTo(side * radius * .68, radius * .42, side * radius * .38, radius * .43);
+      context.moveTo(side * radius * .59, radius * .31); context.lineTo(side * radius * .75, radius * .25);
+      context.moveTo(side * radius * .59, radius * .31); context.lineTo(side * radius * .77, radius * .32);
+      context.moveTo(side * radius * .59, radius * .31); context.lineTo(side * radius * .7, radius * .39);
+      context.stroke();
+    });
+    context.restore();
     context.beginPath(); context.moveTo(-radius * .52, -radius * .1); context.quadraticCurveTo(-radius * .48, -radius * .42, -radius * .25, -radius * .32);
     context.lineTo(-radius * .1, -radius * .25); context.quadraticCurveTo(0, -radius * .34, radius * .1, -radius * .25);
     context.lineTo(radius * .25, -radius * .32); context.quadraticCurveTo(radius * .48, -radius * .42, radius * .52, -radius * .1);
@@ -148,6 +172,13 @@
     context.lineTo(radius * .16, radius * .26); context.quadraticCurveTo(0, radius * .43, -radius * .16, radius * .26);
     context.lineTo(-radius * .3, radius * .37); context.quadraticCurveTo(-radius * .57, radius * .22, -radius * .52, -radius * .1);
     context.closePath(); context.fill(); context.stroke();
+    context.strokeStyle = "hsla(" + ((hue + 44) % 360) + ", 58%, 79%, .72)";
+    context.lineWidth = Math.max(.8, width / 900);
+    context.beginPath(); context.ellipse(0, radius * .08, radius * .235, radius * .19, 0, .12, Math.PI - .12); context.stroke();
+    for (var band = -1; band <= 1; band++) {
+      var bandY = radius * (.02 + band * .085);
+      context.beginPath(); context.moveTo(-radius * .16, bandY); context.lineTo(0, bandY + radius * .045); context.lineTo(radius * .16, bandY); context.stroke();
+    }
     [-1, 1].forEach(function (side) {
       context.fillStyle = gold; context.beginPath(); context.ellipse(side * radius * .25, -radius * .26, radius * .15, radius * .17, 0, 0, Math.PI * 2); context.fill(); context.stroke();
       context.fillStyle = "hsla(" + ((hue + 56) % 360) + ", 82%, " + (73 + pulse * 10) + "%, .98)";
@@ -156,6 +187,8 @@
     });
     context.strokeStyle = edge;
     context.beginPath(); context.moveTo(-radius * .25, -radius * .04); context.quadraticCurveTo(0, radius * .08, radius * .25, -radius * .04);
+    context.moveTo(-radius * .29, radius * .02); context.quadraticCurveTo(-radius * .4, radius * .12, -radius * .3, radius * .24);
+    context.moveTo(radius * .29, radius * .02); context.quadraticCurveTo(radius * .4, radius * .12, radius * .3, radius * .24);
     context.moveTo(-radius * .23, radius * .06); context.lineTo(-radius * .13, radius * .16); context.lineTo(-radius * .25, radius * .22);
     context.moveTo(radius * .23, radius * .06); context.lineTo(radius * .13, radius * .16); context.lineTo(radius * .25, radius * .22); context.stroke();
     context.fillStyle = "hsla(" + ((hue + 48) % 360) + ", 78%, 78%, .88)";
@@ -166,7 +199,10 @@
     context.save(); context.translate(cx, cy); context.rotate(reduced.matches ? 0 : time * spinSpeed * .4);
     var ornaments = 4 + intensity * 2, orbit = radius * .62;
     context.strokeStyle = "hsla(" + hue + ", 58%, 62%, .34)"; context.lineWidth = Math.max(1, width / 760);
-    [1.08, 1.2].forEach(function (factor) { context.beginPath(); context.ellipse(0, 0, radius * factor, radius * factor * .8, 0, 0, Math.PI * 2); context.stroke(); });
+    [1.04, 1.16].forEach(function (factor, ring) {
+      context.setLineDash(ring ? [Math.max(2, radius * .035), Math.max(3, radius * .06)] : []);
+      context.beginPath(); context.ellipse(0, 0, radius * factor, radius * factor * .78, 0, 0, Math.PI * 2); context.stroke();
+    }); context.setLineDash([]);
     for (var i = 0; i < ornaments; i++) {
       var angle = i * Math.PI * 2 / ornaments - time * spinSpeed * .6;
       var x = Math.cos(angle) * orbit, y = Math.sin(angle) * orbit;
@@ -175,7 +211,7 @@
       context.beginPath(); context.moveTo(0, -radius * .035); context.lineTo(radius * .035, 0);
       context.lineTo(0, radius * .035); context.lineTo(-radius * .035, 0); context.closePath(); context.fill(); context.restore();
     }
-    context.save(); context.scale(1 + pulse * .04, 1 + pulse * .04); drawFrogMotif(radius * .66, hue + 8, pulse); context.restore();
+    context.save(); context.scale(1 + pulse * .04, 1 + pulse * .04); drawFrogMotif(radius * .9, hue + 8, pulse); context.restore();
     context.restore();
   }
   function draw(now) {
