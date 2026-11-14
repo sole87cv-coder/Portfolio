@@ -63,7 +63,7 @@
     context.fillStyle = center; context.beginPath(); context.arc(0, 0, radius * (.14 + pulse * .025), 0, Math.PI * 2); context.fill();
     context.restore();
   }
-  function drawTreeBranch(length, depth, intensity, hue, time, pulse, spinSpeed) {
+  function drawTreeBranch(length, depth, intensity, hue, time, pulse, spinSpeed, direction, branchRatio) {
     context.strokeStyle = "hsla(" + ((hue + depth * 7) % 360) + ", 54%, " + (57 + pulse * 9) + "%, .9)";
     context.lineWidth = Math.max(1, width / 570) * Math.max(.45, (depth + 1) / (intensity + 1));
     context.beginPath(); context.moveTo(0, 0); context.lineTo(0, -length); context.stroke(); context.translate(0, -length);
@@ -72,14 +72,20 @@
       context.beginPath(); context.ellipse(0, 0, length * (.19 + pulse * .04), length * .1, time * spinSpeed, 0, Math.PI * 2); context.fill();
       return;
     }
-    var sway = Math.sin(time * spinSpeed + depth) * .035;
-    var next = length * .72, spread = .34 + intensity * .02;
-    context.save(); context.rotate(-spread + sway); drawTreeBranch(next, depth - 1, intensity, hue - 9, time, pulse, spinSpeed); context.restore();
-    context.save(); context.rotate(spread + sway); drawTreeBranch(next, depth - 1, intensity, hue + 9, time, pulse, spinSpeed); context.restore();
+    var sway = Math.sin(time * spinSpeed + depth) * .025;
+    var next = length * branchRatio, spread = .34 + intensity * .012;
+    var leftDirection = Math.max(-.85, direction - spread + sway);
+    var rightDirection = Math.min(.85, direction + spread + sway);
+    context.save(); context.rotate(leftDirection - direction);
+    drawTreeBranch(next, depth - 1, intensity, hue - 9, time, pulse, spinSpeed, leftDirection, branchRatio); context.restore();
+    context.save(); context.rotate(rightDirection - direction);
+    drawTreeBranch(next, depth - 1, intensity, hue + 9, time, pulse, spinSpeed, rightDirection, branchRatio); context.restore();
   }
+  function treeBranchRatio(intensity) { return .58 - intensity * .012; }
   function drawTree(cx, cy, radius, intensity, hue, time, pulse, spinSpeed) {
-    context.save(); context.translate(cx, cy + radius * .42); context.rotate(Math.sin(time * spinSpeed) * .04);
-    drawTreeBranch(radius * .8, intensity, intensity, hue, time, pulse, spinSpeed); context.restore();
+    var branchRatio = treeBranchRatio(intensity);
+    context.save(); context.translate(cx, cy + radius * .25); context.rotate(Math.sin(time * spinSpeed) * .025);
+    drawTreeBranch(radius * .62, intensity, intensity, hue, time, pulse, spinSpeed, 0, branchRatio); context.restore();
   }
   function drawFrogMotif(radius, hue, pulse) {
     var edge = "hsla(" + hue + ", 67%, 48%, .96)";
@@ -134,9 +140,15 @@
     var shortSide = Math.min(width, height), pointerShift = shortSide * .018;
     var centerX = width * .5 + pointer.x * pointerShift, centerY = height * .5 + pointer.y * pointerShift;
     var hue = (Number(colorControl.value) * 3.25 + 24 + treble * 42 + 360) % 360;
-    var shape = shapeControl.value, fit = shape === "flower" ? .68 : shape === "tree" ? .4 : .43;
-    var radius = Math.min(shortSide * .47, shortSide * fit * Number(scaleControl.value) / 78 * (1 + bass * .025));
-    var intensity = Number(depthControl.value);
+    var shape = shapeControl.value, intensity = Number(depthControl.value);
+    var fit = shape === "flower" ? .68 : shape === "tree" ? .3 : .43;
+    var fitLimit = shape === "flower" ? .78 : shape === "tree" ? .46 : .45;
+    var radius = Math.min(shortSide * fitLimit, shortSide * fit * Number(scaleControl.value) / 78 * (1 + bass * .015));
+    if (shape === "tree") {
+      var ratio = treeBranchRatio(intensity);
+      var treeEnvelope = .25 + .62 * (1 - Math.pow(ratio, intensity + 1)) / (1 - ratio) + .025;
+      radius = Math.min(radius, shortSide * (.465 - .018) / treeEnvelope);
+    }
     var depth = intensity - 1;
     var ringCount = 2 + Math.ceil(intensity / 2);
     var spinSpeed = .05 + (intensity - 1) * .046 + treble * .14;
