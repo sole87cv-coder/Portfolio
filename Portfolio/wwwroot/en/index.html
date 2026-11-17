@@ -11,7 +11,7 @@
   <meta property="og:locale" content="en_US">
   <title>Sol Emanuel Calderón Vargas · Audiovisual artist</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F1E8D6'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-family='Georgia,serif' font-size='20' fill='%231C1A17'%3ES0LE%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="../css/style.css?v=20261117-mobile-vj3">
+  <link rel="stylesheet" href="../css/style.css?v=20261117-vj-shape1">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Sol Emanuel Calderón Vargas","jobTitle":"Audiovisual artist and researcher","sameAs":["https://instagram.com/v1su4rt","https://www.youtube.com/@v1su4rt-Vj"]}</script>
   <!-- [PENDENTE: domínio definitivo para canonical, og:url, hreflang e sitemap.] -->
 </head>
@@ -22,15 +22,32 @@
     <button type="button" class="monogram" id="logo-sole" aria-label="S0LE · home, with 8-bit sound" data-i18n="sole-label"><img src="../img/sole-mono.png" width="467" height="260" alt="" aria-hidden="true"></button>
     <nav aria-label="Sections" data-i18n="sections-label"><a href="#trabalho" data-i18n="work">Work</a><a href="#pesquisa" data-i18n="research">Research</a><a href="#sobre" data-i18n="about">About</a><a href="#contato" data-i18n="contact">Contact</a></nav>
     <span id="idioma-header"><label class="language"><span class="sr-only" data-i18n="language">Language</span><select id="idioma" aria-label="Language" data-i18n="language"><option value="pt-BR" data-href="../index.html">PT</option><option value="es" data-href="../es/index.html">ES</option><option value="en" data-href="../en/index.html" selected>EN</option><option value="fr" data-href="../fr/index.html">FR</option></select></label></span>
-    <button type="button" id="ambiente" aria-pressed="false" aria-controls="conteudo" data-i18n="ambient" data-reading-label="Back to reading">Ambient</button>
+    <div class="ambient-actions" role="group" aria-label="Visual controls">
+      <button type="button" id="demo-mic" class="sensor-action" aria-pressed="false" aria-label="Microphone" aria-describedby="demo-privacy mic-status" data-off="Microphone" data-on="Turn off microphone" data-short="Mic" hidden>Mic</button>
+      <button type="button" id="demo-motion" class="sensor-action" aria-pressed="false" aria-label="Motion" aria-describedby="demo-privacy motion-status" data-off="Motion" data-on="Turn off motion" data-short="Move" hidden>Move</button>
+      <button type="button" id="ambiente" data-reading-label="Back to reading" aria-pressed="false" aria-controls="conteudo" data-i18n="ambient">Ambient</button>
+      <button type="button" id="vj-toggle" class="vj-toggle" aria-expanded="false" aria-controls="vj-panel" aria-label="Visual controls">VJ</button>
+    </div>
   </header>
+  <section id="vj-panel" class="vj-panel sheet" aria-labelledby="vj-title" hidden>
+    <div class="vj-panel-heading"><div><h2 id="vj-title">Visual controls</h2><p>Shape the environment in real time.</p></div><button type="button" id="vj-close" aria-label="Hide VJ controls">×</button></div>
+    <label class="vj-control vj-effect"><span>Shader</span><select id="vj-mode"><option value="1">Mist</option><option value="2">Organic</option><option value="3">Flow</option><option value="0">Analog</option><option value="4">Grid</option></select></label>
+    <label class="vj-control vj-effect"><span>Geometry</span><select id="vj-shape"><option value="triangle">Triangles</option><option value="flower">Fractal flower</option><option value="tree">Fractal tree</option><option value="frog">Frog</option></select></label>
+    <label class="vj-control"><span>Speed</span><output id="vj-speed-value">1.0×</output><input id="vj-speed" type="range" min="20" max="240" value="100"></label>
+    <label class="vj-control"><span>Distortion</span><output id="vj-warp-value">60%</output><input id="vj-warp" type="range" min="0" max="150" value="60"></label>
+    <label class="vj-control"><span>Intensity</span><output id="vj-pigment-value">100%</output><input id="vj-pigment" type="range" min="20" max="180" value="100"></label>
+    <div class="vj-audio-meter" role="img" aria-label="Live audio levels"><span data-band="low"><b>Low</b><i><em></em></i></span><span data-band="mid"><b>Mid</b><i><em></em></i></span><span data-band="high"><b>Hi</b><i><em></em></i></span></div>
+    <label class="vj-control"><span>Microphone sensitivity</span><output id="mic-sensitivity-value">135%</output><input id="mic-sensitivity" type="range" min="50" max="250" value="135"></label>
+    <button type="button" id="vj-mix-toggle" class="vj-mix-toggle" aria-pressed="false" data-off="Mix geometries" data-on="Pause mix">Mix geometries</button>
+    <button type="button" id="vj-hide" class="vj-hide">Hide controls</button>
+  </section>
   <p id="ambient-hint" class="ambient-hint sheet" hidden data-i18n="ambient-hint">Tap or drag to paint. Press Esc to return to reading.</p>
   <main id="conteudo" tabindex="-1">
     <section id="inicio" class="hero" aria-labelledby="titulo" data-mode="1" data-hue="0.7">
       <div class="hero-opening"><div class="sheet hero-copy"><div class="hero-brand"><img class="brand-image" src="../img/sole-mono.png" width="467" height="260" alt="S0LE"><p class="eyebrow">S0LE · São Paulo</p></div><h1 id="titulo">Sol Emanuel<br>Calderón Vargas</h1><p class="hero-line">I use image, sound and light to activate spaces, memories and forms of collective creation.</p><p class="hero-sub">I’m an audiovisual artist and researcher in São Paulo.</p><span class="scroll-mark" aria-hidden="true">↓</span>
         <!-- Alternativas: Video mapping, imagem ao vivo e sistemas interativos. | Luz, imagem e som em espaços coletivos. | Imagem em movimento, pesquisa e percepção. -->
       </div>
-        <details id="fotografia-vivitar" class="record sheet hero-photography" open><summary><h3>Analog photographs · VIVITAR</h3></summary><div class="record-body"><!-- Galeria fotografia-vivitar: início -->
+        <details id="fotografia-vivitar" class="record sheet hero-photography" open><summary><h3 id="fotografia-vivitar-titulo">Analog photographs · VIVITAR</h3></summary><div class="record-body"><!-- Galeria fotografia-vivitar: início -->
           <div class="gallery" aria-label="Images of Analog photographs · VIVITAR">
             <figure><a href="../img/vivitar-analogica-02.jpg" aria-label="Enlarge: Candlelight"><picture><source type="image/webp" srcset="../img/responsive/vivitar-analogica-02-480.webp 480w, ../img/responsive/vivitar-analogica-02-960.webp 960w" sizes="(max-width: 600px) 80vw, 420px"><img src="../img/vivitar-analogica-02.jpg" alt="A flame on the ground lights a dark passage between building walls." width="1512" height="1003" loading="eager" fetchpriority="high" decoding="async"></picture></a><figcaption>Candlelight<span class="credit">Photo: Sol Emanuel Calderón Vargas</span></figcaption></figure>
             <figure><a href="../img/vivitar-analogica-01.jpg" aria-label="Enlarge: Dark, grainy surface"><picture><source type="image/webp" srcset="../img/responsive/vivitar-analogica-01-480.webp 480w, ../img/responsive/vivitar-analogica-01-720.webp 720w" sizes="(max-width: 600px) 80vw, 420px"><img src="../img/vivitar-analogica-01.jpg" alt="A winding trail of light crosses a gray background with a grainy texture." width="720" height="1080" loading="lazy" decoding="async"></picture></a><figcaption>Dark, grainy surface<span class="credit">Photo: Sol Emanuel Calderón Vargas</span></figcaption></figure>
@@ -44,7 +61,7 @@
             <figure><a href="../img/vivitar-analogica-10.jpg" aria-label="Enlarge: Ouvidor 63"><picture><source type="image/webp" srcset="../img/responsive/vivitar-analogica-10-480.webp 480w, ../img/responsive/vivitar-analogica-10-960.webp 960w" sizes="(max-width: 600px) 80vw, 420px"><img src="../img/vivitar-analogica-10.jpg" alt="Graffiti-covered building beside tall buildings in a monochrome photograph." width="1512" height="1003" loading="lazy" decoding="async"></picture></a><figcaption>Ouvidor 63<span class="credit">Photo: Sol Emanuel Calderón Vargas</span></figcaption></figure>
           </div>
           <p class="gallery-hint">Swipe to see other images. Click to enlarge.</p>
-          <!-- Galeria fotografia-vivitar: fim --><details class="photography-notes"><summary>About the series and technique</summary><p class="period">Photographic series</p><p>I photograph on film: grain, light and a moment that can’t be corrected afterward.</p><p>I photograph on film with a VIVITAR camera. The series explores grain, light, and black and white.</p><dl><dt>Technique</dt><dd>Analog film photography</dd><dt>Camera</dt><dd>VIVITAR</dd></dl></details>
+          <!-- Galeria fotografia-vivitar: fim --><details class="photography-notes"><summary id="fotografia-tecnica-titulo">About the series and technique</summary><p class="period">Photographic series</p><p>I photograph on film: grain, light and a moment that can’t be corrected afterward.</p><p>I photograph on film with a VIVITAR camera. The series explores grain, light, and black and white.</p><dl><dt>Technique</dt><dd>Analog film photography</dd><dt>Camera</dt><dd>VIVITAR</dd></dl></details>
           <section class="fractal-studio" aria-labelledby="fractal-title"><div class="fractal-heading"><div><p class="eyebrow">S0LE · LIVE VISUAL</p><h3 id="fractal-title">Geometry in motion</h3></div><span class="fractal-live" aria-hidden="true">◉ LIVE</span></div>
             <div class="fractal-shape-picker"><span id="fractal-shape-label">Geometry</span><div class="fractal-shape-options" role="group" aria-labelledby="fractal-shape-label"><button type="button" class="fractal-shape-option" data-fractal-shape="triangle" aria-pressed="true">Triangles</button><button type="button" class="fractal-shape-option" data-fractal-shape="flower" aria-pressed="false">Fractal flower</button><button type="button" class="fractal-shape-option" data-fractal-shape="tree" aria-pressed="false">Fractal tree</button><button type="button" class="fractal-shape-option" data-fractal-shape="frog" aria-pressed="false">Frog</button></div><select id="fractal-shape" hidden aria-hidden="true" tabindex="-1"><option value="triangle">Triangle geometry</option><option value="flower">Fractal flower</option><option value="tree">Fractal tree</option><option value="frog">Frog</option></select></div>
             <div class="fractal-stage"><canvas id="fractal-canvas" aria-hidden="true"></canvas><span class="fractal-stage-label" aria-hidden="true">FRACTAL / 01</span></div>
@@ -57,11 +74,7 @@
         <div class="demo-tools" hidden><label for="demo-mode">Effect</label><select id="demo-mode"><option value="1">Mist</option><option value="2">Organic</option><option value="3">Flow</option><option value="0">Analog</option><option value="4">Grid</option></select><button type="button" id="demo-clear">Clear</button></div>
         <div id="demo-stage" class="demo-stage" role="group" tabindex="0" aria-label="Interactive visual area" aria-describedby="demo-gesture" hidden><canvas id="demo-canvas" aria-hidden="true"></canvas><span class="demo-stage-mark" aria-hidden="true">S0LE · LIVE</span></div>
         <p id="demo-gesture" class="demo-gesture" hidden>Tap to place a mark; drag horizontally to paint. Swipe vertically to scroll. Keyboard: arrows move, Enter paints.</p>
-        <div class="demo-controls">
-          <button type="button" id="demo-mic" aria-pressed="false" aria-describedby="demo-privacy mic-status" data-off="Microphone" data-on="Turn off microphone" hidden>Microphone</button>
-          <button type="button" id="demo-motion" aria-pressed="false" aria-describedby="demo-privacy motion-status" data-off="Motion" data-on="Turn off motion" hidden>Motion</button>
-          <span class="demo-signal" aria-hidden="true"></span>
-        </div>
+        <div class="demo-controls"><span class="demo-signal" aria-hidden="true"></span></div>
         <details class="demo-permissions"><summary>Permissions and privacy</summary><p id="demo-privacy" class="demo-privacy">Only with your permission. Audio is processed here, without recording, sending or playing it back. When you leave the opening section or hide the page, the sensors turn off.</p></details>
         <div class="demo-feedback"><p id="mic-status" role="status" aria-live="polite" data-idle="Microphone off." data-pending="Waiting for permission… Click again to cancel." data-active="Microphone active. Make a sound near the device." data-denied="Microphone permission denied. You can try again." data-unavailable="Microphone unavailable on this browser or device." data-secure="The microphone requires HTTPS or localhost.">Microphone off.</p>
         <p id="motion-status" role="status" aria-live="polite" data-idle="Motion off." data-pending="Waiting for permission and a signal from the device… Click again to cancel." data-active="Motion active. Tilt the device gently." data-denied="Motion permission denied. You can try again." data-unavailable="This device did not provide orientation data." data-secure="Motion requires HTTPS or localhost.">Motion off.</p>
@@ -217,9 +230,9 @@
   <p class="sr-only" id="app-status" role="status" aria-live="polite"></p>
   <dialog id="lb" aria-labelledby="lb-caption"><button type="button" id="lb-fechar" data-i18n="close-image">Close image</button><img id="lb-img" alt=""><p id="lb-caption"></p></dialog>
   <script src="../js/projects.js"></script>
-  <script src="../js/shader.js?v=20261117-mobile-vj1"></script>
+  <script src="../js/shader.js?v=20261117-vj-shape1"></script>
   <script src="../js/audio.js"></script>
-  <script src="../js/fractal.js?v=20261117-studio21"></script>
-  <script src="../js/app.js?v=20261113-studio1"></script>
+  <script src="../js/fractal.js?v=20261117-vj-shape1"></script>
+  <script src="../js/app.js?v=20261117-vj-shape1"></script>
 </body>
 </html>

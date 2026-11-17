@@ -7,6 +7,13 @@
   const ambientButton = document.getElementById("ambiente");
   const ambientLabel = ambientButton.textContent;
   const ambientHint = document.getElementById("ambient-hint");
+  const vjPanel = document.getElementById("vj-panel");
+  const vjToggle = document.getElementById("vj-toggle");
+  const vjShape = document.getElementById("vj-shape");
+  const geometryMixToggle = document.getElementById("vj-mix-toggle");
+  const fractalStage = document.querySelector(".fractal-stage");
+  const fractalStageParent = fractalStage.parentElement;
+  const fractalStageNext = fractalStage.nextSibling;
   const dialog = document.getElementById("lb");
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
   const sections = [...main.querySelectorAll(":scope > section")];
@@ -24,9 +31,11 @@
   const motionButton = document.getElementById("demo-motion");
   const micStatus = document.getElementById("mic-status");
   const motionStatus = document.getElementById("motion-status");
+  const audioMeters = Array.from(document.querySelectorAll(".vj-audio-meter [data-band]"));
   const reactiveSurfaces = [demo, document.querySelector(".hero-copy")];
   const stage = document.getElementById("demo-stage");
   const modeSelect = document.getElementById("demo-mode");
+  const vjMode = document.getElementById("vj-mode");
   stage.hidden = false;
   document.querySelector(".demo-tools").hidden = false;
   document.getElementById("demo-gesture").hidden = false;
@@ -37,8 +46,8 @@
   let micState = "off", motionState = "off", micGeneration = 0, motionGeneration = 0;
   let micStream = null, micContext = null, micSource = null, analyser = null, samples = null, frequencies = null;
   let orientationBase = null, motionTimer = 0, lastOrientation = 0;
-  let level = 0, bass = 0, treble = 0, attack = 0, tiltX = 0, tiltY = 0, targetX = 0, targetY = 0;
-  let previousBassTarget = 0, previousTrebleTarget = 0;
+  let level = 0, bass = 0, mid = 0, treble = 0, attack = 0, tiltX = 0, tiltY = 0, targetX = 0, targetY = 0;
+  let previousBassTarget = 0, previousMidTarget = 0, previousTrebleTarget = 0;
   let inputFrame = 0, lastInputUpdate = 0;
 
   function updatePreviewVisibility() {
@@ -50,8 +59,80 @@
   }, { threshold: .05 }).observe(stage);
   modeSelect.addEventListener("change", function () {
     manualMode = Number(modeSelect.value);
+    vjMode.value = modeSelect.value;
     preview.setTarget(manualMode, .7);
     applySection(activeSection);
+  });
+  vjMode.addEventListener("change", function () {
+    modeSelect.value = vjMode.value;
+    manualMode = Number(vjMode.value);
+    shader.setTarget(manualMode, Number(activeSection.dataset.hue));
+    applySection(activeSection);
+  });
+  vjShape.addEventListener("change", function () {
+    if (window.fractalStudio) window.fractalStudio.setShape(vjShape.value);
+  });
+  function bindVjRange(id, outputId, parameter, scale, suffix, decimals) {
+    const input = document.getElementById(id), output = document.getElementById(outputId);
+    function update() {
+      const value = Number(input.value);
+      shader.params[parameter] = value / scale;
+      output.value = decimals ? (value / scale).toFixed(decimals) + suffix : value + suffix;
+      output.textContent = output.value;
+      shader.invalidate();
+    }
+    input.addEventListener("input", update);
+    update();
+  }
+  bindVjRange("vj-speed", "vj-speed-value", "speed", 100, "×", 1);
+  bindVjRange("vj-warp", "vj-warp-value", "warp", 100, "%", 0);
+  bindVjRange("vj-pigment", "vj-pigment-value", "pigment", 100, "%", 0);
+  const micSensitivityControl = document.getElementById("mic-sensitivity");
+  const micSensitivityValue = document.getElementById("mic-sensitivity-value");
+  let micSensitivity = Number(micSensitivityControl.value) / 100;
+  function updateMicSensitivity() {
+    micSensitivity = Number(micSensitivityControl.value) / 100;
+    micSensitivityValue.value = micSensitivityControl.value + "%";
+    micSensitivityValue.textContent = micSensitivityValue.value;
+    renderInput();
+  }
+  micSensitivityControl.addEventListener("input", updateMicSensitivity);
+  function closeVjPanel(returnFocus) {
+    vjPanel.hidden = true;
+    vjToggle.setAttribute("aria-expanded", "false");
+    if (returnFocus) vjToggle.focus({ preventScroll: true });
+  }
+  function toggleVjPanel() {
+    const open = vjPanel.hidden;
+    vjPanel.hidden = !open;
+    vjToggle.setAttribute("aria-expanded", String(open));
+    if (open) document.getElementById("vj-mode").focus({ preventScroll: true });
+  }
+  vjToggle.addEventListener("click", toggleVjPanel);
+  document.getElementById("vj-close").addEventListener("click", function () { closeVjPanel(true); });
+  document.getElementById("vj-hide").addEventListener("click", function () { closeVjPanel(true); });
+  function setGeometryMix(enabled) {
+    if (enabled) {
+      document.body.appendChild(fractalStage);
+      fractalStage.classList.add("ambient-fractal-layer");
+    } else {
+      fractalStage.classList.remove("ambient-fractal-layer");
+      fractalStageParent.insertBefore(fractalStage, fractalStageNext && fractalStageNext.parentNode === fractalStageParent ? fractalStageNext : null);
+    }
+    if (window.fractalStudio) window.fractalStudio.setAmbientBlend(enabled);
+    geometryMixToggle.setAttribute("aria-pressed", String(enabled));
+    geometryMixToggle.textContent = enabled ? geometryMixToggle.dataset.on : geometryMixToggle.dataset.off;
+  }
+  geometryMixToggle.addEventListener("click", function () {
+    if (document.body.classList.contains("ambient")) { setGeometryMix(geometryMixToggle.getAttribute("aria-pressed") !== "true"); return; }
+    setAmbient(true);
+    setGeometryMix(true);
+  });
+  document.addEventListener("pointerdown", function (event) {
+    if (!vjPanel.hidden && !vjPanel.contains(event.target) && !vjToggle.contains(event.target)) closeVjPanel(false);
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !vjPanel.hidden) { event.preventDefault(); closeVjPanel(true); }
   });
   document.getElementById("demo-clear").addEventListener("click", function () {
     releasePaint(); shader.clearStains(); preview.clearStains();
@@ -60,16 +141,28 @@
   function sensorStatus(button, status, state, message) {
     button.dataset.state = state;
     button.setAttribute("aria-pressed", String(state !== "off"));
-    button.textContent = state === "off" ? button.dataset.off : button.dataset.on;
+    button.setAttribute("aria-label", state === "off" ? button.dataset.off : button.dataset.on);
+    button.textContent = button.dataset.short;
     status.textContent = status.dataset[message];
   }
   function renderInput() {
     const x = reduced.matches ? 0 : tiltX, y = reduced.matches ? 0 : tiltY;
-    shader.setInput(level, x, y, bass, treble, attack);
-    preview.setInput(level, x, y, bass, treble, attack);
-    if (window.fractalStudio) window.fractalStudio.setInput(level, x, y, bass, treble, attack);
+    const audioLevel = Math.min(1, level * micSensitivity);
+    const audioBass = Math.min(1, bass * micSensitivity);
+    const audioMid = Math.min(1, mid * micSensitivity);
+    const audioTreble = Math.min(1, treble * micSensitivity);
+    const audioAttack = Math.min(1, attack * micSensitivity);
+    shader.setInput(audioLevel, x, y, audioBass, audioTreble, audioAttack, audioMid);
+    preview.setInput(audioLevel, x, y, audioBass, audioTreble, audioAttack, audioMid);
+    if (window.fractalStudio) window.fractalStudio.setInput(audioLevel, x, y, audioBass, audioTreble, audioAttack, audioMid);
+    micButton.style.setProperty("--mic-level", audioLevel.toFixed(3));
+    micButton.style.boxShadow = audioLevel > 0 ? "0 0 " + (6 + audioLevel * 22).toFixed(1) + "px rgba(var(--accent-rgb)," + (.08 + audioLevel * .34).toFixed(2) + ")" : "";
+    audioMeters.forEach(function (meter) {
+      const value = meter.dataset.band === "low" ? audioBass : meter.dataset.band === "mid" ? audioMid : audioTreble;
+      meter.style.setProperty("--band-level", value.toFixed(3));
+    });
     reactiveSurfaces.forEach(function (surface) {
-      surface.style.setProperty("--input-level", level.toFixed(3));
+      surface.style.setProperty("--input-level", audioLevel.toFixed(3));
       surface.style.setProperty("--input-x", (x * 8).toFixed(2) + "px");
       surface.style.setProperty("--input-y", (y * 8).toFixed(2) + "px");
     });
@@ -81,36 +174,50 @@
     const binWidth = micContext.sampleRate / analyser.fftSize;
     const first = Math.max(1, Math.floor(from / binWidth));
     const last = Math.min(frequencies.length - 1, Math.ceil(to / binWidth));
-    let sum = 0;
-    for (let i = first; i <= last; i++) sum += frequencies[i];
-    return sum / ((last - first + 1) * 255);
+    let sum = 0, firstPeak = 0, secondPeak = 0, thirdPeak = 0;
+    for (let i = first; i <= last; i++) {
+      const value = frequencies[i] / 255;
+      sum += value * value;
+      if (value > firstPeak) { thirdPeak = secondPeak; secondPeak = firstPeak; firstPeak = value; }
+      else if (value > secondPeak) { thirdPeak = secondPeak; secondPeak = value; }
+      else if (value > thirdPeak) thirdPeak = value;
+    }
+    const bandRms = Math.sqrt(sum / Math.max(1, last - first + 1));
+    return Math.min(1, (firstPeak + secondPeak + thirdPeak) * .25 + bandRms * .25);
   }
   function updateInput(now) {
     inputFrame = 0;
     if (document.hidden) { stopDemo(); return; }
-    if (now - lastInputUpdate >= (reduced.matches ? 400 : 32)) {
+    if (now - lastInputUpdate >= (reduced.matches ? 100 : 32)) {
       const dt = Math.min((now - lastInputUpdate) / 1000, .1);
       lastInputUpdate = now;
-      let targetLevel = 0, targetBass = 0, targetTreble = 0;
+      let targetLevel = 0, targetBass = 0, targetMid = 0, targetTreble = 0;
       if (analyser) {
         analyser.getFloatTimeDomainData(samples);
         analyser.getByteFrequencyData(frequencies);
-        let sum = 0;
-        for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
-        targetLevel = 1 - Math.exp(-Math.max(0, Math.sqrt(sum / samples.length) - .006) * 9);
-        targetBass = Math.min(1, bandEnergy(45, 260) * targetLevel * 3.2);
-        targetTreble = Math.min(1, bandEnergy(1600, 9000) * targetLevel * 3.6);
+        let sum = 0, mean = 0;
+        for (let i = 0; i < samples.length; i++) mean += samples[i];
+        mean /= samples.length;
+        for (let i = 0; i < samples.length; i++) { const centered = samples[i] - mean; sum += centered * centered; }
+        const rms = Math.sqrt(sum / samples.length);
+        targetLevel = 1 - Math.exp(-Math.max(0, rms - .0025) * 26);
+        const spectralGate = Math.max(0, targetLevel - .018) * 8.5;
+        targetBass = Math.min(1, bandEnergy(45, 250) * spectralGate);
+        targetMid = Math.min(1, bandEnergy(250, 1800) * spectralGate);
+        targetTreble = Math.min(1, bandEnergy(1800, 9000) * spectralGate);
       }
       const rise = Math.max(0, targetLevel - level);
-      const spectralRise = Math.max(0, targetBass - previousBassTarget, targetTreble - previousTrebleTarget);
+      const spectralRise = Math.max(0, targetBass - previousBassTarget, targetMid - previousMidTarget, targetTreble - previousTrebleTarget);
       previousBassTarget = targetBass;
+      previousMidTarget = targetMid;
       previousTrebleTarget = targetTreble;
-      const smoothing = 1 - Math.exp(-dt * (targetLevel > level ? 18 : 5));
+      const smoothing = 1 - Math.exp(-dt * (targetLevel > level ? 24 : 5));
       level += (targetLevel - level) * (reduced.matches ? 1 : smoothing);
-      bass += (targetBass - bass) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 8));
-      treble += (targetTreble - treble) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 10));
-      const transient = Math.min(1, Math.max(rise * 3.2, spectralRise * 1.8));
-      attack += (transient - attack) * (1 - Math.exp(-dt * (transient > attack ? 24 : 7)));
+      bass += (targetBass - bass) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 13));
+      mid += (targetMid - mid) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 15));
+      treble += (targetTreble - treble) * (reduced.matches ? 1 : 1 - Math.exp(-dt * 18));
+      const transient = Math.min(1, Math.max(rise * 4.8, spectralRise * 2.2));
+      attack += (transient - attack) * (1 - Math.exp(-dt * (transient > attack ? 30 : 6)));
       if (level < .001) level = 0;
       const tiltSmoothing = reduced.matches ? 1 : 1 - Math.exp(-dt * 10);
       tiltX += (targetX - tiltX) * tiltSmoothing;
@@ -128,8 +235,8 @@
     if (micStream) micStream.getTracks().forEach(function (track) { track.stop(); });
     if (micContext) micContext.close().catch(function () {});
     micStream = null; micContext = null; micSource = null; analyser = null; samples = null; frequencies = null;
-    level = 0; bass = 0; treble = 0; attack = 0;
-    previousBassTarget = 0; previousTrebleTarget = 0;
+    level = 0; bass = 0; mid = 0; treble = 0; attack = 0;
+    previousBassTarget = 0; previousMidTarget = 0; previousTrebleTarget = 0;
     sensorStatus(micButton, micStatus, "off", message);
     renderInput();
     if (motionState !== "active") { cancelAnimationFrame(inputFrame); inputFrame = 0; }
@@ -164,7 +271,9 @@
       if (!await resumed) throw new Error("AudioContext unavailable");
       if (generation !== micGeneration) return;
       analyser = context.createAnalyser(); analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = .42;
+      analyser.minDecibels = -90;
+      analyser.maxDecibels = -24;
+      analyser.smoothingTimeConstant = .24;
       samples = new Float32Array(analyser.fftSize);
       frequencies = new Uint8Array(analyser.frequencyBinCount);
       micSource = context.createMediaStreamSource(stream);
@@ -316,6 +425,7 @@
     paint = null;
   }
   function setAmbient(on) {
+    if (!on) setGeometryMix(false);
     if (on) stopDemo();
     releasePaint();
     document.body.classList.toggle("ambient", on);
@@ -324,9 +434,12 @@
     ambientButton.textContent = on ? ambientButton.dataset.readingLabel : ambientLabel;
     ambientButton.dataset.i18n = on ? "return-reading" : "ambient";
     ambientHint.hidden = !on;
-    bar.inert = on; main.inert = on; footer.inert = on;
-    if (on) { document.body.appendChild(ambientButton); scheduleGhost(3500); }
-    else { bar.appendChild(ambientButton); stopGhosts(); }
+    bar.querySelector("nav").inert = on;
+    document.getElementById("logo-sole").inert = on;
+    document.getElementById("idioma-header").inert = on;
+    main.inert = on; footer.inert = on;
+    if (on) scheduleGhost(3500);
+    else { stopGhosts(); closeVjPanel(false); }
     ambientButton.focus({ preventScroll: true });
   }
   ambientButton.addEventListener("click", function () {

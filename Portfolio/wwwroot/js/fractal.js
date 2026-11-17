@@ -19,7 +19,7 @@
   placeStudioForViewport();
   if (mobileLayout.addEventListener) mobileLayout.addEventListener("change", placeStudioForViewport);
   else if (mobileLayout.addListener) mobileLayout.addListener(placeStudioForViewport);
-  var context = canvas.getContext("2d", { alpha: false });
+  var context = canvas.getContext("2d", { alpha: true });
   if (!context) return;
   var stage = canvas.parentElement;
   var scaleControl = document.getElementById("fractal-size");
@@ -34,10 +34,11 @@
   var visualLabel = document.querySelector(".fractal-stage-label");
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
   var visible = false, frame = 0, last = 0, width = 0, height = 0;
-  var audio = { level: 0, bass: 0, treble: 0, attack: 0 }, pointer = { x: 0, y: 0 };
-  var displayedScale = Number(scaleControl.value), lastScaleStep = 0;
-  var displayedFragment = 0, lastFragmentStep = 0;
-  var frogSprite = document.createElement("canvas"); frogSprite.width = 512; frogSprite.height = 512;
+  var audio = { level: 0, bass: 0, mid: 0, treble: 0, attack: 0 }, pointer = { x: 0, y: 0 };
+  var displayedScale = Number(scaleControl.value), lastScaleStep = 0;
+  var displayedFragment = 0, lastFragmentStep = 0, ambientBlend = false;
+
+  var frogSprite = document.createElement("canvas"); frogSprite.width = 512; frogSprite.height = 512;
   var frogSpriteContext = frogSprite.getContext("2d");
   var palettes = ["Âmbar", "Vermelho", "Magenta", "Índigo", "Ciano", "Verde"];
   function resize() {
@@ -74,7 +75,7 @@
       context.strokeStyle = "hsla(" + ((hue + layer * 30) % 360) + ", 68%, " + (68 - layer * 7) + "%, " + (.82 - layer * .16) + ")";
       context.lineWidth = Math.max(1, width / 650);
       for (var p = 0; p < petalCount; p++) {
-        context.save(); context.rotate(p * Math.PI * 2 / petalCount + time * spinSpeed * (layer % 2 ? -.32 : .4));
+        context.save(); context.rotate(p * Math.PI * 2 / petalCount + time * spinSpeed * (layer % 2 ? -.32 : .4) + pulse * .018 * (p % 2 ? 1 : -1));
         context.beginPath(); context.ellipse(0, -radius * .2 * shrink, radius * .11 * shrink,
           radius * (.34 + pulse * .025) * shrink, 0, 0, Math.PI * 2); context.stroke(); context.restore();
       }
@@ -383,23 +384,25 @@
   }  function draw(now) {
     if (!width || !height) return;
     var t = reduced.matches ? 0 : now * .001;
-    var level = audio.level, bass = audio.bass, treble = audio.treble, pulse = level * .7 + audio.attack * .5;
+    var level = audio.level, bass = audio.bass, mid = audio.mid, treble = audio.treble;
+    var pulse = level * .9 + audio.attack * .8;
     var shortSide = Math.min(width, height), pointerShift = shortSide * (shapeControl.value === "tree" ? .004 : .018);
     var centerX = width * .5 + pointer.x * pointerShift, centerY = height * .5 + pointer.y * pointerShift;
-    var hue = (Number(colorControl.value) * 3.25 + 24 + treble * 42 + 360) % 360;
+    var hue = (Number(colorControl.value) * 3.25 + 24 + treble * 58 + mid * 18 + 360) % 360;
     var shape = shapeControl.value, intensity = Number(depthControl.value);
-    var scaleValue = easeScale(now), scaleFactor = .62 + scaleValue * .0034;
-    var fragmentTarget = shape === "frog" ? Math.min(1, (intensity - 1) / 5 + Math.min(.08, (pulse + bass * .3) * .075)) : 0;
+    var scaleValue = easeScale(now), scaleFactor = .62 + scaleValue * .0034;
+    var fragmentTarget = shape === "frog" ? Math.min(1, (intensity - 1) / 5 + Math.min(.18, (pulse * .8 + bass * .35 + mid * .25 + treble * .2) * .18)) : 0;
     var fragment = easeFragment(now, fragmentTarget);
-    var audioScale = 1 + Math.min(.14, Math.max(0, bass) * .1 + Math.max(0, audio.attack) * .07 + Math.max(0, level) * .03);
+    var audioScale = 1 + Math.min(.2, Math.max(0, bass) * .14 + Math.max(0, audio.attack) * .1 + Math.max(0, level) * .06);
     var fit = shape === "flower" ? .68 : .43;
     var fitLimit = shape === "flower" ? .78 : .45;
     var depth = intensity - 1;
     var ringCount = 2 + Math.ceil(intensity / 2);
-    var spinSpeed = .05 + (intensity - 1) * .046 + treble * .14;
+    var spinSpeed = .05 + (intensity - 1) * .046 + mid * .24 + treble * .3;
     var radius = shape === "tree" ? shortSide * .28 : shape === "frog" ? shortSide * .47 * scaleFactor * audioScale :
       Math.min(shortSide * fitLimit, shortSide * fit * Number(scaleControl.value) / 78 * (1 + bass * .015));
-    context.fillStyle = "#100d0c"; context.fillRect(0, 0, width, height);
+    if (ambientBlend) context.clearRect(0, 0, width, height);
+    else { context.fillStyle = "#100d0c"; context.fillRect(0, 0, width, height); }
     var glow = context.createRadialGradient(centerX, centerY, radius * .03, centerX, centerY, radius * 1.25);
     glow.addColorStop(0, "hsla(" + hue + ", 65%, 48%, " + (.09 + pulse * .12) + ")");
     glow.addColorStop(1, "hsla(" + hue + ", 65%, 35%, 0)");
@@ -410,11 +413,11 @@
     var spin = reduced.matches ? 0 : t * spinSpeed;
     if (shapeControl.value === "triangle") {
       for (var ring = 0; ring < ringCount; ring++) {
-        var ringRadius = radius * (1 - ring * .13) * (1 + Math.sin(t * .8 + ring) * .018 + pulse * .035);
+      var ringRadius = radius * (1 - ring * .13) * (1 + Math.sin(t * (.8 + mid * .6) + ring) * .018 + pulse * .06 + bass * .025);
         triangle(0, 0, ringRadius, spin + ring * Math.PI / ringCount, depth, hue + ring * 22, .76 - ring * .07, t, pulse, spinSpeed);
       }
-    } else if (shape === "flower") drawFlower(0, 0, radius, intensity, hue, t, pulse, spinSpeed);
-    else if (shape === "tree") drawTree(0, 0, width, height, intensity, hue, t, pulse + bass * .32, spinSpeed, scaleFactor, audioScale);
+    } else if (shape === "flower") drawFlower(0, 0, radius * (1 + bass * .035), intensity, hue, t, pulse + bass * .25, spinSpeed);
+    else if (shape === "tree") drawTree(0, 0, width, height, intensity, hue, t, pulse + bass * .38 + mid * .2, spinSpeed, scaleFactor, audioScale);
     else drawFrog(0, 0, radius * .74, intensity, hue, t, pulse, spinSpeed, fragment);
     context.restore();
   }
@@ -429,6 +432,8 @@
   function updateControls() {
     scaleOutput.value = scaleControl.value + "%";
     shapeButtons.forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.fractalShape === shapeControl.value)); });
+    var ambientShape = document.getElementById("vj-shape");
+    if (ambientShape && ambientShape.value !== shapeControl.value) ambientShape.value = shapeControl.value;
     var intensity = Number(depthControl.value), shape = shapeControl.value, label, amount, unit;
     if (shape === "triangle") {
       label = "Triângulos + giro"; unit = " △";
@@ -471,9 +476,18 @@
   }, { threshold: .05 }).observe(stage);
   document.addEventListener("visibilitychange", function () { if (document.hidden && frame) { cancelAnimationFrame(frame); frame = 0; } else wake(); });
   window.fractalStudio = {
-    setInput: function (level, x, y, bass, treble, attack) {
-      audio = { level: level || 0, bass: bass || 0, treble: treble || 0, attack: attack || 0 };
-      if (level > .04 || bass > .04 || treble > .04) wake();
+    setShape: function (shape) {
+      if (["triangle", "flower", "tree", "frog"].indexOf(shape) < 0) return;
+      shapeControl.value = shape;
+      updateControls();
+    },
+    setAmbientBlend: function (enabled) {
+      ambientBlend = !!enabled;
+      resize(); wake();
+    },
+    setInput: function (level, x, y, bass, treble, attack, mid) {
+      audio = { level: level || 0, bass: bass || 0, mid: mid || 0, treble: treble || 0, attack: attack || 0 };
+      if (level > .04 || bass > .04 || mid > .04 || treble > .04 || attack > .04) wake();
       if (reduced.matches) draw(performance.now());
     }
   };

@@ -11,7 +11,7 @@
   <meta property="og:locale" content="pt_BR">
   <title>Sol Emanuel Calderón Vargas · Artista audiovisual</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F1E8D6'/%3E%3Ctext x='32' y='40' text-anchor='middle' font-family='Georgia,serif' font-size='20' fill='%231C1A17'%3ES0LE%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css?v=20261117-mobile-vj3">
+  <link rel="stylesheet" href="css/style.css?v=20261117-vj-shape1">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Sol Emanuel Calderón Vargas","jobTitle":"Artista audiovisual e pesquisador","sameAs":["https://instagram.com/v1su4rt","https://www.youtube.com/@v1su4rt-Vj"]}</script>
   <!-- [PENDENTE: domínio definitivo para canonical, og:url, hreflang e sitemap.] -->
 </head>
@@ -22,8 +22,25 @@
     <button type="button" class="monogram" id="logo-sole" aria-label="S0LE · início, com som 8-bit" data-i18n="sole-label"><img src="img/sole-mono.png" width="467" height="260" alt="" aria-hidden="true"></button>
     <nav aria-label="Seções" data-i18n="sections-label"><a href="#trabalho" data-i18n="work">Trabalho</a><a href="#pesquisa" data-i18n="research">Pesquisa</a><a href="#sobre" data-i18n="about">Sobre</a><a href="#contato" data-i18n="contact">Contato</a></nav>
     <span id="idioma-header"><label class="language"><span class="sr-only" data-i18n="language">Idioma</span><select id="idioma" aria-label="Idioma" data-i18n="language"><option value="pt-BR" data-href="index.html" selected>PT</option><option value="es" data-href="es/index.html">ES</option><option value="en" data-href="en/index.html">EN</option><option value="fr" data-href="fr/index.html">FR</option></select></label></span>
-    <button type="button" id="ambiente" data-reading-label="Voltar à leitura" aria-pressed="false" aria-controls="conteudo" data-i18n="ambient">Ambiente</button>
+    <div class="ambient-actions" role="group" aria-label="Controles visuais">
+      <button type="button" id="demo-mic" class="sensor-action" aria-pressed="false" aria-label="Microfone" aria-describedby="demo-privacy mic-status" data-off="Microfone" data-on="Desligar microfone" data-short="Mic" hidden>Mic</button>
+      <button type="button" id="demo-motion" class="sensor-action" aria-pressed="false" aria-label="Movimento" aria-describedby="demo-privacy motion-status" data-off="Movimento" data-on="Desligar movimento" data-short="Mov." hidden>Mov.</button>
+      <button type="button" id="ambiente" data-reading-label="Voltar à leitura" aria-pressed="false" aria-controls="conteudo" data-i18n="ambient">Ambiente</button>
+      <button type="button" id="vj-toggle" class="vj-toggle" aria-expanded="false" aria-controls="vj-panel" aria-label="Controles visuais">VJ</button>
+    </div>
   </header>
+  <section id="vj-panel" class="vj-panel sheet" aria-labelledby="vj-title" hidden>
+    <div class="vj-panel-heading"><div><h2 id="vj-title">Controles visuais</h2><p>Modele o ambiente em tempo real.</p></div><button type="button" id="vj-close" aria-label="Ocultar controles VJ">×</button></div>
+    <label class="vj-control vj-effect"><span>Shader</span><select id="vj-mode"><option value="1">Névoa</option><option value="2">Orgânico</option><option value="3">Fluxo</option><option value="0">Analógico</option><option value="4">Grade</option></select></label>
+    <label class="vj-control vj-effect"><span>Geometria</span><select id="vj-shape"><option value="triangle">Triângulos</option><option value="flower">Flor fractal</option><option value="tree">Árvore fractal</option><option value="frog">Sapo</option></select></label>
+    <label class="vj-control"><span>Velocidade</span><output id="vj-speed-value">1.0×</output><input id="vj-speed" type="range" min="20" max="240" value="100"></label>
+    <label class="vj-control"><span>Deformação</span><output id="vj-warp-value">60%</output><input id="vj-warp" type="range" min="0" max="150" value="60"></label>
+    <label class="vj-control"><span>Intensidade</span><output id="vj-pigment-value">100%</output><input id="vj-pigment" type="range" min="20" max="180" value="100"></label>
+    <div class="vj-audio-meter" role="img" aria-label="Níveis de áudio em tempo real"><span data-band="low"><b>Low</b><i><em></em></i></span><span data-band="mid"><b>Mid</b><i><em></em></i></span><span data-band="high"><b>Hi</b><i><em></em></i></span></div>
+    <label class="vj-control"><span>Sensibilidade do microfone</span><output id="mic-sensitivity-value">135%</output><input id="mic-sensitivity" type="range" min="50" max="250" value="135"></label>
+    <button type="button" id="vj-mix-toggle" class="vj-mix-toggle" aria-pressed="false" data-off="Ativar mixagem" data-on="Pausar mixagem">Ativar mixagem</button>
+    <button type="button" id="vj-hide" class="vj-hide">Ocultar controles</button>
+  </section>
   <p id="ambient-hint" class="ambient-hint sheet" hidden data-i18n="ambient-hint">Toque ou arraste para pintar. Esc retorna à leitura.</p>
   <main id="conteudo" tabindex="-1">
     <section id="inicio" class="hero" aria-labelledby="titulo" data-mode="1" data-hue="0.7">
@@ -63,11 +80,7 @@
         <div class="demo-tools" hidden><label for="demo-mode">Efeito</label><select id="demo-mode"><option value="1">Névoa</option><option value="2">Orgânico</option><option value="3">Fluxo</option><option value="0">Analógico</option><option value="4">Grade</option></select><button type="button" id="demo-clear">Limpar</button></div>
         <div id="demo-stage" class="demo-stage" role="group" tabindex="0" aria-label="Área visual interativa" aria-describedby="demo-gesture" hidden><canvas id="demo-canvas" aria-hidden="true"></canvas><span class="demo-stage-mark" aria-hidden="true">S0LE · LIVE</span></div>
         <p id="demo-gesture" class="demo-gesture" hidden>Toque para criar uma mancha; arraste horizontalmente para pintar. Deslize verticalmente para rolar. Teclado: setas movem, Enter pinta.</p>
-        <div class="demo-controls">
-          <button type="button" id="demo-mic" aria-pressed="false" aria-describedby="demo-privacy mic-status" data-off="Microfone" data-on="Desligar microfone" hidden>Microfone</button>
-          <button type="button" id="demo-motion" aria-pressed="false" aria-describedby="demo-privacy motion-status" data-off="Movimento" data-on="Desligar movimento" hidden>Movimento</button>
-          <span class="demo-signal" aria-hidden="true"></span>
-        </div>
+        <div class="demo-controls"><span class="demo-signal" aria-hidden="true"></span></div>
         <details class="demo-permissions"><summary>Permissões e privacidade</summary><p id="demo-privacy" class="demo-privacy">Só com sua permissão. Áudio processado aqui, sem gravar, enviar ou reproduzir. Ao sair da abertura ou ocultar a página, os sensores desligam.</p></details>
         <div class="demo-feedback"><p id="mic-status" role="status" aria-live="polite" data-idle="Microfone desligado." data-pending="Aguardando permissão… Clique novamente para cancelar." data-active="Microfone ativo. Faça um som perto do aparelho." data-denied="Microfone não autorizado. Você pode tentar novamente." data-unavailable="Microfone indisponível neste navegador ou aparelho." data-secure="O microfone precisa de HTTPS ou localhost.">Microfone desligado.</p>
         <p id="motion-status" role="status" aria-live="polite" data-idle="Movimento desligado." data-pending="Aguardando permissão e sinal do aparelho… Clique novamente para cancelar." data-active="Movimento ativo. Incline o aparelho suavemente." data-denied="Movimento não autorizado. Você pode tentar novamente." data-unavailable="Este aparelho não forneceu dados de orientação." data-secure="O movimento precisa de HTTPS ou localhost.">Movimento desligado.</p>
@@ -223,9 +236,9 @@
   <p class="sr-only" id="app-status" role="status" aria-live="polite"></p>
   <dialog id="lb" aria-labelledby="lb-caption"><button type="button" id="lb-fechar" data-i18n="close-image">Fechar imagem</button><img id="lb-img" alt=""><p id="lb-caption"></p></dialog>
   <script src="js/projects.js"></script>
-  <script src="js/shader.js?v=20261117-mobile-vj1"></script>
+  <script src="js/shader.js?v=20261117-vj-shape1"></script>
   <script src="js/audio.js"></script>
-  <script src="js/fractal.js?v=20261117-studio21"></script>
-  <script src="js/app.js?v=20261113-studio1"></script>
+  <script src="js/fractal.js?v=20261117-vj-shape1"></script>
+  <script src="js/app.js?v=20261117-vj-shape1"></script>
 </body>
 </html>
