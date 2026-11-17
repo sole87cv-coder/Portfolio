@@ -2,6 +2,23 @@
   "use strict";
   var canvas = document.getElementById("fractal-canvas");
   if (!canvas) return;
+  var photography = document.getElementById("fotografia-vivitar");
+  var studio = document.querySelector(".fractal-studio");
+  var opening = photography && photography.parentElement;
+  var originalStudioParent = studio && studio.parentElement;
+  var originalStudioNext = studio && studio.nextSibling;
+  var mobileLayout = window.matchMedia("(max-width: 820px)");
+  function placeStudioForViewport() {
+    if (!studio || !opening || !originalStudioParent) return;
+    if (mobileLayout.matches) {
+      if (studio.parentElement !== opening) opening.insertBefore(studio, photography);
+    } else if (studio.parentElement !== originalStudioParent) {
+      originalStudioParent.insertBefore(studio, originalStudioNext);
+    }
+  }
+  placeStudioForViewport();
+  if (mobileLayout.addEventListener) mobileLayout.addEventListener("change", placeStudioForViewport);
+  else if (mobileLayout.addListener) mobileLayout.addListener(placeStudioForViewport);
   var context = canvas.getContext("2d", { alpha: false });
   if (!context) return;
   var stage = canvas.parentElement;
