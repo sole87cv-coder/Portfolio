@@ -275,7 +275,10 @@ dialog:not([open]) { display: none; }
   .demo-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) auto; gap: 8px; }
   .demo-controls button { padding-inline: 10px; font-size: 14px; }
   .demo-feedback { grid-template-columns: 1fr; gap: 8px; }
-  .demo-stage { height: clamp(220px, 62vw, 300px); }
+  .demo-stage { height: clamp(240px, 66vw, 320px); }
+  .fractal-stage { height: clamp(230px, 62vw, 300px); }
+  .fractal-shape-picker select, .demo-tools select { min-height: 48px; }
+  .demo-controls button { min-height: 52px; }
 }
 @media (max-width: 480px) {
   .bar { height: 56px; gap: 5px; padding-inline: max(6px, env(safe-area-inset-left)); }
@@ -288,7 +291,7 @@ dialog:not([open]) { display: none; }
   .sheet { border-radius: 21px 27px 19px 24px / 20px 17px 23px 19px; }
   .chapter { padding-inline: 20px; }
   .fractal-studio { padding: 13px; gap: 10px; }
-  .fractal-stage { height: 190px; }
+  .fractal-stage { height: clamp(230px, 62vw, 300px); }
   .fractal-controls { grid-template-columns: 1fr; gap: 8px; }
   .fractal-controls label { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   .fractal-controls input { grid-column: 1 / -1; }

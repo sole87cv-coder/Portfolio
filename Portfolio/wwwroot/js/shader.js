@@ -202,12 +202,17 @@
     var cancelFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.clearTimeout;
     var motionReduced = reducedMotion.matches, speedBeforeReduced = 1;
     var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    var hasHardwareSignal = !!(navigator.hardwareConcurrency || navigator.deviceMemory);
-    var lowCapacity = initialCanvas.id === "demo-canvas" || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
-      (navigator.deviceMemory && navigator.deviceMemory <= 4) || window.innerWidth <= 820 || (connection && connection.saveData) || !hasHardwareSignal;
-    var maxDpr = lowCapacity ? 1 : 1.5;
-    var frameDelay = lowCapacity ? 34 : 0;
-    var quality = lowCapacity ? 0 : 2;
+    var hardwareConcurrency = Number(navigator.hardwareConcurrency) || 0;
+    var deviceMemory = Number(navigator.deviceMemory) || 0;
+    var hasHardwareSignal = !!(hardwareConcurrency || deviceMemory);
+    var touchDevice = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+    var mobileViewport = touchDevice || window.innerWidth <= 820;
+    var constrainedHardware = (hardwareConcurrency > 0 && hardwareConcurrency <= 4 && (!deviceMemory || deviceMemory <= 4)) ||
+      (deviceMemory > 0 && deviceMemory <= 3) || (connection && connection.saveData) || (!hasHardwareSignal && mobileViewport);
+    var lowCapacity = constrainedHardware;
+    var maxDpr = lowCapacity ? 1 : mobileViewport ? 1.25 : 1.5;
+    var frameDelay = lowCapacity ? 22 : 0;
+    var quality = lowCapacity ? 1 : 2;
     var gl = null, ctx2d = null, program = null, loc = {}, fallbackCanvas = null, fallbackContext = null;
     var framePending = false, frameTimer = 0, frameRequest = 0, stainTimer = 0, time = 0, last = nowTime();
     var lastResizeAt = 0, frameTimes = [], nextDowngrade = 0, frames = 0;
@@ -379,7 +384,7 @@
     function scheduleFrame() {
       if (!enabled || framePending || document.hidden || (!gl && !ctx2d)) return;
       framePending = true;
-      var draw = function () { frameTimer = 0; frameRequest = requestFrame.call(window, frame); };
+      var draw = function () { frameTimer = 0; if (frameDelay) frame(nowTime()); else frameRequest = requestFrame.call(window, frame); };
       if (frameDelay) frameTimer = window.setTimeout(draw, frameDelay);
       else draw();
     }
@@ -642,7 +647,7 @@
         window.clearTimeout(stainTimer); stainTimer = 0;
       }
       if (gl && moving && api.params.speed > 0) {
-        frameTimes.push(dt * 1000);
+        frameTimes.push(Math.max(0, dt * 1000 - frameDelay));
         if (frameTimes.length > 36) frameTimes.shift();
         if (frameTimes.length === 36 && quality > 0 && now > nextDowngrade) {
           var ordered = frameTimes.slice().sort(function (a, b) { return a - b; });
