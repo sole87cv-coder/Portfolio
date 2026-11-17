@@ -9,6 +9,7 @@
   var colorControl = document.getElementById("fractal-color");
   var depthControl = document.getElementById("fractal-depth");
   var shapeControl = document.getElementById("fractal-shape");
+  var shapeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-fractal-shape]"));
   var scaleOutput = document.getElementById("fractal-size-value");
   var colorOutput = document.getElementById("fractal-color-value");
   var depthOutput = document.getElementById("fractal-depth-value");
@@ -17,6 +18,10 @@
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
   var visible = false, frame = 0, last = 0, width = 0, height = 0;
   var audio = { level: 0, bass: 0, treble: 0, attack: 0 }, pointer = { x: 0, y: 0 };
+  var displayedScale = Number(scaleControl.value), lastScaleStep = 0;
+  var displayedFragment = 0, lastFragmentStep = 0;
+  var frogSprite = document.createElement("canvas"); frogSprite.width = 512; frogSprite.height = 512;
+  var frogSpriteContext = frogSprite.getContext("2d");
   var palettes = ["Âmbar", "Vermelho", "Magenta", "Índigo", "Ciano", "Verde"];
   function resize() {
     var rect = stage.getBoundingClientRect(), ratio = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -63,85 +68,121 @@
     context.fillStyle = center; context.beginPath(); context.arc(0, 0, radius * (.14 + pulse * .025), 0, Math.PI * 2); context.fill();
     context.restore();
   }
-  function drawTreeBranch(length, depth, intensity, hue, time, pulse, spinSpeed, direction, branchRatio, canopyRadius) {
-    context.strokeStyle = "hsla(" + ((hue + depth * 7) % 360) + ", 54%, " + (57 + pulse * 9) + "%, .9)";
-    context.lineWidth = Math.max(1, width / 570) * Math.max(.45, (depth + 1) / (intensity + 1));
-    var bend = Math.sin(time * spinSpeed + depth * 1.9 + direction) * length * .055;
-    context.beginPath(); context.moveTo(0, 0); context.quadraticCurveTo(bend, -length * .54, 0, -length); context.stroke(); context.translate(0, -length);
-    if (depth <= 0) {
-      var leafSize = canopyRadius * (.04 + intensity * .0025);
-      context.save(); context.rotate(Math.sin(time * spinSpeed + direction) * .12);
-      context.fillStyle = "hsla(" + ((hue + 100) % 360) + ", 48%, " + (59 + pulse * 8) + "%, .82)";
-      context.beginPath();
-      context.ellipse(0, 0, leafSize * .72, leafSize * .39, 0, 0, Math.PI * 2);
-      context.ellipse(-leafSize * .48, -leafSize * .22, leafSize * .58, leafSize * .3, -.48, 0, Math.PI * 2);
-      context.ellipse(leafSize * .48, -leafSize * .22, leafSize * .58, leafSize * .3, .48, 0, Math.PI * 2);
-      context.fill();
-      context.strokeStyle = "hsla(" + ((hue + 124) % 360) + ", 42%, 78%, .56)";
-      context.lineWidth = Math.max(.6, width / 1000); context.beginPath(); context.moveTo(0, leafSize * .24); context.lineTo(0, -leafSize * .16); context.stroke();
-      context.restore();
-      return;
-    }
-    var sway = Math.sin(time * spinSpeed + depth) * .025;
-    var next = length * branchRatio, spread = .42 + intensity * .02;
-    var leftDirection = Math.max(-.85, direction - spread + sway);
-    var rightDirection = Math.min(.85, direction + spread + sway);
-    context.save(); context.rotate(leftDirection - direction);
-    drawTreeBranch(next, depth - 1, intensity, hue - 12, time, pulse, spinSpeed, leftDirection, branchRatio, canopyRadius); context.restore();
-    context.save(); context.rotate(sway * .35);
-    drawTreeBranch(next * .94, depth - 1, intensity, hue + 2, time, pulse, spinSpeed, direction + sway * .35, branchRatio, canopyRadius); context.restore();
-    context.save(); context.rotate(rightDirection - direction);
-    drawTreeBranch(next, depth - 1, intensity, hue + 12, time, pulse, spinSpeed, rightDirection, branchRatio, canopyRadius); context.restore();
-  }
-  function drawTreeRoots(radius, intensity, hue, time, pulse, spinSpeed) {
-    var rootCount = 5 + intensity, baseWidth = Math.max(1, width / 570);
-    context.save(); context.lineCap = "round"; context.lineJoin = "round";
-    for (var i = 0; i < rootCount; i++) {
-      var angle = -1.08 + i * 2.16 / (rootCount - 1);
-      var length = radius * (.29 + .07 * (1 - Math.abs(angle) / 1.08));
-      var sway = Math.sin(time * spinSpeed + i * 1.7) * radius * .009;
-      var endX = Math.sin(angle) * length + sway, endY = Math.cos(angle) * length;
-      context.strokeStyle = "hsla(" + ((hue - 12 + i * 3) % 360) + ", 48%, " + (48 + pulse * 8) + "%, .88)";
-      context.lineWidth = baseWidth * (1.15 + (1 - Math.abs(angle) / 1.08) * .75);
-      context.beginPath(); context.moveTo(0, 0);
-      context.bezierCurveTo(endX * .2, endY * .24, endX * .7, endY * .7, endX, endY); context.stroke();
-      var forkX = endX * .54, forkY = endY * .55, forkSide = i % 2 ? 1 : -1;
-      context.strokeStyle = "hsla(" + ((hue - 4 + i * 3) % 360) + ", 45%, " + (53 + pulse * 7) + "%, .7)";
-      context.lineWidth = baseWidth * .72;
-      context.beginPath(); context.moveTo(forkX, forkY);
-      context.quadraticCurveTo(forkX + forkSide * radius * .035, forkY + radius * .045,
-        forkX + forkSide * radius * .09, forkY + radius * .1); context.stroke();
-    }
+  function drawTreeLeafCluster(size, hue, pulse, time, spinSpeed, phase, opacity) {
+    var beat = Math.min(1, Math.max(0, pulse));
+    context.save();
+    context.rotate(Math.sin(time * spinSpeed * .72 + phase) * (.055 + beat * .075));
+    context.scale(1 + beat * .07, 1 + beat * .045);
+    context.fillStyle = "hsla(" + ((hue + 106) % 360) + ", 44%, " + (53 + beat * 7) + "%, " + opacity + ")";
+    context.beginPath();
+    context.ellipse(0, 0, size * .72, size * .38, 0, 0, Math.PI * 2);
+    context.ellipse(-size * .45, -size * .2, size * .56, size * .29, -.52, 0, Math.PI * 2);
+    context.ellipse(size * .45, -size * .2, size * .56, size * .29, .52, 0, Math.PI * 2);
+    context.ellipse(-size * .16, -size * .47, size * .48, size * .25, -.82, 0, Math.PI * 2);
+    context.ellipse(size * .2, -size * .45, size * .45, size * .24, .78, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = "hsla(" + ((hue + 128) % 360) + ", 40%, 82%, " + (opacity * .62) + ")";
+    context.lineWidth = Math.max(.45, size * .035);
+    context.beginPath(); context.moveTo(0, size * .27); context.lineTo(0, -size * .34);
+    context.moveTo(-size * .03, -size * .04); context.lineTo(-size * .34, -size * .34);
+    context.moveTo(size * .03, -size * .05); context.lineTo(size * .34, -size * .34); context.stroke();
     context.restore();
   }
-  function treeBranchRatio(intensity) { return .58 - intensity * .012; }
-  function treeExtent(intensity, time, spinSpeed) {
-    var extent = 0, ratio = treeBranchRatio(intensity), spread = .42 + intensity * .02;
+  function drawTreeBranch(length, depth, intensity, hue, time, pulse, spinSpeed, direction, branchRatio, canopyRadius, pixelScale) {
+    var beat = Math.min(1, Math.max(0, pulse));
+    context.strokeStyle = "hsla(" + ((hue + depth * 7) % 360) + ", 54%, " + (57 + beat * 9) + "%, .94)";
+    context.lineWidth = Math.max(1, width / 570) * Math.max(.68, (depth + 1) / (intensity + 4)) / pixelScale;
+    var bend = Math.sin(time * spinSpeed + depth * 1.9 + direction) * length * (.035 + beat * .055);
+    context.beginPath(); context.moveTo(0, 0); context.quadraticCurveTo(bend, -length * .54, 0, -length); context.stroke(); context.translate(0, -length);
+    var leafSize = canopyRadius * (.055 + intensity * .0035);
+    if (depth === 2) drawTreeLeafCluster(leafSize * .62, hue + 18, beat, time, spinSpeed, direction + depth, .48);
+    if (depth <= 0) { drawTreeLeafCluster(leafSize, hue + 10, beat, time, spinSpeed, direction, .86); return; }
+    var sway = Math.sin(time * spinSpeed + depth + direction * 2) * .025 +
+      Math.sin(time * spinSpeed * 1.7 + direction + depth) * beat * .026;
+    var next = length * branchRatio, spread = .84 + intensity * .022 + beat * .06;
+    var leftDirection = Math.max(-1.45, direction - spread + sway - beat * .015);
+    var rightDirection = Math.min(1.45, direction + spread + sway + beat * .015);
+    context.save(); context.rotate(leftDirection - direction);
+    drawTreeBranch(next, depth - 1, intensity, hue - 12, time, beat, spinSpeed, leftDirection, branchRatio, canopyRadius, pixelScale); context.restore();
+    context.save(); context.rotate(rightDirection - direction);
+    drawTreeBranch(next, depth - 1, intensity, hue + 12, time, beat, spinSpeed, rightDirection, branchRatio, canopyRadius, pixelScale); context.restore();
+  }  function drawTreeRoots(radius, intensity, hue, time, pulse, spinSpeed, pixelScale) {
+    var rootCount = 7 + intensity * 2, baseWidth = Math.max(1.2, width / 520) / pixelScale;
+    context.save(); context.lineCap = "round"; context.lineJoin = "round";
+    for (var i = 0; i < rootCount; i++) {
+      var angle = -1.12 + i * 2.24 / (rootCount - 1);
+      var length = radius * (.34 + .13 * (1 - Math.abs(angle) / 1.12));
+      var sway = Math.sin(time * spinSpeed + i * 1.7) * radius * .009;
+      var endX = Math.sin(angle) * length + sway, endY = Math.cos(angle) * length;
+      context.strokeStyle = "hsla(" + ((hue - 12 + i * 3) % 360) + ", 48%, " + (48 + pulse * 8) + "%, .9)";
+      context.lineWidth = baseWidth * (1.2 + (1 - Math.abs(angle) / 1.12) * .85);
+      context.beginPath(); context.moveTo(0, 0);
+      context.bezierCurveTo(endX * .2, endY * .24, endX * .7, endY * .7, endX, endY); context.stroke();
+      [-1, 1].forEach(function (side) {
+        var forkX = endX * .54 + side * radius * .09, forkY = endY * .55 + radius * .1;
+        context.strokeStyle = "hsla(" + ((hue - 4 + i * 3) % 360) + ", 45%, " + (53 + pulse * 7) + "%, .74)";
+        context.lineWidth = baseWidth * .72;
+        context.beginPath(); context.moveTo(forkX, forkY);
+        context.quadraticCurveTo(forkX + side * radius * .035, forkY + radius * .045,
+          forkX + side * radius * .09, forkY + radius * .1); context.stroke();
+        var twigX = forkX + side * radius * .09, twigY = forkY + radius * .1;
+        context.strokeStyle = "hsla(" + ((hue + i * 4) % 360) + ", 42%, " + (57 + pulse * 6) + "%, .58)";
+        context.lineWidth = baseWidth * .48;
+        context.beginPath(); context.moveTo(twigX, twigY);
+        context.quadraticCurveTo(twigX + side * radius * .03, twigY + radius * .04,
+          twigX + side * radius * .07, twigY + radius * .08); context.stroke();
+      });
+    }
+    context.restore();
+  }  function treeBranchRatio(intensity) { return .68 - intensity * .005; }
+  function treeBounds(intensity, time, spinSpeed, pulse) {
+    var bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+    var beat = Math.min(1, Math.max(0, pulse));
+    var ratio = treeBranchRatio(intensity), spread = .84 + intensity * .022 + beat * .06;
+    var leafReach = (.055 + intensity * .0035) * 1.22;
+    function include(x, y, pad) {
+      bounds.minX = Math.min(bounds.minX, x - pad); bounds.maxX = Math.max(bounds.maxX, x + pad);
+      bounds.minY = Math.min(bounds.minY, y - pad); bounds.maxY = Math.max(bounds.maxY, y + pad);
+    }
     function measure(x, y, length, depth, direction) {
       var endX = x + Math.sin(direction) * length, endY = y - Math.cos(direction) * length;
-      var terminalFoliage = depth <= 0 ? .04 + intensity * .0025 : 0;
-      extent = Math.max(extent, Math.hypot(x, y), Math.hypot(endX, endY) + terminalFoliage * 1.15);
+      include(x, y, Math.max(.018, length * .06));
+      include(endX, endY, depth <= 0 ? leafReach : depth === 2 ? leafReach * .72 : Math.max(.018, length * .08));
       if (depth <= 0) return;
-      var sway = Math.sin(time * spinSpeed + depth) * .025;
-      var leftDirection = Math.max(-.85, direction - spread + sway);
-      var rightDirection = Math.min(.85, direction + spread + sway);
+      var sway = Math.sin(time * spinSpeed + depth + direction * 2) * .025 + Math.sin(time * spinSpeed * 1.7 + direction + depth) * beat * .026;
+      var leftDirection = Math.max(-1.45, direction - spread + sway - beat * .015);
+      var rightDirection = Math.min(1.45, direction + spread + sway + beat * .015);
       measure(endX, endY, length * ratio, depth - 1, leftDirection);
       measure(endX, endY, length * ratio, depth - 1, rightDirection);
     }
-    measure(0, .25, .62, intensity, 0);
-    var rootCount = 5 + intensity;
+    measure(0, 0, 1, intensity + 3, 0);
+    var rootCount = 7 + intensity * 2;
     for (var i = 0; i < rootCount; i++) {
-      var angle = -1.08 + i * 2.16 / (rootCount - 1);
-      var length = .29 + .07 * (1 - Math.abs(angle) / 1.08);
-      extent = Math.max(extent, Math.hypot(Math.sin(angle) * length, .25 + Math.cos(angle) * length));
+      var angle = -1.12 + i * 2.24 / (rootCount - 1);
+      var length = .34 + .13 * (1 - Math.abs(angle) / 1.12);
+      var endX = Math.sin(angle) * length, endY = Math.cos(angle) * length;
+      include(endX, endY, .025);
+      [-1, 1].forEach(function (side) {
+        var forkX = endX * .54 + side * .09, forkY = endY * .55 + .1;
+        var twigX = forkX + side * .09, twigY = forkY + .1;
+        include(forkX, forkY, .025); include(twigX, twigY, .02);
+        include(twigX + side * .07, twigY + .08, .025);
+      });
     }
-    return extent + .02;
+    return bounds;
   }
-  function drawTree(cx, cy, radius, intensity, hue, time, pulse, spinSpeed) {
+  function drawTree(cx, cy, stageWidth, stageHeight, intensity, hue, time, pulse, spinSpeed, scaleFactor, audioScale) {
+    pulse = Math.min(1, Math.max(0, pulse));
+    var bounds = treeBounds(intensity, time, spinSpeed, pulse);
+    var spanX = Math.max(.1, bounds.maxX - bounds.minX), spanY = Math.max(.1, bounds.maxY - bounds.minY);
+    var fillLevel = .87 + intensity * .035;
+    var pixelScale = Math.min(stageWidth / spanX, stageHeight / spanY) * Math.min(.96, fillLevel * scaleFactor * audioScale);
+    var centerX = (bounds.minX + bounds.maxX) * .5, centerY = (bounds.minY + bounds.maxY) * .5;
     var branchRatio = treeBranchRatio(intensity);
-    context.save(); context.translate(cx, cy + radius * .25); context.rotate(Math.sin(time * spinSpeed) * .025);
-    drawTreeRoots(radius, intensity, hue, time, pulse, spinSpeed);
-    drawTreeBranch(radius * .62, intensity, intensity, hue, time, pulse, spinSpeed, 0, branchRatio, radius); context.restore();
+    context.save(); context.translate(cx - centerX * pixelScale, cy - centerY * pixelScale); context.scale(pixelScale, pixelScale);
+    drawTreeRoots(1, intensity, hue, time, pulse, spinSpeed, pixelScale);
+    drawTreeBranch(1, intensity + 3, intensity, hue, time, pulse, spinSpeed, 0, branchRatio, 1, pixelScale);
+    context.restore();
   }
   function drawFrogMotif(radius, hue, pulse) {
     var outline = "hsla(" + ((hue + 188) % 360) + ", 56%, 44%, .98)";
@@ -156,22 +197,34 @@
     context.strokeStyle = highlight; context.lineWidth = Math.max(.8, radius * .009);
     context.beginPath(); context.arc(0, 0, radius * .86, 0, Math.PI * 2); context.stroke();
 
-    /* Four angular limbs and three-toed hands form a balanced glyph silhouette. */
-    context.strokeStyle = outline; context.lineWidth = radius * .062;
+    /* Broad stepped limbs and spread toes echo carved glyph silhouettes. */
+    context.strokeStyle = outline; context.lineWidth = radius * .105;
     [-1, 1].forEach(function (side) {
-      context.beginPath(); context.moveTo(side * .19 * radius, -.16 * radius);
-      context.lineTo(side * .43 * radius, -.4 * radius); context.lineTo(side * .59 * radius, -.27 * radius);
-      context.lineTo(side * .68 * radius, -.5 * radius); context.stroke();
-      context.beginPath(); context.moveTo(side * .19 * radius, .16 * radius);
-      context.lineTo(side * .43 * radius, .4 * radius); context.lineTo(side * .59 * radius, .27 * radius);
-      context.lineTo(side * .69 * radius, .5 * radius); context.stroke();
+      context.beginPath(); context.moveTo(side * .22 * radius, -.13 * radius);
+      context.lineTo(side * .67 * radius, -.13 * radius); context.lineTo(side * .67 * radius, -.34 * radius);
+      context.lineTo(side * .81 * radius, -.34 * radius); context.stroke();
+      context.beginPath(); context.moveTo(side * .2 * radius, .14 * radius);
+      context.lineTo(side * .48 * radius, .35 * radius); context.lineTo(side * .48 * radius, .56 * radius);
+      context.lineTo(side * .68 * radius, .56 * radius); context.stroke();
       [-1, 0, 1].forEach(function (toe) {
-        context.beginPath(); context.moveTo(side * .68 * radius, -.5 * radius);
-        context.lineTo(side * (.68 + toe * .085) * radius, (-.68 + Math.abs(toe) * .045) * radius); context.stroke();
-        context.beginPath(); context.moveTo(side * .69 * radius, .5 * radius);
-        context.lineTo(side * (.69 + toe * .09) * radius, (.68 - Math.abs(toe) * .04) * radius); context.stroke();
+        context.beginPath(); context.moveTo(side * .81 * radius, -.34 * radius);
+        context.lineTo(side * (.81 + toe * .075) * radius, (-.62 + Math.abs(toe) * .04) * radius); context.stroke();
+        context.beginPath(); context.moveTo(side * .68 * radius, .56 * radius);
+        context.lineTo(side * (.68 + toe * .075) * radius, (.76 - Math.abs(toe) * .035) * radius); context.stroke();
       });
     });
+
+    /* A stepped crest frames the eyes like a ceremonial mask. */
+    context.fillStyle = field; context.strokeStyle = outline; context.lineWidth = Math.max(1, radius * .018);
+    context.beginPath(); context.moveTo(-.3 * radius, -.29 * radius); context.lineTo(-.3 * radius, -.48 * radius);
+    context.lineTo(-.22 * radius, -.64 * radius); context.lineTo(-.13 * radius, -.7 * radius);
+    context.lineTo(-.13 * radius, -.55 * radius); context.lineTo(0, -.66 * radius);
+    context.lineTo(.13 * radius, -.55 * radius); context.lineTo(.13 * radius, -.7 * radius);
+    context.lineTo(.22 * radius, -.64 * radius); context.lineTo(.3 * radius, -.48 * radius);
+    context.lineTo(.3 * radius, -.29 * radius); context.closePath(); context.fill(); context.stroke();
+    context.strokeStyle = highlight; context.lineWidth = Math.max(.8, radius * .009);
+    context.beginPath(); context.moveTo(-.22 * radius, -.5 * radius); context.lineTo(-.1 * radius, -.61 * radius);
+    context.lineTo(0, -.53 * radius); context.lineTo(.1 * radius, -.61 * radius); context.lineTo(.22 * radius, -.5 * radius); context.stroke();
 
     var body = context.createLinearGradient(0, -radius * .4, 0, radius * .4);
     body.addColorStop(0, "hsla(" + ((hue + 8) % 360) + ", 70%, 82%, 1)");
@@ -205,12 +258,75 @@
     steppedDiamond(radius * .105, highlight, Math.max(.8, radius * .012));
     context.fillStyle = highlight; context.beginPath(); context.arc(0, 0, radius * .035, 0, Math.PI * 2); context.fill();
     [-1, 1].forEach(function (side) {
-      context.fillStyle = outline; context.beginPath(); context.arc(side * radius * .14, -radius * .235, radius * .028, 0, Math.PI * 2); context.fill();
+      context.fillStyle = highlight; context.beginPath(); context.arc(side * radius * .15, -radius * .31, radius * .055, 0, Math.PI * 2); context.fill(); context.fillStyle = outline; context.beginPath(); context.arc(side * radius * .15, -radius * .31, radius * .027, 0, Math.PI * 2); context.fill();
     });
     context.restore();
   }
-  function drawFrog(cx, cy, radius, intensity, hue, time, pulse, spinSpeed) {
-    context.save(); context.translate(cx, cy); context.rotate(reduced.matches ? 0 : time * spinSpeed * .4);
+  function drawFrogFragments(radius, hue, pulse, time, spinSpeed, amount) {
+    var spriteSize = frogSprite.width, targetSize = radius * 2.2;
+    if (!frogSpriteContext) { drawFrogMotif(radius * 1.08, hue, pulse); return; }
+    var mainContext = context; context = frogSpriteContext;
+    try {
+      context.setTransform(1, 0, 0, 1, 0, 0); context.clearRect(0, 0, spriteSize, spriteSize);
+      context.save(); context.translate(spriteSize * .5, spriteSize * .5);
+      context.scale(1 + pulse * .04, 1 + pulse * .04);
+      drawFrogMotif(spriteSize * 1.08 / 2.2, hue, pulse); context.restore();
+    } finally { context = mainContext; }
+    if (amount < .002) {
+      context.drawImage(frogSprite, -targetSize * .5, -targetSize * .5, targetSize, targetSize); return;
+    }
+
+    var grid = 8, tile = spriteSize / grid, tileSize = targetSize / grid;
+    var inset = Math.min(width, height) * .055;
+    var reachX = Math.max(targetSize * .5, width * .5 - inset);
+    var reachY = Math.max(targetSize * .5, height * .5 - inset);
+    var ease = amount * amount * (3 - 2 * amount), beat = Math.min(1, Math.max(0, pulse));
+    var ghost = 1 - amount;
+    if (ghost > .005) {
+      context.save(); context.globalAlpha = ghost;
+      context.drawImage(frogSprite, -targetSize * .5, -targetSize * .5, targetSize, targetSize);
+      context.restore();
+    }
+
+    for (var row = 0; row < grid; row++) for (var column = 0; column < grid; column++) {
+      var nx = (column + .5) / grid - .5, ny = (row + .5) / grid - .5;
+      var seed = Math.sin((column + 1) * 12.9898 + (row + 1) * 78.233);
+      var sourceX = -targetSize * .5 + (column + .5) * tileSize;
+      var sourceY = -targetSize * .5 + (row + .5) * tileSize;
+      var targetX = nx * 2 * (reachX - tileSize * .5);
+      var targetY = ny * 2 * (reachY - tileSize * .5);
+      var drift = amount * tileSize * (.025 + beat * .055) * Math.sin(time * spinSpeed * .85 + seed * 4);
+      var cellX = sourceX + (targetX - sourceX) * ease + nx * drift;
+      var cellY = sourceY + (targetY - sourceY) * ease + ny * drift;
+      var half = tileSize * .5, sx = column * tile, sy = row * tile;
+      var triangles = (row + column) % 2 === 0 ?
+        [[[-half, -half], [half, -half], [half, half]], [[-half, -half], [half, half], [-half, half]]] :
+        [[[-half, -half], [half, -half], [-half, half]], [[half, -half], [half, half], [-half, half]]];
+      for (var part = 0; part < 2; part++) {
+        var vertices = triangles[part], centroidX = (vertices[0][0] + vertices[1][0] + vertices[2][0]) / 3;
+        var centroidY = (vertices[0][1] + vertices[1][1] + vertices[2][1]) / 3;
+        var direction = Math.atan2(centroidY, centroidX);
+        var separation = amount * tileSize * (.045 + beat * .035);
+        var shardX = cellX + Math.cos(direction) * separation;
+        var shardY = cellY + Math.sin(direction) * separation;
+        var rotation = amount * (seed * .24 + Math.sin(time * spinSpeed * .62 + seed * 5 + part) * .12 + beat * .14);
+        var shrink = 1 - amount * .16;
+        context.save(); context.translate(shardX, shardY); context.rotate(rotation);
+        context.translate(-centroidX, -centroidY); context.globalAlpha = amount;
+        context.beginPath();
+        for (var point = 0; point < 3; point++) {
+          var vx = centroidX + (vertices[point][0] - centroidX) * shrink;
+          var vy = centroidY + (vertices[point][1] - centroidY) * shrink;
+          if (point === 0) context.moveTo(vx, vy); else context.lineTo(vx, vy);
+        }
+        context.closePath(); context.clip();
+        context.drawImage(frogSprite, sx, sy, tile, tile, -half - centroidX, -half - centroidY, tileSize, tileSize);
+        context.restore();
+      }
+    }
+  }  function drawFrog(cx, cy, radius, intensity, hue, time, pulse, spinSpeed, fragment) {
+    context.save(); context.translate(cx, cy); context.rotate(reduced.matches ? 0 : time * spinSpeed * .4 * (1 - fragment * .45));
+    context.save(); context.globalAlpha = 1 - fragment * .86;
     var ornaments = 4 + intensity * 2, orbit = radius * .62;
     context.strokeStyle = "hsla(" + hue + ", 58%, 62%, .34)"; context.lineWidth = Math.max(1, width / 760);
     [1.04, 1.16].forEach(function (factor, ring) {
@@ -225,32 +341,53 @@
       context.beginPath(); context.moveTo(0, -radius * .035); context.lineTo(radius * .035, 0);
       context.lineTo(0, radius * .035); context.lineTo(-radius * .035, 0); context.closePath(); context.fill(); context.restore();
     }
-    context.save(); context.scale(1 + pulse * .04, 1 + pulse * .04); drawFrogMotif(radius * 1.08, hue + 8, pulse); context.restore();
+    context.restore();
+    drawFrogFragments(radius, hue + 8, pulse, time, spinSpeed, fragment);
     context.restore();
   }
-  function draw(now) {
+  function easeScale(now) {
+    var target = Number(scaleControl.value);
+    if (reduced.matches) { displayedScale = target; lastScaleStep = now; return target; }
+    if (!lastScaleStep) { lastScaleStep = now; return displayedScale; }
+    var elapsed = Math.max(0, Math.min(80, now - lastScaleStep));
+    displayedScale += (target - displayedScale) * (1 - Math.exp(-elapsed / 115));
+    lastScaleStep = now;
+    if (Math.abs(target - displayedScale) < .01) displayedScale = target;
+    return displayedScale;
+  }
+  function easeFragment(now, target) {
+    if (reduced.matches) { displayedFragment = target; lastFragmentStep = now; return target; }
+    if (!lastFragmentStep) { lastFragmentStep = now; return displayedFragment; }
+    var elapsed = Math.max(0, Math.min(80, now - lastFragmentStep));
+    displayedFragment += (target - displayedFragment) * (1 - Math.exp(-elapsed / 245));
+    lastFragmentStep = now;
+    if (Math.abs(target - displayedFragment) < .002) displayedFragment = target;
+    return displayedFragment;
+  }  function draw(now) {
     if (!width || !height) return;
     var t = reduced.matches ? 0 : now * .001;
     var level = audio.level, bass = audio.bass, treble = audio.treble, pulse = level * .7 + audio.attack * .5;
-    var shortSide = Math.min(width, height), pointerShift = shortSide * .018;
+    var shortSide = Math.min(width, height), pointerShift = shortSide * (shapeControl.value === "tree" ? .004 : .018);
     var centerX = width * .5 + pointer.x * pointerShift, centerY = height * .5 + pointer.y * pointerShift;
     var hue = (Number(colorControl.value) * 3.25 + 24 + treble * 42 + 360) % 360;
     var shape = shapeControl.value, intensity = Number(depthControl.value);
-    var fit = shape === "flower" ? .68 : shape === "tree" ? .62 : .43;
-    var fitLimit = shape === "flower" ? .78 : shape === "tree" ? .46 : .45;
+    var scaleValue = easeScale(now), scaleFactor = .62 + scaleValue * .0034;
+    var fragmentTarget = shape === "frog" ? Math.min(1, (intensity - 1) / 5 + Math.min(.08, (pulse + bass * .3) * .075)) : 0;
+    var fragment = easeFragment(now, fragmentTarget);
+    var audioScale = 1 + Math.min(.14, Math.max(0, bass) * .1 + Math.max(0, audio.attack) * .07 + Math.max(0, level) * .03);
+    var fit = shape === "flower" ? .68 : .43;
+    var fitLimit = shape === "flower" ? .78 : .45;
     var depth = intensity - 1;
     var ringCount = 2 + Math.ceil(intensity / 2);
     var spinSpeed = .05 + (intensity - 1) * .046 + treble * .14;
-    var radius = Math.min(shortSide * fitLimit, shortSide * fit * Number(scaleControl.value) / 78 * (1 + bass * .015));
-    if (shape === "tree") {
-      radius = Math.min(radius, shortSide * (.465 - .018) / treeExtent(intensity, t, spinSpeed));
-    }
+    var radius = shape === "tree" ? shortSide * .28 : shape === "frog" ? shortSide * .47 * scaleFactor * audioScale :
+      Math.min(shortSide * fitLimit, shortSide * fit * Number(scaleControl.value) / 78 * (1 + bass * .015));
     context.fillStyle = "#100d0c"; context.fillRect(0, 0, width, height);
     var glow = context.createRadialGradient(centerX, centerY, radius * .03, centerX, centerY, radius * 1.25);
     glow.addColorStop(0, "hsla(" + hue + ", 65%, 48%, " + (.09 + pulse * .12) + ")");
     glow.addColorStop(1, "hsla(" + hue + ", 65%, 35%, 0)");
     context.fillStyle = glow; context.fillRect(0, 0, width, height);
-    var inset = shortSide * .035;
+    var inset = shortSide * (shape === "tree" ? .012 : .035);
     context.save(); context.beginPath(); context.rect(inset, inset, width - inset * 2, height - inset * 2); context.clip();
     context.translate(centerX, centerY);
     var spin = reduced.matches ? 0 : t * spinSpeed;
@@ -260,8 +397,8 @@
         triangle(0, 0, ringRadius, spin + ring * Math.PI / ringCount, depth, hue + ring * 22, .76 - ring * .07, t, pulse, spinSpeed);
       }
     } else if (shape === "flower") drawFlower(0, 0, radius, intensity, hue, t, pulse, spinSpeed);
-    else if (shape === "tree") drawTree(0, 0, radius, intensity, hue, t, pulse, spinSpeed);
-    else drawFrog(0, 0, radius * .74, intensity, hue, t, pulse, spinSpeed);
+    else if (shape === "tree") drawTree(0, 0, width, height, intensity, hue, t, pulse + bass * .32, spinSpeed, scaleFactor, audioScale);
+    else drawFrog(0, 0, radius * .74, intensity, hue, t, pulse, spinSpeed, fragment);
     context.restore();
   }
   function animate(now) {
@@ -274,6 +411,7 @@
   function wake() { if (visible && !document.hidden && !frame) frame = requestAnimationFrame(animate); }
   function updateControls() {
     scaleOutput.value = scaleControl.value + "%";
+    shapeButtons.forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.fractalShape === shapeControl.value)); });
     var intensity = Number(depthControl.value), shape = shapeControl.value, label, amount, unit;
     if (shape === "triangle") {
       label = "Triângulos + giro"; unit = " △";
@@ -283,10 +421,10 @@
       label = "Pétalas + giro"; unit = " pétalas"; amount = (6 + intensity * 2) * (1 + Math.floor(intensity / 3));
       visualLabel.textContent = "BOTÂNICA / FLOR";
     } else if (shape === "tree") {
-      label = "Ramos + giro"; unit = " ramos"; amount = (Math.pow(3, intensity + 1) - 1) / 2 + (5 + intensity) * 2;
+      label = "Ramos + giro"; unit = " ramos"; amount = Math.pow(2, intensity + 4) - 1 + (5 + intensity * 2) * 3;
       visualLabel.textContent = "BOTÂNICA / ÁRVORE";
     } else {
-      label = "Ornamentos + giro"; unit = " motivos"; amount = 4 + intensity * 2;
+      label = "Fragmentação + giro"; unit = "%"; amount = Math.round((intensity - 1) * 20);
       visualLabel.textContent = "ORNAMENTO / SAPO";
     }
     depthLabel.textContent = label;
@@ -294,10 +432,13 @@
     depthOutput.title = intensity + " níveis · " + amount + unit.trim();
     var palette = palettes[Math.min(palettes.length - 1, Math.floor(Number(colorControl.value) / 20))];
     colorOutput.value = palette;
-    draw(performance.now());
+    draw(performance.now()); wake();
   }
   [scaleControl, colorControl, depthControl].forEach(function (control) { control.addEventListener("input", updateControls); });
   shapeControl.addEventListener("change", updateControls);
+  shapeButtons.forEach(function (button) {
+    button.addEventListener("click", function () { shapeControl.value = button.dataset.fractalShape; updateControls(); });
+  });
   stage.addEventListener("pointermove", function (event) {
     var bounds = stage.getBoundingClientRect();
     pointer.x = (event.clientX - bounds.left) / bounds.width - .5;
